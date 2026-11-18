@@ -1,0 +1,14 @@
+[
+  {
+    "id": "CB-DEMO-01",
+    "from": "Coimbatore",
+    "to": "Gandhipuram",
+    "status": "illustrative_only"
+  },
+  {
+    "id": "CB-DEMO-02",
+    "from": "Coimbatore",
+    "to": "Ukkadam",
+    "status": "illustrative_only"
+  }
+]
