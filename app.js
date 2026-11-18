@@ -4,7 +4,10 @@ let stops = [];
 let timings = {};
 let favoriteRoutes = new Set();
 let showingFavorites = false;
-let bussuMap = null;\nlet favoriteStops = new Set();\nlet tamilMode = false;\ntry { favoriteStops = new Set(JSON.parse(localStorage.getItem('bussu-favorite-stops') || '[]')); } catch (_) {}
+let bussuMap = null;
+let favoriteStops = new Set();
+let tamilMode = false;
+try { favoriteStops = new Set(JSON.parse(localStorage.getItem('bussu-favorite-stops') || '[]')); } catch (_) {}
 try { favoriteRoutes = new Set(JSON.parse(localStorage.getItem('bussu-favorite-routes') || '[]')); } catch (_) {}
 
 const esc = value => String(value).replace(/[&<>"']/g, char => ({
