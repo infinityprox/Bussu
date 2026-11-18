@@ -4,6 +4,7 @@ let stops = [];
 let timings = {};
 let favoriteRoutes = new Set();
 let showingFavorites = false;
+let bussuMap = null;
 try { favoriteRoutes = new Set(JSON.parse(localStorage.getItem('bussu-favorite-routes') || '[]')); } catch (_) {}
 
 const esc = value => String(value).replace(/[&<>"']/g, char => ({
@@ -32,11 +33,25 @@ async function init() {
   $('#timingCount').textContent = verifiedTimes;
 
   renderRoutes(routes);
+  initMap();
   updateFavoriteButton();
   $('#stopResults').innerHTML = [...new Set(stops.map(stop => stop.name))]
     .sort((a,b) => a.localeCompare(b))
     .map(name => `<span class="stop-chip stop-directory-item" data-stop-name="${esc(name.toLowerCase())}">${esc(name)}</span>`).join('');
   renderTimings(timings);
+}
+
+function initMap() {
+  const mapElement = $('#bussuMap');
+  if (!mapElement || typeof L === 'undefined' || bussuMap) return;
+  bussuMap = L.map(mapElement, { scrollWheelZoom: false }).setView([11.0168, 76.9558], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+  }).addTo(bussuMap);
+  L.marker([11.0168, 76.9558]).addTo(bussuMap)
+    .bindPopup('<strong>Coimbatore</strong><br>City map');
+  setTimeout(() => bussuMap.invalidateSize(), 150);
 }
 
 function renderRoutes(list) {
@@ -91,6 +106,7 @@ function showRouteDetails(index) {
     direction, items: routeStages.filter(stop => stop.direction === direction)
   }));
 
+  const mapsUrl = 'https://www.google.com/maps/dir/?api=1&origin=' + encodeURIComponent(route.from + ', Coimbatore') + '&destination=' + encodeURIComponent(route.to + ', Coimbatore') + '&travelmode=transit';
   const stageHtml = directionGroups.length ? `
     <section class="route-stage-section">
       <h4>Stops <span class="tag">Third-party · Unverified</span></h4>
