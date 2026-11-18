@@ -1293,5 +1293,77 @@
     "coordinates": null,
     "source": "CCMC route directory",
     "note": "Endpoint only; not a verified complete stop inventory."
+  },
+  {
+    "name": "Avarampalayam",
+    "type": "route_stage",
+    "route_no": "1",
+    "direction": "Avarampalayam to Maruthamalai",
+    "sequence": 1,
+    "coordinates": null,
+    "source": "OneFiveNine third-party route listing",
+    "source_url": "https://www.onefivenine.com/india/BusRouteStage/bus_CityBus_9000_Route.htm",
+    "verification_status": "third_party_unverified",
+    "note": "Third-party published route stage; not officially verified. CCMC lists Route 1 endpoints in the opposite direction."
+  },
+  {
+    "name": "Gandhipuram",
+    "type": "route_stage",
+    "route_no": "1",
+    "direction": "Avarampalayam to Maruthamalai",
+    "sequence": 2,
+    "coordinates": null,
+    "source": "OneFiveNine third-party route listing",
+    "source_url": "https://www.onefivenine.com/india/BusRouteStage/bus_CityBus_9000_Route.htm",
+    "verification_status": "third_party_unverified",
+    "note": "Third-party published route stage; not officially verified. CCMC lists Route 1 endpoints in the opposite direction."
+  },
+  {
+    "name": "Sukravarpet",
+    "type": "route_stage",
+    "route_no": "1",
+    "direction": "Avarampalayam to Maruthamalai",
+    "sequence": 3,
+    "coordinates": null,
+    "source": "OneFiveNine third-party route listing",
+    "source_url": "https://www.onefivenine.com/india/BusRouteStage/bus_CityBus_9000_Route.htm",
+    "verification_status": "third_party_unverified",
+    "note": "Third-party published route stage; not officially verified. CCMC lists Route 1 endpoints in the opposite direction."
+  },
+  {
+    "name": "Agri University",
+    "type": "route_stage",
+    "route_no": "1",
+    "direction": "Avarampalayam to Maruthamalai",
+    "sequence": 4,
+    "coordinates": null,
+    "source": "OneFiveNine third-party route listing",
+    "source_url": "https://www.onefivenine.com/india/BusRouteStage/bus_CityBus_9000_Route.htm",
+    "verification_status": "third_party_unverified",
+    "note": "Third-party published route stage; not officially verified. CCMC lists Route 1 endpoints in the opposite direction."
+  },
+  {
+    "name": "Bharathiar University",
+    "type": "route_stage",
+    "route_no": "1",
+    "direction": "Avarampalayam to Maruthamalai",
+    "sequence": 5,
+    "coordinates": null,
+    "source": "OneFiveNine third-party route listing",
+    "source_url": "https://www.onefivenine.com/india/BusRouteStage/bus_CityBus_9000_Route.htm",
+    "verification_status": "third_party_unverified",
+    "note": "Third-party published route stage; not officially verified. CCMC lists Route 1 endpoints in the opposite direction."
+  },
+  {
+    "name": "Maruthamalai",
+    "type": "route_stage",
+    "route_no": "1",
+    "direction": "Avarampalayam to Maruthamalai",
+    "sequence": 6,
+    "coordinates": null,
+    "source": "OneFiveNine third-party route listing",
+    "source_url": "https://www.onefivenine.com/india/BusRouteStage/bus_CityBus_9000_Route.htm",
+    "verification_status": "third_party_unverified",
+    "note": "Third-party published route stage; not officially verified. CCMC lists Route 1 endpoints in the opposite direction."
   }
 ]
