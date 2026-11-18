@@ -88,7 +88,7 @@ Language: \${language}\`;
           const payload=await response.json().catch(()=>({}));
           if(!response.ok) throw new Error(payload.error || 'Could not get recipes. Please try again.');
           let raw=payload.content || payload.text || '';
-          raw=raw.trim().replace(/^\\\`\\\`\\\`(?:json)?\\s*/i,'').replace(/\\s*\\\`\\\`\\\`$/,'');
+          raw=raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
           const parsed=JSON.parse(raw);
           if(!Array.isArray(parsed.recipes)||parsed.recipes.length!==3) throw new Error('The recipe response was incomplete. Please retry.');
           setRecipes(parsed.recipes);
