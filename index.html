@@ -58,7 +58,7 @@ function App(){
  function startListening(){const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Speech){setError('Voice input is not supported in this browser. You can type your question instead.');return}const recognition=new Speech();recognition.lang=language==='tamil'?'ta-IN':'en-IN';recognition.onresult=e=>{const q=e.results[0][0].transcript;setVoiceQuestion(q);askVoice(q)};recognition.onerror=()=>setError('Could not hear that. Please try typing your question.');recognition.start()}
  async function dinnerIdea(){if(!items.length){const picks=[...QUICK].sort(()=>Math.random()-.5).slice(0,3);setItems(picks);getRecipes(picks)}else getRecipes()}
  async function getRecipes(ingredientOverride){
-  const selectedIngredients=ingredientOverride||items;
+  const selectedIngredients=Array.isArray(ingredientOverride)?ingredientOverride:items;
   if(!selectedIngredients.length){setError('Add at least one ingredient first.');return}
   setLoading(true);setError('');setActive(null);setTab('recipes');
   const userPrompt='Ingredients I have: '+selectedIngredients.join(', ')+'\nDiet: '+diet+'\nMax time: '+time+' minutes\nSpice level: '+spice+'\nServings: '+servings+'\nAllergies: '+(allergies.trim()||'none')+'\nLanguage: '+language;
@@ -116,7 +116,7 @@ function App(){
      <label className="text-sm font-semibold">{t.allergy}<input value={allergies} onChange={e=>setAllergies(e.target.value)} placeholder="e.g. peanuts, milk" className="mt-2 w-full rounded-xl border border-[#ead9c5] bg-white px-3 py-3 text-sm font-normal"/></label>
      <label className="text-sm font-semibold">{t.language}<select value={language} onChange={e=>setLanguage(e.target.value)} className="mt-2 w-full rounded-xl border border-[#ead9c5] bg-white px-3 py-3 text-sm"><option value="tamil">தமிழ்</option><option value="english">English</option><option value="tanglish">Tanglish</option></select></label>
     </div>
-    <div className="mt-6 flex flex-col gap-3 sm:flex-row"><button onClick={getRecipes} disabled={loading} className="btn-red flex-1 rounded-2xl px-5 py-4 font-bold shadow-md disabled:opacity-60">{loading?'Cooking…':'✦ '+t.get}</button><button onClick={surprise} className="rounded-2xl border border-[#e5d4bd] px-5 py-4 font-bold">🎲 {t.surprise}</button></div>
+    <div className="mt-6 flex flex-col gap-3 sm:flex-row"><button onClick={()=>getRecipes()} disabled={loading} className="btn-red flex-1 rounded-2xl px-5 py-4 font-bold shadow-md disabled:opacity-60">{loading?'Cooking…':'✦ '+t.get}</button><button onClick={surprise} className="rounded-2xl border border-[#e5d4bd] px-5 py-4 font-bold">🎲 {t.surprise}</button></div>
    </section>}
    {error&&<div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#efc6b8] bg-[#fff0eb] p-4 text-sm text-[#9e3328]"><span>{error}</span><button onClick={getRecipes} className="rounded-xl bg-[#c8372d] px-4 py-2 font-bold text-white">{t.retry}</button></div>}
    {loading&&<section className="mt-8"><p className="mb-4 text-center font-semibold">{t.loading}</p><div className="grid gap-4 md:grid-cols-3">{[1,2,3].map(x=><div key={x} className="surface rounded-3xl p-5"><div className="skeleton h-36 rounded-2xl"></div><div className="skeleton mt-4 h-5 w-3/4 rounded"></div><div className="skeleton mt-3 h-3 rounded"></div><div className="skeleton mt-2 h-3 w-1/2 rounded"></div></div>)}</div></section>}
