@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Coimbatore City Municipal Corporation \u2013 Bus Services",
+    "url": "https://ccmc.gov.in/index.php/createpage/bus-services",
+    "type": "Official route numbers and origin/destination endpoints",
+    "checked": "2026-11-18"
+  },
+  {
+    "name": "Coimbatore city transport bus-stops map (PDF)",
+    "url": "https://gacbe.ac.in/pdf/SPATIAL%20DATA/BUSSTOPS__COIMBATORE%20CORPORATION.pdf",
+    "type": "Map reference for stop locations; not a structured stop-coordinate dataset"
+  },
+  {
+    "name": "CoimbatoreJunction route finder",
+    "url": "https://coimbatorejunction.in/coimbatore-bus-routes/",
+    "type": "Secondary route reference; states full stop-by-stop timetable is not published for every service"
+  }
+]
