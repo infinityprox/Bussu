@@ -1,6 +1,6 @@
-# BusTrack India — Coimbatore
+# Bussu — Coimbatore
 
-A responsive static website for exploring published Coimbatore city bus route endpoints, known endpoints and available timing information.
+Bussu is a responsive static website for exploring published Coimbatore city bus route endpoints, known endpoints and available timing information.
 
 ## Run locally
 
