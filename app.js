@@ -2,6 +2,9 @@ const $ = selector => document.querySelector(selector);
 let routes = [];
 let stops = [];
 let timings = {};
+let favoriteRoutes = new Set();
+let showingFavorites = false;
+try { favoriteRoutes = new Set(JSON.parse(localStorage.getItem('bussu-favorite-routes') || '[]')); } catch (_) {}
 
 const esc = value => String(value).replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -29,9 +32,10 @@ async function init() {
   $('#timingCount').textContent = verifiedTimes;
 
   renderRoutes(routes);
+  updateFavoriteButton();
   $('#stopResults').innerHTML = [...new Set(stops.map(stop => stop.name))]
     .sort((a,b) => a.localeCompare(b))
-    .map(name => `<span class="stop-chip">${esc(name)}</span>`).join('');
+    .map(name => `<span class="stop-chip stop-directory-item" data-stop-name="${esc(name.toLowerCase())}">${esc(name)}</span>`).join('');
   renderTimings(timings);
 }
 
@@ -52,12 +56,28 @@ function renderRoutes(list) {
           <button class="route-destination route-open" type="button" data-route-index="${index}">${esc(route.from)} → ${esc(route.to)}</button>
           <small>Tap bus number or destination to view route details</small>
         </div>
+        <button class="favorite-button" type="button" data-favorite-route="${esc(route.route_no)}">${favoriteRoutes.has(route.route_no) ? '★ Saved' : '☆ Save'}</button>
       </article>`;
   }).join('');
 
+  container.querySelectorAll('[data-favorite-route]').forEach(button => {
+    button.addEventListener('click', () => {
+      const routeNo = button.dataset.favoriteRoute;
+      if (favoriteRoutes.has(routeNo)) favoriteRoutes.delete(routeNo); else favoriteRoutes.add(routeNo);
+      try { localStorage.setItem('bussu-favorite-routes', JSON.stringify([...favoriteRoutes])); } catch (_) {}
+      const query = $('#q').value.trim().toLowerCase();
+      renderRoutes(showingFavorites ? routes.filter(route => favoriteRoutes.has(route.route_no)) : routes.filter(route => (route.route_no + ' ' + route.from + ' ' + route.to).toLowerCase().includes(query)));
+      updateFavoriteButton();
+    });
+  });
   container.querySelectorAll('.route-open').forEach(button => {
     button.addEventListener('click', () => showRouteDetails(button.dataset.routeIndex));
   });
+}
+
+function updateFavoriteButton() {
+  const button = $('#showFavorites');
+  if (button) button.textContent = showingFavorites ? 'Show all routes' : 'Show saved routes';
 }
 
 function showRouteDetails(index) {
@@ -158,9 +178,23 @@ $('#routeDetail').addEventListener('click', event => {
   if (event.target.closest('#closeRouteDetail')) $('#routeDetail').hidden = true;
 });
 
+$('#stopSearch').addEventListener('input', () => {
+  const query = $('#stopSearch').value.trim().toLowerCase();
+  document.querySelectorAll('.stop-directory-item').forEach(item => { item.hidden = !item.dataset.stopName.includes(query); });
+});
+
+$('#showFavorites').addEventListener('click', () => {
+  showingFavorites = !showingFavorites;
+  const query = $('#q').value.trim().toLowerCase();
+  renderRoutes(showingFavorites ? routes.filter(route => favoriteRoutes.has(route.route_no)) : routes.filter(route => (route.route_no + ' ' + route.from + ' ' + route.to).toLowerCase().includes(query)));
+  updateFavoriteButton();
+});
+
 $('#search').addEventListener('submit', event => {
   event.preventDefault();
   const query = $('#q').value.trim().toLowerCase();
+  showingFavorites = false;
+  updateFavoriteButton();
   renderRoutes(routes.filter(route =>
     (route.route_no + ' ' + route.from + ' ' + route.to).toLowerCase().includes(query)
   ));
