@@ -36,7 +36,6 @@ async function init() {
   $('#timingCount').textContent = verifiedTimes;
 
   renderRoutes(routes);
-  initMap();
   updateFavoriteButton();
   $('#stopResults').innerHTML = [...new Set(stops.map(stop => stop.name))]
     .sort((a,b) => a.localeCompare(b))
@@ -100,19 +99,6 @@ function renderFavoriteStops() {
     try { localStorage.setItem('bussu-favorite-stops', JSON.stringify([...favoriteStops])); } catch (_) {}
     renderFavoriteStops();
   }));
-}
-
-function initMap() {
-  const mapElement = $('#bussuMap');
-  if (!mapElement || typeof L === 'undefined' || bussuMap) return;
-  bussuMap = L.map(mapElement, { scrollWheelZoom: false }).setView([11.0168, 76.9558], 12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-  }).addTo(bussuMap);
-  L.marker([11.0168, 76.9558]).addTo(bussuMap)
-    .bindPopup('<strong>Coimbatore</strong><br>City map');
-  setTimeout(() => bussuMap.invalidateSize(), 150);
 }
 
 function renderRoutes(list) {
