@@ -54,19 +54,33 @@ function renderRoutes(list) {
 
 function renderTimings(data) {
   const verified = Array.isArray(data.verified_official) ? data.verified_official : [];
-  if (verified.length) {
-    $('#timingResults').innerHTML = verified.map(item => `
-      <article class="timing-entry">
-        <h3>Route ${esc(item.route_no || '—')}</h3>
-        <p>${esc(item.from || '')} → ${esc(item.to || '')}</p>
-        <p><b>${esc(item.departure_time || '')}</b></p>
-      </article>`).join('');
-    return;
-  }
+  const thirdParty = Array.isArray(data.third_party_unverified) ? data.third_party_unverified : [];
+
+  const verifiedHtml = verified.map(item => `
+    <article class="timing-entry">
+      <h3>Route ${esc(item.route_no || '—')} <span class="tag">Official</span></h3>
+      <p>${esc(item.from || '')} → ${esc(item.to || '')}</p>
+      <p><b>${esc(item.departure_time || '')}</b></p>
+    </article>`).join('');
+
+  const thirdPartyHtml = thirdParty.map(item => `
+    <article class="timing-entry">
+      <h3>Route ${esc(item.route_no || '—')} <span class="tag warn">Unverified</span></h3>
+      <p>${esc(item.from_stop || '')} → ${esc(item.to || '')}</p>
+      <div class="departure-times">
+        ${(Array.isArray(item.departure_times) ? item.departure_times : [])
+          .map(time => `<span class="stop-chip">${esc(time)}</span>`).join('')}
+      </div>
+      <small>Third-party reference schedule · may change. Confirm before travel.</small>
+      <p><a href="${esc(item.source_url || '#')}" target="_blank" rel="noopener noreferrer">Source: ${esc(item.source_name || 'Third-party timetable')}</a></p>
+    </article>`).join('');
 
   $('#timingResults').innerHTML = `
-    <h3>Verified bus timings are not available yet</h3>
-    <p>The currently available Coimbatore route data does not include verified route-specific departure times. No estimated or fictional timings are displayed.</p>
+    ${verifiedHtml}
+    ${thirdPartyHtml}
+    <p class="note">${esc(data.note || 'Timings can change. Confirm with the bus operator before travel.')}</p>
+    ${verified.length ? '' : '<p class="note">No official departure times have been verified yet.</p>'}
+    ${verified.length || thirdParty.length ? '' : '<h3>Bus timings are not available yet</h3>'}
   `;
 }
 
