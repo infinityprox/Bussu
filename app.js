@@ -65,7 +65,7 @@ function renderTimings(data) {
 
   const thirdPartyHtml = thirdParty.map(item => `
     <article class="timing-entry">
-      <h3>Route ${esc(item.route_no || '—')} <span class="tag warn">Unverified</span></h3>
+      <h3>Route ${esc(item.route_no || '—')} <span class="tag">Third-party Schedule</span></h3>
       <p>${esc(item.from_stop || '')} → ${esc(item.to || '')}</p>
       <div class="departure-times">
         ${(Array.isArray(item.departure_times) ? item.departure_times : [])
