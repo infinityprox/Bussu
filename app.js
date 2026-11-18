@@ -41,15 +41,54 @@ async function init() {
 
 function renderRoutes(list) {
   $('#routeResults').innerHTML = list.length
-    ? list.map(route => `
-      <article class="route-card">
-        <span class="route-no">${esc(route.route_no)}</span>
-        <div>
-          <strong>${esc(route.from)} → ${esc(route.to)}</strong>
-          <small>Published route endpoints · intermediate stops may not be available</small>
-        </div>
-      </article>`).join('')
+    ? list.map(route => {
+      const index = routes.indexOf(route);
+      return `
+        <article class="route-card">
+          <button class="route-no route-open" type="button" data-route-index="${index}" aria-label="View route ${esc(route.route_no)}">${esc(route.route_no)}</button>
+          <div>
+            <button class="route-destination route-open" type="button" data-route-index="${index}">${esc(route.from)} → ${esc(route.to)}</button>
+            <small>Tap bus number or destination to view route details</small>
+          </div>
+        </article>`;
+    }).join('')
     : '<p>No matching route entry found.</p>';
+}
+
+function showRouteDetails(index) {
+  const route = routes[Number(index)];
+  if (!route) return;
+
+  const allTimes = [
+    ...(Array.isArray(timings.verified_official) ? timings.verified_official : []),
+    ...(Array.isArray(timings.third_party_unverified) ? timings.third_party_unverified : [])
+  ].filter(item => String(item.route_no).trim().toLowerCase() === String(route.route_no).trim().toLowerCase());
+
+  const timeCards = allTimes.length ? allTimes.map(item => `
+    <article class="detail-timing">
+      <h4>Timetable <span class="tag">${item.status && item.status.includes('Third-party') ? 'Third-party Schedule' : 'Official'}</span></h4>
+      <p>${esc(item.from_stop || item.from || '')} → ${esc(item.to || '')}</p>
+      <div class="departure-times">${(item.departure_times || [item.departure_time].filter(Boolean))
+        .map(time => `<span class="stop-chip">${esc(time)}</span>`).join('')}</div>
+      ${item.source_url ? `<a href="${esc(item.source_url)}" target="_blank" rel="noopener noreferrer">View timetable source</a>` : ''}
+    </article>`).join('') : '<p class="note">No route-specific timetable is available in the current dataset.</p>';
+
+  $('#routeDetail').hidden = false;
+  $('#routeDetail').innerHTML = `
+    <div class="detail-heading">
+      <div><small>BUS ROUTE DETAILS</small><h3>Route ${esc(route.route_no)}</h3></div>
+      <button type="button" class="detail-close" id="closeRouteDetail" aria-label="Close route details">✕</button>
+    </div>
+    <div class="route-timeline">
+      <div class="timeline-stop"><span class="timeline-dot"></span><div><small>FROM</small><strong>${esc(route.from)}</strong></div></div>
+      <div class="timeline-line"></div>
+      <div class="timeline-stop"><span class="timeline-dot end"></span><div><small>TO</small><strong>${esc(route.to)}</strong></div></div>
+    </div>
+    <p class="note">Only the published route endpoints are available here. Intermediate stops have not been confirmed for this route.</p>
+    <h4>Bus timings</h4>
+    ${timeCards}
+  `;
+  $('#routeDetail').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function renderTimings(data) {
@@ -83,6 +122,15 @@ function renderTimings(data) {
     ${verified.length || thirdParty.length ? '' : '<h3>Bus timings are not available yet</h3>'}
   `;
 }
+
+$('#routeResults').addEventListener('click', event => {
+  const trigger = event.target.closest('.route-open');
+  if (trigger) showRouteDetails(trigger.dataset.routeIndex);
+});
+
+$('#routeDetail').addEventListener('click', event => {
+  if (event.target.closest('#closeRouteDetail')) $('#routeDetail').hidden = true;
+});
 
 $('#search').addEventListener('submit', event => {
   event.preventDefault();
