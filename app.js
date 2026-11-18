@@ -40,19 +40,30 @@ async function init() {
 }
 
 function renderRoutes(list) {
-  $('#routeResults').innerHTML = list.length
-    ? list.map(route => {
-      const index = routes.indexOf(route);
-      return `
-        <article class="route-card">
-          <button class="route-no route-open" type="button" data-route-index="${index}" aria-label="View route ${esc(route.route_no)}">${esc(route.route_no)}</button>
-          <div>
-            <button class="route-destination route-open" type="button" data-route-index="${index}">${esc(route.from)} → ${esc(route.to)}</button>
-            <small>Tap bus number or destination to view route details</small>
-          </div>
-        </article>`;
-    }).join('')
-    : '<p>No matching route entry found.</p>';
+  const container = $('#routeResults');
+  if (!container) return;
+
+  if (!list.length) {
+    container.innerHTML = '<p>No matching route entry found.</p>';
+    return;
+  }
+
+  container.innerHTML = list.map(route => {
+    const index = routes.indexOf(route);
+    return `
+      <article class="route-card">
+        <button class="route-no route-open" type="button" data-route-index="${index}" aria-label="View route ${esc(route.route_no)}">${esc(route.route_no)}</button>
+        <div>
+          <button class="route-destination route-open" type="button" data-route-index="${index}">${esc(route.from)} → ${esc(route.to)}</button>
+          <small>Tap bus number or destination to view route details</small>
+        </div>
+      </article>`;
+  }).join('');
+
+  // Bind directly after rendering so each newly displayed route is clickable.
+  container.querySelectorAll('.route-open').forEach(button => {
+    button.addEventListener('click', () => showRouteDetails(button.dataset.routeIndex));
+  });
 }
 
 function showRouteDetails(index) {
@@ -88,7 +99,7 @@ function showRouteDetails(index) {
     <h4>Bus timings</h4>
     ${timeCards}
   `;
-  $('#routeDetail').scrollIntoView({behavior:'smooth',block:'start'});
+  $('#routeDetail').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderTimings(data) {
