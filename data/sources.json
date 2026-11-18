@@ -1,6 +1,6 @@
 [
   {
-    "name": "Coimbatore City Municipal Corporation \u2013 Bus Services",
+    "name": "Coimbatore City Municipal Corporation – Bus Services",
     "url": "https://ccmc.gov.in/index.php/createpage/bus-services",
     "type": "Official route numbers and origin/destination endpoints",
     "checked": "2026-11-18"
@@ -14,5 +14,11 @@
     "name": "CoimbatoreJunction route finder",
     "url": "https://coimbatorejunction.in/coimbatore-bus-routes/",
     "type": "Secondary route reference; states full stop-by-stop timetable is not published for every service"
+  },
+  {
+    "name": "OneFiveNine – Route 1 Avarampalayam to Maruthamalai",
+    "url": "https://www.onefivenine.com/india/BusRouteStage/bus_CityBus_9000_Route.htm",
+    "type": "Third-party route-stage sequence for Route 1; unverified and direction differs from CCMC endpoint order",
+    "checked": "2026-11-18"
   }
 ]
