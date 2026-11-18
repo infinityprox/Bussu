@@ -16,6 +16,7 @@
       <a href="#routes">Routes</a>
       <a href="#map">Map</a>
       <a href="#stops">Stops</a>
+      <a href="#tools">Tools</a>
       <a href="#timings">Timings</a>
       <a href="#live">Live</a>
     </nav>
@@ -54,6 +55,17 @@
       <input id="stopSearch" class="stop-search" type="search" placeholder="Search a bus stop" aria-label="Search bus stops">
       <p class="note">These names are route endpoints, not a verified complete list of every intermediate bus stop.</p>
       <div id="stopResults" class="stop-grid"></div>
+    </section>
+
+    <section class="section" id="tools">
+      <div class="heading"><div><small>TRAVEL TOOLS</small><h2>Useful features</h2></div><button type="button" class="outline-button" id="languageToggle">தமிழ்</button></div>
+      <div class="feature-grid">
+        <article class="feature-card" id="nearbyFeature"><h3>Nearby bus stops</h3><p id="nearbyMessage">Nearby search needs verified stop coordinates. They are not available yet.</p><button type="button" class="outline-button" id="nearbyButton">Check nearby</button></article>
+        <article class="feature-card"><h3>Fare calculator</h3><p>Official fare data is not available yet. Enter a fare supplied by the operator to calculate your group total.</p><label>Fare per passenger (₹)<input id="fareEach" type="number" min="0" step="0.5" placeholder="Enter known fare"></label><label>Passengers<input id="farePeople" type="number" min="1" step="1" value="1"></label><strong id="fareTotal">Total: —</strong></article>
+        <article class="feature-card"><h3>Stop alerts</h3><p>Save a stop reminder on this device. Automatic arrival alerts need GPS/geofencing and are not connected.</p><select id="alertStop" aria-label="Choose stop"><option value="">Choose a known stop</option></select><button type="button" class="outline-button" id="saveStopAlert">Save reminder</button><p id="alertMessage" aria-live="polite"></p></article>
+        <article class="feature-card"><h3>Crowd status</h3><p>Community crowd reports are not connected. Choose a status to preview a local-only report; it is not shared or verified.</p><select id="crowdStop" aria-label="Choose stop for crowd report"><option value="">Choose a known stop</option></select><select id="crowdLevel" aria-label="Crowd level"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select><button type="button" class="outline-button" id="saveCrowd">Save on this device</button><p id="crowdMessage" aria-live="polite"></p></article>
+        <article class="feature-card"><h3>Favourite stops</h3><p>Save stops for quick access on this device.</p><div id="favoriteStops" class="stop-grid"></div></article>
+      </div>
     </section>
 
     <section class="section" id="live">
