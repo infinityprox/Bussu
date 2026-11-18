@@ -29,8 +29,9 @@ export default async function handler(req, res) {
           { role: "system", content: system },
           { role: "user", content: prompt }
         ],
-        max_completion_tokens: 1800,
-        temperature: 0.7
+        max_completion_tokens: 4096,
+        response_format: { type: "json_object" },
+        temperature: 0.3
       })
     });
 
