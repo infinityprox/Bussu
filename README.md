@@ -33,3 +33,18 @@ Then visit `http://localhost:8000`.
 - `data/timings.json`: verified and unverified schedule record containers.
 
 Add new route, stop or timing records only when supported by reliable, identifiable evidence.
+
+## Pasi — AI recipe assistant
+
+A separate single-page recipe app is available at `/pasi.html`. The Claude API key is kept on the server in `api/recipes.js`; it is never included in browser code.
+
+### Deploy Pasi
+
+GitHub Pages only hosts static files and cannot run the secure API endpoint. Deploy this repository on Vercel to use recipe generation:
+
+1. Import `infinityprox/Bussu` into Vercel.
+2. In **Project Settings → Environment Variables**, add `ANTHROPIC_API_KEY` with your Anthropic API key.
+3. Redeploy the project.
+4. Open `/pasi.html` on the Vercel deployment.
+
+Do not put the API key in `pasi.html`, a public GitHub file, or any frontend environment variable. Claude API usage may incur charges.
