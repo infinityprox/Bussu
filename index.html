@@ -6,7 +6,6 @@
   <meta name="theme-color" content="#050505">
   <title>Bussu | Coimbatore</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 </head>
 <body>
   <header class="nav">
@@ -14,7 +13,6 @@
     <nav aria-label="Main navigation">
       <a href="#home">Home</a>
       <a href="#routes">Routes</a>
-      <a href="#map">Map</a>
       <a href="#stops">Stops</a>
       <a href="#tools">Tools</a>
       <a href="#timings">Timings</a>
@@ -23,15 +21,21 @@
   </header>
 
   <main id="home">
-    <section class="hero">
-      <form id="search">
-        <input id="q" placeholder="Search route number, origin or destination" aria-label="Search routes">
-        <button type="submit">Search</button>
-      </form>
-      <div class="stats">
-        <div><b id="routeCount">—</b><small>published route entries</small></div>
-        <div><b id="stopCount">—</b><small>known route endpoints</small></div>
-        <div><b id="timingCount">0</b><small>verified departure times</small></div>
+    <section class="hero landing-hero">
+      <div class="hero-copy">
+        <span class="hero-kicker">COIMBATORE • CITY BUS GUIDE</span>
+        <h1>Every bus journey,<br><em>made simpler.</em></h1>
+        <p>Explore bus routes, check available schedule information and keep your favourite stops close.</p>
+        <div class="hero-actions"><a class="primary-cta" href="#routes">Explore routes <span>↗</span></a><a class="secondary-cta" href="#stops">Find a stop</a></div>
+      </div>
+      <div class="hero-search-wrap">
+        <span class="search-caption">START YOUR JOURNEY</span>
+        <form id="search"><input id="q" placeholder="Search route number, origin or destination" aria-label="Search routes"><button type="submit">Search</button></form>
+        <div class="stats">
+          <div><b id="routeCount">—</b><small>published route entries</small></div>
+          <div><b id="stopCount">—</b><small>known route endpoints</small></div>
+          <div><b id="timingCount">0</b><small>verified departure times</small></div>
+        </div>
       </div>
     </section>
 
@@ -72,7 +76,6 @@
   </main>
 
   <footer>Bussu · Coimbatore</footer>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="app.js"></script>
 </body>
 </html>
