@@ -12,10 +12,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { system, prompt } = req.body || {};
-    if (typeof system !== "string" || typeof prompt !== "string" || !prompt.trim()) {
-      return res.status(400).json({ error: "Please provide ingredients and recipe preferences." });
+    const { system, prompt, mode, image } = req.body || {};
+    if (typeof prompt !== "string" || !prompt.trim()) {
+      return res.status(400).json({ error: "Please provide a prompt." });
     }
+
+    const isVision = mode === "vision";
+    if (isVision && (typeof image !== "string" || !/^data:image\/(jpeg|png|webp);base64,/.test(image))) {
+      return res.status(400).json({ error: "Please upload a JPG, PNG or WebP fridge photo." });
+    }
+    if (isVision && image.length > 5_000_000) {
+      return res.status(413).json({ error: "That image is too large. Please choose a smaller photo." });
+    }
+
+    const messages = isVision
+      ? [{
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            { type: "image_url", image_url: { url: image } }
+          ]
+        }]
+      : [
+          ...(typeof system === "string" && system.trim() ? [{ role: "system", content: system }] : []),
+          { role: "user", content: prompt }
+        ];
 
     const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -24,13 +45,10 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-20b",
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: prompt }
-        ],
-        max_completion_tokens: 4096,
-        response_format: { type: "json_object" },
+        model: isVision ? "qwen/qwen3.8-27b" : "openai/gpt-oss-20b",
+        messages,
+        max_completion_tokens: isVision ? 1200 : 4096,
+        ...(mode === "vision" || mode === "planner" ? { response_format: { type: "json_object" } } : {}),
         temperature: 0.3
       })
     });
