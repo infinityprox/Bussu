@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f4e9">
+<title>BusTrack India | Tamil Nadu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#"><span class="logo">B</span><span>BusTrack <b>India</b><small>TAMIL NADU</small></span></a>
+  <nav><a class="active" href="#home">Home</a><a href="#explore">Explore</a><a href="#routes">Routes</a><a href="#stops">Bus stops</a></nav>
+  <button class="avatar" aria-label="Profile">👤</button>
+</header>
+<main id="home">
+<section class="hero">
+ <div class="hero-copy"><p class="eyebrow">YOUR JOURNEY STARTS HERE</p><h1>Explore more.<br><em>Travel smarter.</em></h1><p class="intro">Find bus routes, discover places and plan your next journey across Tamil Nadu.</p><div class="actions"><a class="red-btn" href="#routes">Find a bus <span>→</span></a><a class="plain-link" href="#explore">Explore destinations</a></div></div>
+ <div class="hero-art"><div class="sun"></div><div class="city">🏙️</div><div class="road"></div><div class="bus">🚌</div><span class="float-tag tag-one">📍 Coimbatore</span><span class="float-tag tag-two">🗺️ Tamil Nadu</span></div>
+</section>
+<section class="search-card" id="routes">
+ <div class="section-head"><div><p class="eyebrow">PLAN YOUR JOURNEY</p><h2>Where are you going?</h2></div><span class="chip">BUS ROUTE FINDER</span></div>
+ <div class="tabs"><button class="selected">One way</button><button id="roundTrip">Round trip</button></div>
+ <form id="routeForm" class="search-grid">
+  <label>FROM<div class="field">📍 <input id="from" list="places" placeholder="Starting point" required></div></label>
+  <button class="swap" type="button" id="swap" aria-label="Swap">⇄</button>
+  <label>TO<div class="field">📍 <input id="to" list="places" placeholder="Destination" required></div></label>
+  <label>TRAVEL DATE<div class="field">📅 <input id="date" type="date"></div></label>
+  <button class="search-btn">Search buses <span>→</span></button>
+  <datalist id="places"><option>Coimbatore</option><option>Gandhipuram</option><option>Ukkadam</option><option>Chennai</option><option>Koyambedu</option><option>Madurai</option><option>Salem</option><option>Hosur</option><option>Trichy</option></datalist>
+ </form><div id="results" aria-live="polite"></div>
+ <p class="fineprint">Demo routes are illustrative only. Confirmed schedules and availability require verified operator data.</p>
+</section>
+<section class="block" id="explore"><div class="section-head"><div><p class="eyebrow">DISCOVER TAMIL NADU</p><h2>Popular destinations</h2></div><a class="view-all" href="#cities">View all →</a></div>
+ <div class="destinations" id="cities">
+  <button class="destination d1" data-city="Coimbatore"><span>⛰️</span><b>Coimbatore</b><small>Western Tamil Nadu</small><i>↗</i></button>
+  <button class="destination d2" data-city="Chennai"><span>🌊</span><b>Chennai</b><small>Capital city</small><i>↗</i></button>
+  <button class="destination d3" data-city="Madurai"><span>🛕</span><b>Madurai</b><small>Temple city</small><i>↗</i></button>
+  <button class="destination d4" data-city="Hosur"><span>🌿</span><b>Hosur</b><small>Krishnagiri district</small><i>↗</i></button>
+ </div>
+</section>
+<section class="lower" id="stops">
+ <div class="stop-card"><div class="section-head"><div><p class="eyebrow">NEAR YOUR LOCATION</p><h2>Find bus stops</h2></div><span class="target">⌖</span></div><p>Discover nearby bus stops when location services and verified stop data are available.</p><button class="outline-btn" id="nearby">Use my location</button><small id="locationMessage"></small></div>
+ <div class="promo"><p class="eyebrow">BUSTRACK INDIA</p><h2>Every route<br>has a story.</h2><p>One simple place to explore public transport information.</p><a href="#routes">Plan a journey →</a><span>🚌</span></div>
+</section>
+<div class="notice"><b>ⓘ &nbsp; Information notice</b><p>BusTrack India is an independent project. This version uses demo route entries. It does not provide live vehicle tracking, confirmed schedules, ticket booking or official fares yet.</p></div>
+</main>
+<footer><a class="brand" href="#"><span class="logo">B</span><span>BusTrack <b>India</b><small>PUBLIC TRANSPORT, MADE SIMPLE</small></span></a><p>Made for journeys across Tamil Nadu.</p></footer>
+<script src="app.js"></script>
+</body></html>
