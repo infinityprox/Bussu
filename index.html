@@ -52,7 +52,7 @@ function App(){
  async function getRecipes(){
   if(!items.length){setError('Add at least one ingredient first.');return}
   setLoading(true);setError('');setActive(null);setTab('recipes');
-  const userPrompt='Ingredients I have: '+items.join(', ')+'\\nDiet: '+diet+'\\nMax time: '+time+' minutes\\nSpice level: '+spice+'\\nServings: '+servings+'\\nAllergies: '+(allergies.trim()||'none')+'\\nLanguage: '+language;
+  const userPrompt='Ingredients I have: '+items.join(', ')+'\nDiet: '+diet+'\nMax time: '+time+' minutes\nSpice level: '+spice+'\nServings: '+servings+'\nAllergies: '+(allergies.trim()||'none')+'\nLanguage: '+language;
   try{
    const response=await fetch('/api/recipes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:SYSTEM_PROMPT,prompt:userPrompt})});
    if(!response.ok){const e=await response.json().catch(()=>({}));throw new Error(e.error||'Recipe service is not configured yet. Please try again.')}
@@ -60,7 +60,7 @@ function App(){
    let raw=payload.content||payload.text||payload;
    if(Array.isArray(raw))raw=raw.map(x=>x.text||'').join('');
    if(typeof raw!=='string')raw=JSON.stringify(raw);
-   raw=raw.trim().replace(/^\\s*\`\`\`(?:json)?\\s*/i,'').replace(/\\s*\`\`\`\\s*$/,'');
+   raw=raw.trim().replace(/^\s*\`\`\`(?:json)?\s*/i,'').replace(/\s*\`\`\`\s*$/,'');
    const parsed=JSON.parse(raw);
    if(!Array.isArray(parsed.recipes)||parsed.recipes.length!==3)throw new Error('The recipe response was incomplete. Please retry.');
    setRecipes(parsed.recipes);setTab('recipes');
@@ -69,7 +69,7 @@ function App(){
  }
  function surprise(){const shuffled=[...QUICK].sort(()=>Math.random()-.5).slice(0,3);setItems(shuffled);setError('')}
  function scaled(n,r){const base=Number(r.servings)||servings;const amount=Number(n.amount)||0;const value=amount*servings/base;return Number.isInteger(value)?value:Number(value.toFixed(2))}
- async function copyRecipe(r){const text=[r.name,r.description,'', 'Ingredients:',...(r.ingredients||[]).map(i=>'- '+i.item+': '+scaled(i,r)+' '+(i.unit||'')), '', 'Steps:',...(r.steps||[]).map((s,i)=>(i+1)+'. '+s),'','Tip: '+r.tip].join('\\n');try{await navigator.clipboard.writeText(text);setCopied(true);setTimeout(()=>setCopied(false),1600)}catch(e){setError('Could not copy. Please allow clipboard access.')}}
+ async function copyRecipe(r){const text=[r.name,r.description,'', 'Ingredients:',...(r.ingredients||[]).map(i=>'- '+i.item+': '+scaled(i,r)+' '+(i.unit||'')), '', 'Steps:',...(r.steps||[]).map((s,i)=>(i+1)+'. '+s),'','Tip: '+r.tip].join('\n');try{await navigator.clipboard.writeText(text);setCopied(true);setTimeout(()=>setCopied(false),1600)}catch(e){setError('Could not copy. Please allow clipboard access.')}}
  const shown=tab==='favorites'?favorites:recipes;
  return <div className="min-h-screen pb-12">
   <header className="sticky top-0 z-20 border-b border-[#eadfce] bg-[#fff8ec]/95 backdrop-blur dark:bg-[#211b17]/95 dark:border-[#493a31]">
