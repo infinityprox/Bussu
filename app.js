@@ -151,6 +151,7 @@ function showRouteDetails(index) {
       <div class="timeline-line"></div>
       <div class="timeline-stop"><span class="timeline-dot end"></span><div><small>${route.source === 'CCMC' ? 'CCMC LISTED TO' : 'THIRD-PARTY LISTED TO'}</small><strong>${esc(route.to)}</strong></div></div>
     </div>
+    <a class="map-directions" href="${mapsUrl}" target="_blank" rel="noopener noreferrer">Open route directions in Google Maps ↗</a>
     ${stageHtml}
     <h4>Bus timings</h4>
     ${timeCards}
