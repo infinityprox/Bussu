@@ -1,5 +1,76 @@
 {
   "verified_official": [],
-  "third_party_unverified": [],
-  "note": "No usable route-specific departure-time records were found in the cited sources. Do not display invented times."
+  "third_party_unverified": [
+    {
+      "route_no": "4H",
+      "from_stop": "Press Colony",
+      "to": "Railway Station",
+      "departure_times": [
+        "5:00 AM",
+        "7:00 AM",
+        "9:00 AM",
+        "9:30 AM",
+        "10:00 AM",
+        "10:30 AM",
+        "11:00 AM",
+        "1:00 PM",
+        "3:00 PM",
+        "5:00 PM",
+        "5:30 PM",
+        "6:00 PM",
+        "6:30 PM",
+        "7:00 PM",
+        "7:30 PM",
+        "7:50 PM"
+      ],
+      "source_name": "Coimbatore City Bus",
+      "source_url": "https://coimbatore.citybus.co.in/route-4h-timings-from-intermediate-bus-stops-towards-railway-station/",
+      "status": "Third-party reference; not officially verified"
+    },
+    {
+      "route_no": "42",
+      "from_stop": "Irugur",
+      "to": "Town Hall",
+      "departure_times": [
+        "6:45 AM",
+        "7:45 AM",
+        "8:45 AM",
+        "9:15 AM",
+        "9:45 AM",
+        "10:15 AM",
+        "10:45 AM",
+        "11:15 AM",
+        "12:15 PM",
+        "1:15 PM",
+        "2:15 PM",
+        "3:15 PM",
+        "3:30 PM"
+      ],
+      "source_name": "Coimbatore City Bus",
+      "source_url": "https://coimbatore.citybus.co.in/route-42-timings-from-intermediate-bus-stops-towards-town-hall/",
+      "status": "Third-party reference; not officially verified"
+    },
+    {
+      "route_no": "77",
+      "from_stop": "Edayarpalayam",
+      "to": "Town Hall",
+      "departure_times": [
+        "5:20 AM",
+        "7:20 AM",
+        "9:20 AM",
+        "9:50 AM",
+        "10:20 AM",
+        "10:50 AM",
+        "11:20 AM",
+        "1:20 PM",
+        "3:20 PM",
+        "5:20 PM",
+        "5:45 PM"
+      ],
+      "source_name": "Coimbatore City Bus",
+      "source_url": "https://coimbatore.citybus.co.in/route-77-timings-from-intermediate-bus-stops-towards-town-hall/",
+      "status": "Third-party reference; not officially verified"
+    }
+  ],
+  "note": "Third-party schedules are reference information only and may be outdated or changed by the operator. Confirm timings locally before travel. No official departure times are currently verified."
 }
