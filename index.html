@@ -26,7 +26,7 @@ button,input,select{font:inherit}.font-tamil{font-family:'Noto Sans Tamil',Poppi
 <script type="text/babel">
 const {useState,useMemo}=React;
 const QUICK=['thakkali','vengayam','muttai','paneer','urulai','arisi'];
-const SYSTEM_PROMPT=\`You are a friendly Indian home-cooking assistant inside a recipe app called Pasi. The user gives you ingredients they have at home. Suggest exactly 3 recipes that mainly use those ingredients.
+const SYSTEM_PROMPT=`You are a friendly Indian home-cooking assistant inside a recipe app called Pasi. The user gives you ingredients they have at home. Suggest exactly 3 recipes that mainly use those ingredients.
 Rules:
 - Assume basic pantry items: salt, oil, water, turmeric, chilli powder, coriander powder, mustard seeds, cumin. Never list them as missing.
 - Respect diet, max time and spice level.
@@ -37,7 +37,7 @@ Rules:
 - Quantities are for the requested servings.
 - Respond ONLY with valid JSON, no markdown, no backticks.
 JSON format:
-{"recipes":[{"name":"","description":"","time_minutes":0,"servings":0,"difficulty":"easy|medium|hard","spice_level":"mild|medium|hot","diet":"veg|non-veg","ingredients":[{"item":"","amount":0,"unit":"","have":true}],"missing_ingredients":[""],"steps":[""],"tip":""}]}\`;
+{"recipes":[{"name":"","description":"","time_minutes":0,"servings":0,"difficulty":"easy|medium|hard","spice_level":"mild|medium|hot","diet":"veg|non-veg","ingredients":[{"item":"","amount":0,"unit":"","have":true}],"missing_ingredients":[""],"steps":[""],"tip":""}]}`;
 const translations={
  english:{title:'What can we cook today?',sub:'A little hunger, a lot of possibilities.',ingredients:'What is in your fridge?',placeholder:'Type an ingredient and press Enter…',get:'Get recipes',surprise:'Surprise me',empty:'Fridge la enna irukku? Sollunga, naan pathukkaren.',favorites:'Favorites',recipes:'Recipes',loading:'Pasi aarra varaikum, samaichitu irukken...',allergy:'Allergies (optional)',servings:'Servings',diet:'Diet',time:'Max time',spice:'Spice level',language:'Language',retry:'Retry',tip:'Chef’s tip',steps:'How to make it',have:'You have',missing:'Need to get',copy:'Copy recipe',copied:'Copied!',back:'Back to recipes',noFav:'No favorites yet. Tap the heart on a recipe to save it.'},
  tamil:{title:'இன்று என்ன சமைக்கலாம்?',sub:'பசிக்கு ஏற்ற சுவையான சமையல்.',ingredients:'உங்கள் ஃப்ரிட்ஜில் என்ன இருக்கிறது?',placeholder:'பொருளை எழுதுங்கள்…',get:'சமையல் குறிப்புகள்',surprise:'ஏதாவது ஆச்சரியம்',empty:'Fridge la enna irukku? Sollunga, naan pathukkaren.',favorites:'விருப்பமானவை',recipes:'சமையல் குறிப்புகள்',loading:'Pasi aarra varaikum, samaichitu irukken...',allergy:'ஒவ்வாமை (விருப்பம்)',servings:'பரிமாறல்',diet:'உணவு முறை',time:'அதிகபட்ச நேரம்',spice:'காரம்',language:'மொழி',retry:'மீண்டும் முயற்சி',tip:'சமையல் குறிப்பு',steps:'செய்முறை',have:'உங்களிடம் உள்ளது',missing:'வாங்க வேண்டும்',copy:'நகலெடு',copied:'நகலெடுக்கப்பட்டது!',back:'திரும்பச் செல்ல',noFav:'விருப்பமான சமையல் குறிப்புகள் இன்னும் இல்லை.'},
@@ -60,7 +60,7 @@ function App(){
    let raw=payload.content||payload.text||payload;
    if(Array.isArray(raw))raw=raw.map(x=>x.text||'').join('');
    if(typeof raw!=='string')raw=JSON.stringify(raw);
-   raw=raw.trim().replace(/^\s*\`\`\`(?:json)?\s*/i,'').replace(/\s*\`\`\`\s*$/,'');
+   raw=raw.trim().replace(/^\s*```(?:json)?\s*/i,'').replace(/\s*```\s*$/,'');
    const parsed=JSON.parse(raw);
    if(!Array.isArray(parsed.recipes)||parsed.recipes.length!==3)throw new Error('The recipe response was incomplete. Please retry.');
    setRecipes(parsed.recipes);setTab('recipes');
