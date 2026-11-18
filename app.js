@@ -67,21 +67,27 @@ function showRouteDetails(index) {
   const routeStages = stops
     .filter(stop => stop.type === 'route_stage' && String(stop.route_no) === String(route.route_no))
     .sort((a,b) => a.sequence - b.sequence);
+  const directionGroups = [...new Set(routeStages.map(stop => stop.direction))].map(direction => ({
+    direction, items: routeStages.filter(stop => stop.direction === direction)
+  }));
 
-  const stageHtml = routeStages.length ? `
+  const stageHtml = directionGroups.length ? `
     <section class="route-stage-section">
       <h4>Stops <span class="tag">Third-party · Unverified</span></h4>
-      <p class="note">Published sequence: ${esc(routeStages[0].direction)}. This direction differs from the endpoint order in the CCMC directory.</p>
-      <div class="route-timeline">
-        ${routeStages.map((stop,i) => `
-          <div class="timeline-stop">
-            <span class="timeline-dot ${i === routeStages.length - 1 ? 'end' : ''}"></span>
-            <div><small>${i === 0 ? 'START' : i === routeStages.length - 1 ? 'END' : 'STOP ' + (i+1)}</small><strong>${esc(stop.name)}</strong></div>
-          </div>
-          ${i === routeStages.length - 1 ? '' : '<div class="timeline-line"></div>'}
-        `).join('')}
-      </div>
-      <small>Source: <a href="${esc(routeStages[0].source_url)}" target="_blank" rel="noopener noreferrer">OneFiveNine route listing</a></small>
+      <p class="note">These stop sequences come from third-party listings and have not been officially verified.</p>
+      ${directionGroups.map(group => `
+        <h5>${esc(group.direction)}</h5>
+        <div class="route-timeline">
+          ${group.items.map((stop,i) => `
+            <div class="timeline-stop">
+              <span class="timeline-dot ${i === group.items.length - 1 ? 'end' : ''}"></span>
+              <div><small>${i === 0 ? 'START' : i === group.items.length - 1 ? 'END' : 'STOP ' + (i+1)}</small><strong>${esc(stop.name)}</strong></div>
+            </div>
+            ${i === group.items.length - 1 ? '' : '<div class="timeline-line"></div>'}
+          `).join('')}
+        </div>
+        <small>Source: <a href="${esc(group.items[0].source_url)}" target="_blank" rel="noopener noreferrer">${esc(group.items[0].source)}</a></small>
+      `).join('')}
     </section>` : '<p class="note">Intermediate stops have not been published or confirmed for this route.</p>';
 
   const allTimes = [
@@ -105,9 +111,9 @@ function showRouteDetails(index) {
       <button type="button" class="detail-close" id="closeRouteDetail" aria-label="Close route details">✕</button>
     </div>
     <div class="route-timeline">
-      <div class="timeline-stop"><span class="timeline-dot"></span><div><small>CCMC LISTED FROM</small><strong>${esc(route.from)}</strong></div></div>
+      <div class="timeline-stop"><span class="timeline-dot"></span><div><small>${route.source === 'CCMC' ? 'CCMC LISTED FROM' : 'THIRD-PARTY LISTED FROM'}</small><strong>${esc(route.from)}</strong></div></div>
       <div class="timeline-line"></div>
-      <div class="timeline-stop"><span class="timeline-dot end"></span><div><small>CCMC LISTED TO</small><strong>${esc(route.to)}</strong></div></div>
+      <div class="timeline-stop"><span class="timeline-dot end"></span><div><small>${route.source === 'CCMC' ? 'CCMC LISTED TO' : 'THIRD-PARTY LISTED TO'}</small><strong>${esc(route.to)}</strong></div></div>
     </div>
     ${stageHtml}
     <h4>Bus timings</h4>
