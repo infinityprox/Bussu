@@ -23,26 +23,21 @@ async function init() {
     })
   ]);
 
-  const verifiedTimes = Array.isArray(timings.verified_official)
-    ? timings.verified_official.length
-    : 0;
-
+  const verifiedTimes = Array.isArray(timings.verified_official) ? timings.verified_official.length : 0;
   $('#routeCount').textContent = routes.length;
-  $('#stopCount').textContent = stops.length;
+  $('#stopCount').textContent = new Set(stops.map(stop => stop.name)).size;
   $('#timingCount').textContent = verifiedTimes;
 
   renderRoutes(routes);
-  $('#stopResults').innerHTML = stops
-    .map(stop => `<span class="stop-chip">${esc(stop.name)}</span>`)
-    .join('');
-
+  $('#stopResults').innerHTML = [...new Set(stops.map(stop => stop.name))]
+    .sort((a,b) => a.localeCompare(b))
+    .map(name => `<span class="stop-chip">${esc(name)}</span>`).join('');
   renderTimings(timings);
 }
 
 function renderRoutes(list) {
   const container = $('#routeResults');
   if (!container) return;
-
   if (!list.length) {
     container.innerHTML = '<p>No matching route entry found.</p>';
     return;
@@ -60,7 +55,6 @@ function renderRoutes(list) {
       </article>`;
   }).join('');
 
-  // Bind directly after rendering so each newly displayed route is clickable.
   container.querySelectorAll('.route-open').forEach(button => {
     button.addEventListener('click', () => showRouteDetails(button.dataset.routeIndex));
   });
@@ -69,6 +63,26 @@ function renderRoutes(list) {
 function showRouteDetails(index) {
   const route = routes[Number(index)];
   if (!route) return;
+
+  const routeStages = stops
+    .filter(stop => stop.type === 'route_stage' && String(stop.route_no) === String(route.route_no))
+    .sort((a,b) => a.sequence - b.sequence);
+
+  const stageHtml = routeStages.length ? `
+    <section class="route-stage-section">
+      <h4>Stops <span class="tag">Third-party · Unverified</span></h4>
+      <p class="note">Published sequence: ${esc(routeStages[0].direction)}. This direction differs from the endpoint order in the CCMC directory.</p>
+      <div class="route-timeline">
+        ${routeStages.map((stop,i) => `
+          <div class="timeline-stop">
+            <span class="timeline-dot ${i === routeStages.length - 1 ? 'end' : ''}"></span>
+            <div><small>${i === 0 ? 'START' : i === routeStages.length - 1 ? 'END' : 'STOP ' + (i+1)}</small><strong>${esc(stop.name)}</strong></div>
+          </div>
+          ${i === routeStages.length - 1 ? '' : '<div class="timeline-line"></div>'}
+        `).join('')}
+      </div>
+      <small>Source: <a href="${esc(routeStages[0].source_url)}" target="_blank" rel="noopener noreferrer">OneFiveNine route listing</a></small>
+    </section>` : '<p class="note">Intermediate stops have not been published or confirmed for this route.</p>';
 
   const allTimes = [
     ...(Array.isArray(timings.verified_official) ? timings.verified_official : []),
@@ -91,11 +105,11 @@ function showRouteDetails(index) {
       <button type="button" class="detail-close" id="closeRouteDetail" aria-label="Close route details">✕</button>
     </div>
     <div class="route-timeline">
-      <div class="timeline-stop"><span class="timeline-dot"></span><div><small>FROM</small><strong>${esc(route.from)}</strong></div></div>
+      <div class="timeline-stop"><span class="timeline-dot"></span><div><small>CCMC LISTED FROM</small><strong>${esc(route.from)}</strong></div></div>
       <div class="timeline-line"></div>
-      <div class="timeline-stop"><span class="timeline-dot end"></span><div><small>TO</small><strong>${esc(route.to)}</strong></div></div>
+      <div class="timeline-stop"><span class="timeline-dot end"></span><div><small>CCMC LISTED TO</small><strong>${esc(route.to)}</strong></div></div>
     </div>
-    <p class="note">Only the published route endpoints are available here. Intermediate stops have not been confirmed for this route.</p>
+    ${stageHtml}
     <h4>Bus timings</h4>
     ${timeCards}
   `;
@@ -133,11 +147,6 @@ function renderTimings(data) {
     ${verified.length || thirdParty.length ? '' : '<h3>Bus timings are not available yet</h3>'}
   `;
 }
-
-$('#routeResults').addEventListener('click', event => {
-  const trigger = event.target.closest('.route-open');
-  if (trigger) showRouteDetails(trigger.dataset.routeIndex);
-});
 
 $('#routeDetail').addEventListener('click', event => {
   if (event.target.closest('#closeRouteDetail')) $('#routeDetail').hidden = true;
