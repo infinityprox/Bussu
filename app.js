@@ -4,7 +4,7 @@ let stops = [];
 let timings = {};
 let favoriteRoutes = new Set();
 let showingFavorites = false;
-let bussuMap = null;
+let bussuMap = null;\nlet favoriteStops = new Set();\nlet tamilMode = false;\ntry { favoriteStops = new Set(JSON.parse(localStorage.getItem('bussu-favorite-stops') || '[]')); } catch (_) {}
 try { favoriteRoutes = new Set(JSON.parse(localStorage.getItem('bussu-favorite-routes') || '[]')); } catch (_) {}
 
 const esc = value => String(value).replace(/[&<>"']/g, char => ({
@@ -39,6 +39,64 @@ async function init() {
     .sort((a,b) => a.localeCompare(b))
     .map(name => `<span class="stop-chip stop-directory-item" data-stop-name="${esc(name.toLowerCase())}">${esc(name)}</span>`).join('');
   renderTimings(timings);
+  initTools();
+}
+
+function initTools() {
+  const names = [...new Set(stops.map(stop => stop.name))].sort((a,b) => a.localeCompare(b));
+  ['#alertStop','#crowdStop'].forEach(selector => {
+    $(selector).innerHTML = '<option value="">Choose a known stop</option>' + names.map(name => '<option value="' + esc(name) + '">' + esc(name) + '</option>').join('');
+  });
+  renderFavoriteStops();
+  $('#nearbyButton').addEventListener('click', () => {
+    $('#nearbyMessage').textContent = 'Nearby stop distances cannot be calculated yet because verified coordinates are missing for the listed stops.';
+  });
+  const updateFare = () => {
+    const fare = Number($('#fareEach').value), people = Math.max(1, Math.floor(Number($('#farePeople').value) || 1));
+    $('#fareTotal').textContent = $('#fareEach').value !== '' && Number.isFinite(fare) && fare >= 0 ? 'Total: ₹' + (fare * people).toFixed(2) + ' (using your entered fare)' : 'Total: —';
+  };
+  $('#fareEach').addEventListener('input', updateFare);
+  $('#farePeople').addEventListener('input', updateFare);
+  $('#saveStopAlert').addEventListener('click', () => {
+    const name = $('#alertStop').value;
+    if (!name) { $('#alertMessage').textContent = 'Choose a stop first.'; return; }
+    try {
+      const saved = JSON.parse(localStorage.getItem('bussu-stop-reminders') || '[]');
+      if (!saved.includes(name)) saved.push(name);
+      localStorage.setItem('bussu-stop-reminders', JSON.stringify(saved));
+      $('#alertMessage').textContent = 'Reminder saved on this device for ' + name + '. It will not trigger automatically yet.';
+    } catch (_) { $('#alertMessage').textContent = 'Could not save reminder in this browser.'; }
+  });
+  $('#saveCrowd').addEventListener('click', () => {
+    const name = $('#crowdStop').value;
+    if (!name) { $('#crowdMessage').textContent = 'Choose a stop first.'; return; }
+    const report = { stop: name, level: $('#crowdLevel').value, savedAt: new Date().toISOString(), shared: false };
+    try {
+      localStorage.setItem('bussu-crowd-preview', JSON.stringify(report));
+      $('#crowdMessage').textContent = report.level + ' crowd report saved locally only. Other passengers cannot see it.';
+    } catch (_) { $('#crowdMessage').textContent = 'Could not save this local report.'; }
+  });
+  $('#languageToggle').addEventListener('click', () => {
+    tamilMode = !tamilMode;
+    $('#languageToggle').textContent = tamilMode ? 'English' : 'தமிழ்';
+    document.documentElement.lang = tamilMode ? 'ta' : 'en';
+    const translations = tamilMode
+      ? [['Nearby bus stops','அருகிலுள்ள பேருந்து நிறுத்தங்கள்'],['Fare calculator','கட்டணக் கணிப்பான்'],['Stop alerts','நிறுத்த நினைவூட்டல்'],['Crowd status','கூட்ட நெரிசல் நிலை'],['Favourite stops','பிடித்த நிறுத்தங்கள்']]
+      : [['அருகிலுள்ள பேருந்து நிறுத்தங்கள்','Nearby bus stops'],['கட்டணக் கணிப்பான்','Fare calculator'],['நிறுத்த நினைவூட்டல்','Stop alerts'],['கூட்ட நெரிசல் நிலை','Crowd status'],['பிடித்த நிறுத்தங்கள்','Favourite stops']];
+    document.querySelectorAll('.feature-card h3').forEach(h => { const pair = translations.find(p => p[0] === h.textContent); if (pair) h.textContent = pair[1]; });
+  });
+}
+function renderFavoriteStops() {
+  const container = $('#favoriteStops');
+  if (!container) return;
+  const names = [...new Set(stops.map(stop => stop.name))].sort((a,b) => a.localeCompare(b));
+  container.innerHTML = names.map(name => '<button type="button" class="stop-chip stop-favorite-toggle" data-stop="' + esc(name) + '">' + (favoriteStops.has(name) ? '★ ' : '☆ ') + esc(name) + '</button>').join('');
+  container.querySelectorAll('.stop-favorite-toggle').forEach(button => button.addEventListener('click', () => {
+    const name = button.dataset.stop;
+    if (favoriteStops.has(name)) favoriteStops.delete(name); else favoriteStops.add(name);
+    try { localStorage.setItem('bussu-favorite-stops', JSON.stringify([...favoriteStops])); } catch (_) {}
+    renderFavoriteStops();
+  }));
 }
 
 function initMap() {
