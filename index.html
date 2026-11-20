@@ -82,7 +82,11 @@ async function loadUserMap(){
  const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/japan_street.glb';
  try{
   document.querySelector('#loading').textContent='Loading Japan street environment…';
-  const gltf=await loader.loadAsync(mapUrl);
+  const gltf=await new Promise((resolve,reject)=>loader.load(mapUrl,resolve,(event)=>{
+   if(event.lengthComputable){const percent=Math.round(event.loaded/event.total*100);document.querySelector('#loading').textContent='Downloading Japan Street… '+percent+'%'}
+   else{document.querySelector('#loading').textContent='Downloading Japan Street… '+(event.loaded/1048576).toFixed(1)+' MB'}
+  },reject));
+  document.querySelector('#loading').textContent='Preparing Japan Street 3D scene…';
   const map=gltf.scene;
   map.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(map);
