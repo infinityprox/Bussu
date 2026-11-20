@@ -130,6 +130,9 @@ cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
 const npcRoot=new THREE.Group();scene.add(npcRoot);
 const npcActors=[];
 const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!','Have you visited the beach?','The park is lovely today.','Good to see you!'];
+const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya'];
+const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician'];
+
 const speechCanvas=document.createElement('canvas');speechCanvas.width=512;speechCanvas.height=128;
 const speechCtx=speechCanvas.getContext('2d');
 function paintSpeech(message){
@@ -187,6 +190,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
   if(walkAction)walkAction.play();
   npcActors.push({
    mesh:npc, x:p[0], z:p[2], baseY:p[1], familyId:Math.floor(i/3), familyRole:i%3,
+   name:npcNames[i%npcNames.length], job:npcJobs[i%npcJobs.length],
    phase:i*1.73, speed:isChild?0.95:0.75+(i%5)*0.16,
    roam:5.5+(i%4)*1.2, targetX:p[0], targetZ:p[2],
    pause:Math.random()*2, baseRotation:npc.rotation.y,
@@ -253,11 +257,20 @@ drawMinimap();
 dayClock=(dayClock+dt/210)%(Math.PI*2);const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
 npcActors.forEach(a=>{
  const playerDistance=Math.hypot(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
+ // Pedestrians give moving vehicles extra room and briefly pause when one passes.
+ const carNear=trafficCars.some(t=>Math.hypot(t.car.mesh.position.x-a.mesh.position.x,t.car.mesh.position.z-a.mesh.position.z)<2.8);
+ if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
+ // Nearby non-family pedestrians occasionally stop and face one another for a short chat.
+ if(!a.socialCooldown&&Math.random()<.0015){
+  const friend=npcActors.find(b=>b!==a&&b.familyId!==a.familyId&&Math.hypot(b.mesh.position.x-a.mesh.position.x,b.mesh.position.z-a.mesh.position.z)<2.2);
+  if(friend){a.socialCooldown=8;friend.socialCooldown=8;a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;friend.targetX=friend.mesh.position.x;friend.targetZ=friend.mesh.position.z;a.socialFriend=friend}
+ }
+ a.socialCooldown=Math.max(0,(a.socialCooldown||0)-dt);
  a.greetCooldown=Math.max(0,(a.greetCooldown||0)-dt);
  a.playerNearby=playerDistance<3.1;
  if(a.playerNearby&&a.greetCooldown<=0){
   a.greetCooldown=11+Math.random()*8;
-  a.talkLine=npcGreetings[Math.floor(Math.random()*npcGreetings.length)];
+  a.talkLine=a.name+': '+npcGreetings[Math.floor(Math.random()*npcGreetings.length)];
  }
  if(playerDistance<closestNPCDistance){closestNPC=a;closestNPCDistance=playerDistance}
  if(a.playerNearby&&a.mesh.position.distanceTo(player.position)<3.1){
@@ -300,7 +313,7 @@ npcActors.forEach(a=>{
 if(closestNPC&&closestNPCDistance<3.1){
  if(activeGreeting!==closestNPC){
   activeGreeting=closestNPC;
-  paintSpeech(closestNPC.talkLine||npcGreetings[Math.floor(Math.random()*npcGreetings.length)]);
+  paintSpeech(closestNPC.talkLine||closestNPC.name+': '+closestNPC.job);
   speechTexture.needsUpdate=true;
  }
  speechBubble.visible=true;
