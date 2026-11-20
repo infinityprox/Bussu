@@ -65,10 +65,17 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
  const doorMat=new THREE.MeshStandardMaterial({color:0x60412f,roughness:.85});
  const trimMat=new THREE.MeshStandardMaterial({color:0xf1e6d2,roughness:.8});
  const shopSignMat=new THREE.MeshStandardMaterial({color:0x24566a,roughness:.7});
- const extraBuildings=[];
+ const extraBuildings=[],shopDoors=[];
+ function isSafeBuildingSite(x,z,w,d){
+  const roadHalf=6.5,walkHalf=1.7,rx=Math.round(x/40)*40,rz=Math.round(z/40)*40;
+  if(Math.abs(x-rx)<w/2+roadHalf+1||Math.abs(z-rz)<d/2+roadHalf+1)return false;
+  for(let k=-2;k<=2;k++)for(const side of [-1,1]){const lane=k*40+side*9.2;if(Math.abs(x-lane)<w/2+walkHalf+.15||Math.abs(z-lane)<d/2+walkHalf+.15)return false}
+  return !extraBuildings.some(b=>Math.abs(x-b.group.position.x)<w/2+b.halfW+2&&Math.abs(z-b.group.position.z)<d/2+b.halfD+2);
+ }
  function addNeighbourBuilding(x,z,kind,index){
-  const g=new THREE.Group();g.position.set(x,0,z);
   const w=kind==='shop'?9:8.2,d=kind==='shop'?7:8.4,h=kind==='shop'?5.2:5.8;
+  if(!isSafeBuildingSite(x,z,w,d)){console.warn('Building skipped: road, sidewalk or overlap rule',x,z);return null}
+  const g=new THREE.Group();g.position.set(x,0,z);
   const wall=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),houseWallMats[index%houseWallMats.length]);wall.position.y=h/2;wall.castShadow=true;wall.receiveShadow=true;g.add(wall);
   const roof=new THREE.Mesh(new THREE.ConeGeometry(kind==='shop'?6.5:6.2,kind==='shop'?2.2:2.8,4),roofMats[index%roofMats.length]);roof.rotation.y=Math.PI/4;roof.position.y=h+(kind==='shop'?1:1.35);roof.castShadow=true;g.add(roof);
   const front=-d/2-.045;
@@ -76,12 +83,12 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
    const win=new THREE.Mesh(new THREE.BoxGeometry(1.35,1.25,.12),windowMat);win.position.set(wx,kind==='shop'?2.9:3.5,front);g.add(win);
    const sill=new THREE.Mesh(new THREE.BoxGeometry(1.55,.12,.2),trimMat);sill.position.set(wx,kind==='shop'?2.25:2.85,front-.04);g.add(sill);
   }
-  const door=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.35,.16),doorMat);door.position.set(0,1.17,front-.07);g.add(door);
+  const doorPivot=new THREE.Group();doorPivot.position.set(-.575,0,front-.07);const door=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.35,.16),doorMat);door.position.set(.575,1.17,0);doorPivot.add(door);g.add(doorPivot);if(kind==='shop')shopDoors.push({pivot:doorPivot,open:0});
   if(kind==='house'){const balcony=new THREE.Group();const deck=new THREE.Mesh(new THREE.BoxGeometry(3.1,.16,1.05),trimMat);deck.position.set(0,3.15,front-.58);balcony.add(deck);for(const bx of [-1.45,0,1.45]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.07,.72,.07),doorMat);rail.position.set(bx,3.58,front-1.02);balcony.add(rail)}const topRail=new THREE.Mesh(new THREE.BoxGeometry(3,.08,.08),doorMat);topRail.position.set(0,3.94,front-1.02);balcony.add(topRail);g.add(balcony);const tank=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.9,12),new THREE.MeshStandardMaterial({color:0x647b86,metalness:.35,roughness:.55}));tank.position.set(w*.25,h+1.15,d*.12);g.add(tank);const garden=new THREE.Mesh(new THREE.BoxGeometry(w+2,.16,2.1),new THREE.MeshStandardMaterial({color:0x557b45,roughness:1}));garden.position.set(0,.08,front-2.5);g.add(garden);for(const gx of [-w*.36,-w*.12,w*.12,w*.36]){const bush=new THREE.Mesh(new THREE.SphereGeometry(.48,8,6),new THREE.MeshStandardMaterial({color:0x39734a}));bush.position.set(gx,.48,front-2.45);g.add(bush)}const fenceMat=new THREE.MeshStandardMaterial({color:0xe5dfce});for(const fx of [-w/2-.25,w/2+.25]){const fence=new THREE.Mesh(new THREE.BoxGeometry(.12,.85,2.5),fenceMat);fence.position.set(fx,.42,front-2.45);g.add(fence)}}
   if(kind==='shop'){
    const awning=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.28,1.15),new THREE.MeshStandardMaterial({color:[0xc95c4b,0x3f8b85,0xd29b43,0x657bb2][index%4]}));awning.position.set(0,3.75,front-.48);g.add(awning);
    const sign=new THREE.Mesh(new THREE.BoxGeometry(4.2,.72,.18),shopSignMat);sign.position.set(0,4.55,front-.13);g.add(sign);
-   const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=96;const sc=signCanvas.getContext('2d');sc.fillStyle='#173e50';sc.fillRect(0,0,512,96);sc.fillStyle='#ffffff';sc.font='bold 48px sans-serif';sc.textAlign='center';sc.fillText(index===17?'SCHOOL':['MARKET','CAFE','BOOKS','BAKERY','GROCERY','FLOWERS'][index%6],256,65);
+   const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=96;const sc=signCanvas.getContext('2d');sc.fillStyle='#173e50';sc.fillRect(0,0,512,96);sc.fillStyle='#ffffff';sc.font='bold 48px sans-serif';sc.textAlign='center';sc.fillText(index===15||index===17?'SCHOOL':['MARKET','CAFE','BOOKS','BAKERY','GROCERY','FLOWERS'][index%6],256,65);
    const signTex=new THREE.CanvasTexture(signCanvas);const label=new THREE.Mesh(new THREE.PlaneGeometry(4.05,.62),new THREE.MeshBasicMaterial({map:signTex,transparent:true}));label.position.set(0,4.55,front-.24);g.add(label);
   }else{
    const porch=new THREE.Mesh(new THREE.BoxGeometry(3.2,.18,1.6),trimMat);porch.position.set(0,.12,front-.7);g.add(porch);
@@ -97,11 +104,11 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
   [-58,-58,'house'],[-22,-58,'shop'],[22,-58,'house'],[58,-58,'shop'],
   [-58,-22,'shop'],[-22,-22,'house'],[22,-22,'shop'],[58,-22,'house'],
   [-58,22,'house'],[-22,22,'shop'],[22,22,'house'],[58,22,'shop'],
-  [-58,58,'shop'],[-22,58,'house'],[22,58,'shop'],[58,58,'house']
+  [-58,58,'shop'],[-22,58,'house'],[22,58,'shop'],[58,58,'shop']
  ];
  neighbourhoodLayout.forEach((p,i)=>addNeighbourBuilding(p[0],p[1],p[2],i));
 // A school gives student pedestrians a daily destination in the north-east block.
-addNeighbourBuilding(82,82,'shop',17);const schoolEntry=extraBuildings[extraBuildings.length-1].entry;
+const schoolEntry=extraBuildings[extraBuildings.length-1].entry;
 
 // Parking bays and streetlights.
 const parkingRoot=new THREE.Group();scene.add(parkingRoot);const parkingPaint=new THREE.MeshStandardMaterial({color:0xe8e3cf});
@@ -147,6 +154,30 @@ cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  document.querySelector('#status').textContent='CITY + BEACH + 4 GREEN PARKS';
  document.querySelector('#hint').textContent='Explore downtown, the beach and the landscaped parks';
 
+ // Park life: paths, flower beds, grass, picnic tables, birds and falling leaves.
+ const parkLifeRoot=new THREE.Group();natureRoot.add(parkLifeRoot);
+ const flowerMats=[0xf3c5d0,0xf4d66f,0xb9a8ed,0xffffff].map(color=>new THREE.MeshStandardMaterial({color,roughness:.8}));
+ const grassMat=new THREE.MeshStandardMaterial({color:0x477b45,roughness:1}),woodMat=new THREE.MeshStandardMaterial({color:0x8b603d});
+ for(const [px,pz] of parkSpots){
+  const path=new THREE.Mesh(new THREE.BoxGeometry(2.4,.035,19),new THREE.MeshStandardMaterial({color:0xc6b99a,roughness:1}));path.position.set(px+8,.025,pz);parkLifeRoot.add(path);
+  for(let n=0;n<24;n++){const gx=px-7+Math.random()*14,gz=pz-9+Math.random()*18,tuft=new THREE.Mesh(new THREE.ConeGeometry(.12,.42,4),grassMat);tuft.position.set(gx,.2,gz);parkLifeRoot.add(tuft);if(n%3===0){const bloom=new THREE.Mesh(new THREE.SphereGeometry(.13,7,6),flowerMats[n%flowerMats.length]);bloom.position.set(gx,.42,gz);parkLifeRoot.add(bloom)}}
+  const table=new THREE.Group(),top=new THREE.Mesh(new THREE.BoxGeometry(2.2,.14,1.15),woodMat);top.position.y=1;table.add(top);for(const tx of [-.8,.8]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,1,.12),woodMat);leg.position.set(tx,.5,0);table.add(leg)}table.position.set(px+4,0,pz+5);parkLifeRoot.add(table);
+ }
+ const parkBirds=[],birdMat=new THREE.MeshStandardMaterial({color:0x39434a});
+ for(let i=0;i<7;i++){const bird=new THREE.Group();bird.add(new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),birdMat));for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.42,.045,.16),birdMat);wing.position.x=side*.22;bird.add(wing)}bird.position.set(cityMid.x+(Math.random()-.5)*70,8+Math.random()*5,cityMid.z+(Math.random()-.5)*70);natureRoot.add(bird);parkBirds.push({mesh:bird,phase:i*1.7,radius:10+Math.random()*14})}
+ const fallingLeaves=[],leafMat=new THREE.MeshStandardMaterial({color:0xb77c42,side:THREE.DoubleSide});
+ for(let i=0;i<28;i++){const leaf=new THREE.Mesh(new THREE.PlaneGeometry(.22,.12),leafMat);leaf.position.set(cityMid.x+(Math.random()-.5)*70,2+Math.random()*9,cityMid.z+(Math.random()-.5)*70);leaf.rotation.x=-Math.PI/2;leaf.userData={speed:.4+Math.random()*.65,phase:Math.random()*6};natureRoot.add(leaf);fallingLeaves.push(leaf)}
+ // Bus shelters are placed on sidewalks, not on the road.
+ const busStops=[];
+ for(const [bx,bz,rot] of [[-30.8,-72,0],[49.2,32,Math.PI/2],[9.2,72,0],[89.2,-32,Math.PI/2]]){
+  const stop=new THREE.Group();stop.position.set(bx,0,bz);stop.rotation.y=rot;const metal=new THREE.MeshStandardMaterial({color:0x3d5663,metalness:.3}),glass=new THREE.MeshStandardMaterial({color:0x8cc9d8,transparent:true,opacity:.34});
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(4.5,.18,2.1),metal);roof.position.y=2.55;stop.add(roof);
+  for(const sx of [-2,2]){const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.5,.12),metal);post.position.set(sx,1.25,-.8);stop.add(post)}
+  const panel=new THREE.Mesh(new THREE.BoxGeometry(4.1,1.75,.06),glass);panel.position.set(0,1.35,-.8);stop.add(panel);
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(2.6,.14,.5),woodMat);seat.position.set(0,.8,.25);stop.add(seat);parkLifeRoot.add(stop);busStops.push({x:bx,z:bz,mesh:stop});
+ }
+ document.querySelector('#status').textContent='CITY + BEACH + PARKS + BUS STOPS';
+
  // Entry interaction points are distributed around the assembled city blocks.
  // Build entry points from the largest assembled district/building groups.
  pack.updateMatrixWorld(true);
@@ -186,6 +217,9 @@ cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
  // Place the shoreline just beyond the east edge of the voxel city.
  coast.position.x+=118+s.x*.5; // Keep the entire beach east of the city road grid (which ends at x=105).
  beachRoot.add(coast);
+ const beachWaves=[],gulls=[],waveMat=new THREE.MeshStandardMaterial({color:0x8bd5df,transparent:true,opacity:.48,roughness:.28});
+ for(let i=0;i<8;i++){const wave=new THREE.Mesh(new THREE.TorusGeometry(5+i*.8,.09,5,36),waveMat);wave.rotation.x=Math.PI/2;wave.position.set(coast.position.x+s.x*.24,.18+i*.012,(i-3.5)*7);beachRoot.add(wave);beachWaves.push(wave)}
+ for(let i=0;i<5;i++){const gull=new THREE.Group(),white=new THREE.MeshStandardMaterial({color:0xf0eee7});gull.add(new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),white));for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.55,.045,.16),white);wing.position.x=side*.28;gull.add(wing)}gull.position.set(coast.position.x+s.x*.18,9+i*1.3,(i-2)*13);beachRoot.add(gull);gulls.push({mesh:gull,phase:i*1.4})}
  document.querySelector('#mission').textContent='VOXEL CITY + BEACH DISTRICT · FREE ROAM';
  document.querySelector('#credit').textContent='Voxel City Districts + Beach Surf and Paddle Kit · CC0 1.0';
  document.querySelector('#hint').textContent='Explore downtown, then head east to the beach';
@@ -409,7 +443,7 @@ if(familyGrowthClock>72&&familyGrowthCount<4){
 npcActors.forEach(a=>{if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
 const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;
 if(inVehicle&&activeCar){heading-=joy.x*1.25*dt;const drive=-joy.y*12*dt;activeCar.mesh.position.x+=Math.sin(heading)*drive;activeCar.mesh.position.z+=Math.cos(heading)*drive;activeCar.mesh.rotation.y=heading;activeCar.wheels.forEach(w=>w.rotation.x+=drive*2.5);player.position.copy(activeCar.mesh.position)}
-else if(moving&&!inside){heading-=joy.x*1.8*dt;const speed=-joy.y*(sprinting?7.2:4.4)*dt;const px=player.position.x+Math.sin(heading)*speed,pz=player.position.z+Math.cos(heading)*speed;const playerBlocked=extraBuildings.some(b=>Math.abs(px-b.group.position.x)<b.halfW&&Math.abs(pz-b.group.position.z)<b.halfD);if(!playerBlocked){player.position.x=px;player.position.z=pz;}player.rotation.y=heading;walkPhase+=dt*(sprinting?15:10);armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}
+else if(moving&&!inside){heading-=joy.x*1.8*dt;const speed=-joy.y*(sprinting?7.2:4.4)*dt;const px=player.position.x+Math.sin(heading)*speed,pz=player.position.z+Math.cos(heading)*speed;const playerBlocked=extraBuildings.some(b=>Math.abs(px-b.group.position.x)<b.halfW+.35&&Math.abs(pz-b.group.position.z)<b.halfD+.35);if(!playerBlocked){player.position.x=px;player.position.z=pz;}player.rotation.y=heading;walkPhase+=dt*(sprinting?15:10);armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}
 else{armL.rotation.x*=.82;armR.rotation.x*=.82;legL.rotation.x*=.82;legR.rotation.x*=.82}
 const signalPhase=now%20000,vehicleGreen=signalPhase<8000,vehicleYellow=signalPhase>=8000&&signalPhase<10000,pedestrianCanCross=signalPhase>=11000&&signalPhase<19000;
 trafficCars.forEach(t=>{const approaching=[-40,40].some(z=>Math.abs(t.z-z)<8);const stopped=approaching&&!vehicleGreen;if(!stopped){t.z+=t.speed*t.dir*dt;if(t.z>110)t.z=-110;if(t.z< -110)t.z=110}t.car.mesh.position.z=t.z;t.car.wheels.forEach(w=>{if(!stopped)w.rotation.x+=t.speed*dt*2})});
@@ -418,6 +452,11 @@ if(!inVehicle){jumpVelocity-=14*dt;jumpHeight=Math.max(0,jumpHeight+jumpVelocity
 drawMinimap();
 dayClock=(dayClock+dt/210)%(Math.PI*2);
  const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);
+ shopDoors.forEach(d=>{const target=daylight>.2?Math.PI/2:0;d.open+=(target-d.open)*Math.min(1,dt*2.2);d.pivot.rotation.y=-d.open});
+ parkBirds.forEach(b=>{b.phase+=dt*.55;b.mesh.position.x=cityMid.x+Math.cos(b.phase)*b.radius;b.mesh.position.z=cityMid.z+Math.sin(b.phase)*b.radius;b.mesh.position.y=8+Math.sin(b.phase*2)*.65});
+ fallingLeaves.forEach(l=>{l.position.y-=l.userData.speed*dt;l.position.x+=Math.sin(now*.001+l.userData.phase)*dt*.55;l.rotation.z+=dt*.8;if(l.position.y<.15){l.position.y=5+Math.random()*7;l.position.x=cityMid.x+(Math.random()-.5)*70;l.position.z=cityMid.z+(Math.random()-.5)*70}});
+ beachWaves.forEach((w,i)=>{w.scale.setScalar(.82+Math.sin(now*.001+i)*.12);w.position.z+=(Math.sin(now*.0007+i)-Math.sin((now-dt*1000)*.0007+i))*.55});
+ gulls.forEach(g=>{g.phase+=dt*.22;g.mesh.position.x+=dt*1.1;g.mesh.position.z=Math.sin(g.phase)*18;if(g.mesh.position.x>coast.position.x+s.x*.55)g.mesh.position.x=coast.position.x-s.x*.25});
  weatherClock+=dt;const nightFactor=1-daylight;streetLights.forEach(s=>{s.light.intensity=nightFactor>.55?1.45:0;s.bulb.material.emissiveIntensity=nightFactor>.55?1.8:0});extraBuildings.forEach(b=>{if(b.kind==='shop')b.isOpen=daylight>.18});
  if(weatherClock>75){weatherClock=0;rainActive=Math.random()<.28}
  if(!window.__cityRain){
@@ -432,7 +471,12 @@ dayClock=(dayClock+dt/210)%(Math.PI*2);
   const rainPos=window.__cityRain.geometry.attributes.position;
   for(let i=0;i<rainPos.count;i++){let y=rainPos.getY(i)-dt*17;if(y<0)y=20+Math.random()*3;rainPos.setY(i,y)}
   rainPos.needsUpdate=true;
- }sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
+ }sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);const morningFog=daylight>.25&&daylight<.48;scene.fog.near=morningFog?24:48;scene.fog.far=morningFog?125:220;scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);
+ if(!window.__cityClouds){window.__cityClouds=new THREE.Group();const cloudMat=new THREE.MeshStandardMaterial({color:0xe8edf0,transparent:true,opacity:.72,roughness:1});for(let i=0;i<9;i++){const cloud=new THREE.Group();for(let j=0;j<4;j++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1.8+(j%2)*.55,8,7),cloudMat);puff.position.set((j-1.5)*1.5,Math.sin(j)*.25,0);cloud.add(puff)}cloud.position.set((i-4)*27,20+(i%3)*2,(i%3-1)*38);window.__cityClouds.add(cloud)}scene.add(window.__cityClouds)}
+ window.__cityClouds.children.forEach(c=>{c.position.x+=dt*.65;if(c.position.x>115)c.position.x=-115});
+ if(!window.__cityPuddles){window.__cityPuddles=[];const puddleMat=new THREE.MeshStandardMaterial({color:0x789eaa,transparent:true,opacity:.34,roughness:.16,metalness:.22});for(let i=0;i<18;i++){const p=new THREE.Mesh(new THREE.CircleGeometry(1+Math.random()*1.4,12),puddleMat);p.rotation.x=-Math.PI/2;p.position.set((Math.random()-.5)*175,.045,(Math.random()-.5)*175);p.scale.y=.55;scene.add(p);window.__cityPuddles.push(p)}}
+ window.__cityPuddles.forEach(p=>p.visible=rainActive);
+ let closestNPC=null,closestNPCDistance=4.6;
 vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.lamps[1].visible=vehicleYellow;s.lamps[2].visible=vehicleGreen});
   pedestrianSignals.forEach(s=>{s.red.visible=!pedestrianCanCross;s.green.visible=pedestrianCanCross});
  npcActors.forEach(a=>{
@@ -533,7 +577,8 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
      tz=a.homeZ+off[1]+(Math.random()-.5)*2.2;
      if(job==='Student'){tx=schoolEntry.x;tz=schoolEntry.z;}
      if(job==='Shopkeeper'||job==='Cook'){const shop=extraBuildings.find(b=>b.kind==='shop'&&b!==extraBuildings[extraBuildings.length-1]);if(shop){tx=shop.entry.x;tz=shop.entry.z;}}
-     if(job==='Visitor'&&daylight>.45){tx=132;tz=(a.familyId%3-1)*9;}
+     if(job==='Visitor'&&daylight>.45){if(Math.random()<.55){tx=132;tz=(a.familyId%3-1)*9}else{const park=parkSpots[Math.floor(Math.random()*parkSpots.length)];tx=park[0]+8;tz=park[1]}}
+     if(job==='Student'&&Math.random()<.22){const stop=busStops[a.familyId%busStops.length];tx=stop.x;tz=stop.z+1.8;}
      if(job==='Resident'||job==='Cyclist'||job==='Artist'||job==='Musician'){const footpath=snapToSidewalk(tx,tz);tx=footpath.x;tz=footpath.z;}
     }
     a.targetX=tx;a.targetZ=tz;a.routineTimer=12+Math.random()*13;a.pause=.3;
