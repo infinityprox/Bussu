@@ -252,9 +252,13 @@ const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),ben
 });
  npcPlacements.forEach((p,i)=>{
   const person=new THREE.Group(),skin=new THREE.MeshStandardMaterial({color:skinTones[i%4],roughness:.8}),shirt=new THREE.MeshStandardMaterial({color:shirts[i%6],roughness:.8}),pants=new THREE.MeshStandardMaterial({color:i%2?0x303b50:0x454545,roughness:.9});
-  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.25,.48,4,8),shirt);torso.position.y=1.02;person.add(torso);
+  const gender=i%2===0?'Male':'Female';
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(gender==='Female'?.22:.26,.48,4,8),shirt);torso.position.y=1.02;person.add(torso);
+  if(gender==='Female'){const skirt=new THREE.Mesh(new THREE.CylinderGeometry(.19,.29,.34,10),shirt);skirt.position.y=.78;person.add(skirt)}
   const head=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),skin);head.position.y=1.52;person.add(head);
-  const hair=new THREE.Mesh(new THREE.SphereGeometry(.175,16,10,0,Math.PI*2,0,Math.PI*.55),new THREE.MeshStandardMaterial({color:i%3?0x29201b:0x171717}));hair.position.y=1.57;person.add(hair);
+  const hairMat=new THREE.MeshStandardMaterial({color:i%3?0x29201b:0x171717});
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(.175,16,10,0,Math.PI*2,0,Math.PI*.55),hairMat);hair.position.y=1.57;person.add(hair);
+  if(gender==='Female'){const backHair=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.36,4,8),hairMat);backHair.position.set(0,1.34,-.105);person.add(backHair);for(const side of [-1,1]){const lock=new THREE.Mesh(new THREE.CapsuleGeometry(.055,.25,4,7),hairMat);lock.position.set(side*.145,1.43,0);person.add(lock)}}
   const limbs={};
   for(const side of [-1,1]){
    const armPivot=new THREE.Group();armPivot.position.set(side*.31,1.27,0);person.add(armPivot);
@@ -271,7 +275,7 @@ const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),ben
    const umbrella=new THREE.Group();const canopy=new THREE.Mesh(new THREE.ConeGeometry(.62,.22,12),new THREE.MeshStandardMaterial({color:[0x347ca5,0xc65a4a,0x4b8a68,0x7659a4][i%4],side:THREE.DoubleSide,roughness:.65}));canopy.rotation.x=Math.PI;canopy.position.y=2.05;umbrella.add(canopy);const handle=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.85,7),new THREE.MeshStandardMaterial({color:0x34383d}));handle.position.set(0,1.62,0);umbrella.add(handle);umbrella.visible=false;person.add(umbrella);
   person.scale.setScalar(1.45);person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
   person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
-  npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18});
+  npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],gender,job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18});
  });
  document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
 }
