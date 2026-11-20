@@ -455,7 +455,7 @@ dayClock=(dayClock+dt/210)%(Math.PI*2);
  const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);
  shopDoors.forEach(d=>{const target=daylight>.2?Math.PI/2:0;d.open+=(target-d.open)*Math.min(1,dt*2.2);d.pivot.rotation.y=-d.open});
  parkBirds.forEach(b=>{b.phase+=dt*.55;b.mesh.position.x=parkCenterX+Math.cos(b.phase)*b.radius;b.mesh.position.z=parkCenterZ+Math.sin(b.phase)*b.radius;b.mesh.position.y=8+Math.sin(b.phase*2)*.65});
- fallingLeaves.forEach(l=>{l.position.y-=l.userData.speed*dt;l.position.x+=Math.sin(now*.001+l.userData.phase)*dt*.55;l.rotation.z+=dt*.8;if(l.position.y<.15){l.position.y=5+Math.random()*7;l.position.x=cityMid.x+(Math.random()-.5)*70;l.position.z=cityMid.z+(Math.random()-.5)*70}});
+ fallingLeaves.forEach(l=>{l.position.y-=l.userData.speed*dt;l.position.x+=Math.sin(now*.001+l.userData.phase)*dt*.55;l.rotation.z+=dt*.8;if(l.position.y<.15){l.position.y=5+Math.random()*7;l.position.x=parkCenterX+(Math.random()-.5)*70;l.position.z=parkCenterZ+(Math.random()-.5)*70}});
  beachWaves.forEach((w,i)=>{w.scale.setScalar(.82+Math.sin(now*.001+i)*.12);w.position.z+=(Math.sin(now*.0007+i)-Math.sin((now-dt*1000)*.0007+i))*.55});
  gulls.forEach(g=>{g.phase+=dt*.22;g.mesh.position.x+=dt*1.1;g.mesh.position.z=Math.sin(g.phase)*18;if(g.mesh.position.x>beachCenterX+beachSpanX*.55)g.mesh.position.x=beachCenterX-beachSpanX*.25});
  weatherClock+=dt;const nightFactor=1-daylight;streetLights.forEach(s=>{s.light.intensity=nightFactor>.55?1.45:0;s.bulb.material.emissiveIntensity=nightFactor>.55?1.8:0});extraBuildings.forEach(b=>{if(b.kind==='shop')b.isOpen=daylight>.18});
