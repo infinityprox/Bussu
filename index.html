@@ -569,6 +569,8 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
   if(!a.sitUntil)a.sitUntil=now+6500+Math.random()*6000;
  }
  if(a.activity==='sitting'&&now>a.sitUntil){a.activity='walk';a.benchTarget=null;a.sitUntil=0;a.targetX=a.x+(Math.random()-.5)*a.roam*2;a.targetZ=a.z+(Math.random()-.5)*a.roam*2;a.activityTimer=18}
+ if(a.activity==='toBusStop'&&dist<1.15){a.activity='waitingBus';a.pause=5+Math.random()*5;a.busWaitUntil=now+a.pause*1000;a.mesh.rotation.y=Math.PI}
+ if(a.activity==='waitingBus'&&now>(a.busWaitUntil||0)){a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam}
  a.walking=dist>=0.45&&a.activity!=='sitting'&&a.pause<=0;
  if(!a.walking){
   if(a.pause<=0&&a.familyRole===0){
@@ -590,7 +592,7 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
      if(job==='Student'){tx=schoolEntry.x;tz=schoolEntry.z;}
      if(job==='Shopkeeper'||job==='Cook'){const shop=extraBuildings.find(b=>b.kind==='shop'&&b!==extraBuildings[extraBuildings.length-1]);if(shop){tx=shop.entry.x;tz=shop.entry.z;}}
      if(job==='Visitor'&&daylight>.45){if(Math.random()<.55){tx=132;tz=(a.familyId%3-1)*9}else if(parkSpots.length){const park=parkSpots[Math.floor(Math.random()*parkSpots.length)];tx=park[0]+8;tz=park[1]}}
-     if(job==='Student'&&busStops.length&&Math.random()<.22){const stop=busStops[a.familyId%busStops.length];tx=stop.x;tz=stop.z+1.8;}
+     if(job==='Student'&&busStops.length&&Math.random()<.22){const stop=busStops[a.familyId%busStops.length];tx=stop.x;tz=stop.z+1.8;a.activity='toBusStop';}
      if(job==='Resident'||job==='Cyclist'||job==='Artist'||job==='Musician'){const footpath=snapToSidewalk(tx,tz);tx=footpath.x;tz=footpath.z;}
     }
     a.targetX=tx;a.targetZ=tz;a.routineTimer=12+Math.random()*13;a.pause=.3;
