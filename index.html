@@ -82,7 +82,8 @@ async function loadUserMap(){
  const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/japan_street.glb';
  try{
   document.querySelector('#loading').textContent='Loading Japan street environment…';
-  const gltf=await loader.loadAsync(mapUrl);\n  const map=gltf.scene;
+  const gltf=await loader.loadAsync(mapUrl);
+  const map=gltf.scene;
   map.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(map);
   const size=bounds.getSize(new THREE.Vector3());
