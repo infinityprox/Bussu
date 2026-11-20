@@ -7,8 +7,8 @@
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}
 </script>
 </head><body>
-<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">VOXEL CITY DISTRICTS</div><div id="status" class="glass">EMPTY WORLD</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">No map assets loaded</div><div id="loading" class="glass">Loading 171 CC0 voxel models…</div>
-<div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore residential, commercial and civic districts built from 171 free CC0 voxel models.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
+<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">VOXEL CITY + BEACH</div><div id="status" class="glass">EMPTY WORLD</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">No map assets loaded</div><div id="loading" class="glass">Loading city and beach districts…</div>
+<div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore voxel city districts and a complete coastal surf and paddle beach.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
 <script type="module">
 import * as THREE from 'three';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,75,190);
@@ -70,6 +70,23 @@ cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  document.querySelector('#loading').textContent='Voxel City Districts failed to load. Check your connection and reload.';
  document.querySelector('#status').textContent='MAP LOAD ERROR';
 });
+
+// Beach Surf and Paddle Kit — CC0 starter scene (52 GLB models).
+// Attached beside the voxel city as a dedicated coastal district.
+const beachRoot=new THREE.Group();scene.add(beachRoot);
+cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
+ const coast=gltf.scene;
+ coast.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+ const b=new THREE.Box3().setFromObject(coast),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());
+ coast.position.x-=c.x;coast.position.z-=c.z;coast.position.y-=b.min.y;
+ // Place the shoreline just beyond the east edge of the voxel city.
+ coast.position.x+=(cityRoot.children.length?new THREE.Box3().setFromObject(cityRoot).max.x:75)+s.x*.5+12;
+ beachRoot.add(coast);
+ document.querySelector('#mission').textContent='VOXEL CITY + BEACH DISTRICT · FREE ROAM';
+ document.querySelector('#credit').textContent='Voxel City Districts + Beach Surf and Paddle Kit · CC0 1.0';
+ document.querySelector('#hint').textContent='Explore downtown, then head east to the beach';
+},undefined,error=>{console.error('Beach kit failed to load:',error)});
+
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
 function moveJoy(e){const r=j.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),m=35;if(l>m){dx=dx/l*m;dy=dy/l*m}joy.x=dx/m;joy.y=dy/m;stick.style.transform='translate('+dx+'px,'+dy+'px)'}
