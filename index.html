@@ -203,7 +203,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
 const npcRoot=new THREE.Group();scene.add(npcRoot);
 const npcActors=[];
 const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!','Have you visited the beach?','The park is lovely today.','Good to see you!'];
-const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya'];
+const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya','Reyansh','Ira','Vivaan','Kiara','Arnav','Myra','Dhruv','Avni','Rudra','Siya','Neil','Anika','Yuvan','Rhea','Atharv','Tia','Krish','Navya'];
 const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician'];
 const speechCanvas=document.createElement('canvas');speechCanvas.width=512;speechCanvas.height=128;
 const speechCtx=speechCanvas.getContext('2d');
@@ -262,10 +262,10 @@ const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),ben
   const accessory=new THREE.Group();
   if(i%4===0){const bag=new THREE.Mesh(new THREE.BoxGeometry(.34,.42,.16),new THREE.MeshStandardMaterial({color:0x343b48}));bag.position.set(0,1.02,-.28);accessory.add(bag);person.add(accessory)}
   if(i%5===0){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.09,12),new THREE.MeshStandardMaterial({color:shirts[(i+2)%shirts.length]}));cap.position.y=1.72;person.add(cap)}
-  const phone=new THREE.Mesh(new THREE.BoxGeometry(.075,.13,.018),new THREE.MeshStandardMaterial({color:0x17212b,metalness:.35,roughness:.35}));phone.position.set(.36,1.02,.08);phone.visible=false;person.add(phone);
+  const phone=new THREE.Mesh(new THREE.BoxGeometry(.075,.13,.018),new THREE.MeshStandardMaterial({color:0x17212b,metalness:.35,roughness:.35}));phone.position.set(.36,1.02,.08);phone.visible=false;person.add(phone);\n   const umbrella=new THREE.Group();const canopy=new THREE.Mesh(new THREE.ConeGeometry(.62,.22,12),new THREE.MeshStandardMaterial({color:[0x347ca5,0xc65a4a,0x4b8a68,0x7659a4][i%4],side:THREE.DoubleSide,roughness:.65}));canopy.rotation.x=Math.PI;canopy.position.y=2.05;umbrella.add(canopy);const handle=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.85,7),new THREE.MeshStandardMaterial({color:0x34383d}));handle.position.set(0,1.62,0);umbrella.add(handle);umbrella.visible=false;person.add(umbrella);
   person.scale.setScalar(1.45);person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
   person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
-  npcActors.push({mesh:person,...limbs,phone,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%18],job:npcJobs[i%9],phase:i*1.73,speed:.8+(i%5)*.15,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null});
+  npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18});
  });
  document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
 }
@@ -398,9 +398,7 @@ const pedestrianCanCross=(now%18000)>11000;
    a.targetZ=player.position.z-Math.cos(followAngle)*2.1;
    a.pause=0;
   }
- if(a.hiddenForVisit&&now>=a.visitUntil){a.hiddenForVisit=false;a.mesh.visible=true;a.mesh.position.set(a.targetX,0,a.targetZ);a.targetX=a.x+(Math.random()-.5)*a.roam*2;a.targetZ=a.z+(Math.random()-.5)*a.roam*2;a.pause=.25}
- if(!a.hiddenForVisit&&a.pause<=0&&Math.random()<.00012){const destination=extraBuildings[Math.floor(Math.random()*extraBuildings.length)];a.targetX=destination.entry.x;a.targetZ=destination.entry.z;a.activity='buildingVisit'}
- // Pedestrians give moving vehicles extra room and briefly pause when one passes.
+ // Rain routine: NPCs shelter at nearby building entrances without disappearing.\n if(rainActive&&a!==companionNPC&&!a.isSheltered&&a.activity!=='sheltering'){const shelter=extraBuildings.reduce((best,b)=>!best||Math.hypot(b.entry.x-a.mesh.position.x,b.entry.z-a.mesh.position.z)<Math.hypot(best.entry.x-a.mesh.position.x,best.entry.z-a.mesh.position.z)?b:best,null);if(shelter){a.targetX=shelter.entry.x;a.targetZ=shelter.entry.z;a.activity='sheltering';a.pause=0}}\n if(a.umbrella)a.umbrella.visible=rainActive&&a.activity!=='sitting';\n if(!rainActive&&a.isSheltered){a.isSheltered=false;a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam;a.pause=.2}\n if(!rainActive&&a.pause<=0&&Math.random()<.00010){const destination=extraBuildings[Math.floor(Math.random()*extraBuildings.length)];a.targetX=destination.entry.x;a.targetZ=destination.entry.z;a.activity='buildingVisit'}\n // Pedestrians give moving vehicles extra room and briefly pause when one passes.
  const carNear=trafficCars.some(t=>Math.hypot(t.car.mesh.position.x-a.mesh.position.x,t.car.mesh.position.z-a.mesh.position.z)<2.8);
  if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
  // Nearby non-family pedestrians occasionally stop and face one another for a short chat.
@@ -446,7 +444,7 @@ const pedestrianCanCross=(now%18000)>11000;
  if(Math.abs(avoidX)+Math.abs(avoidZ)>.08){a.targetX+=avoidX*.9;a.targetZ+=avoidZ*.9}
  const dx=a.targetX-a.mesh.position.x,dz=a.targetZ-a.mesh.position.z,dist=Math.hypot(dx,dz);
  a.pause=Math.max(0,a.pause-dt);
- const crossingRed=[-40,40].some(lane=>Math.abs(a.mesh.position.x-lane)<2.2&&(a.targetX-lane)*(a.mesh.position.x-lane)<0&&Math.abs(a.targetX-lane)>2.2);
+ const crossingRed=[-40,40].some(lane=>Math.abs(a.mesh.position.x-lane)<2.2&&(a.targetX-lane)*(a.mesh.position.x-lane)<0&&Math.abs(a.targetX-lane)>2.2)||[-40,40].some(lane=>Math.abs(a.mesh.position.z-lane)<2.2&&(a.targetZ-lane)*(a.mesh.position.z-lane)<0&&Math.abs(a.targetZ-lane)>2.2);
  if(crossingRed&&!pedestrianCanCross)a.pause=Math.max(a.pause,.22);
  a.activityTimer-=dt;
  if(!a.benchTarget&&a.activityTimer<=0&&a.familyRole===0&&a!==companionNPC&&!rainActive){
@@ -494,14 +492,14 @@ const pedestrianCanCross=(now%18000)>11000;
  }else{
   const step=Math.min(dist,a.speed*dt);
   const nextX=a.mesh.position.x+dx/dist*step,nextZ=a.mesh.position.z+dz/dist*step;
-  const blocked=extraBuildings.some(b=>Math.abs(nextX-b.entry.x)<b.halfW&&Math.abs(nextZ-b.group.position.z)<b.halfD);
+  const blocked=extraBuildings.some(b=>Math.abs(nextX-b.group.position.x)<b.halfW&&Math.abs(nextZ-b.group.position.z)<b.halfD);
   if(blocked){
    a.targetX=a.mesh.position.x+(Math.random()<.5?-1:1)*(2.5+Math.random()*2);
    a.targetZ=a.mesh.position.z+(Math.random()<.5?-1:1)*(2.5+Math.random()*2);
    a.pause=.12;
   }else{
    a.mesh.position.x=nextX;a.mesh.position.z=nextZ;
-   const visited=extraBuildings.find(b=>Math.hypot(a.mesh.position.x-b.entry.x,a.mesh.position.z-b.entry.z)<.78);if(visited&&!a.hiddenForVisit){a.hiddenForVisit=true;a.visitUntil=now+2200;a.mesh.visible=false;a.targetX=visited.entry.x+(Math.random()-.5)*1.1;a.targetZ=visited.entry.z-1.7;a.pause=2.3;a.activity='walk'}
+   const visited=extraBuildings.find(b=>Math.hypot(a.mesh.position.x-b.entry.x,a.mesh.position.z-b.entry.z)<.95);if(visited&&!a.entryVisitUntil){a.entryVisitUntil=now+3200;a.targetX=visited.entry.x;a.targetZ=visited.entry.z;a.pause=3.2;a.activity=rainActive?'sheltering':'buildingVisit';a.isSheltered=rainActive}if(a.entryVisitUntil&&now>a.entryVisitUntil){a.entryVisitUntil=0;a.isSheltered=false;a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam}
    a.mesh.rotation.y=Math.atan2(dx,dz);
    a.phase+=dt*a.speed*7;
   }
