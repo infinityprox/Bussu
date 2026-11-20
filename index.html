@@ -121,10 +121,22 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
    }
   });
   npcRoot.add(npc);
+  npcActors.push({
+   mesh:npc, x:p[0], z:p[2], baseY:p[1],
+   phase:i*1.73, speed:0.32+(i%5)*0.045,
+   radius:0.85+(i%4)*0.18,
+   baseRotation:npc.rotation.y,
+   mixer:gltf.animations.length?new THREE.AnimationMixer(npc):null
+  });
+  if(gltf.animations.length){
+   const clip=gltf.animations.find(c=>/walk|run|idle/i.test(c.name))||gltf.animations[0];
+   const action=npcActors[npcActors.length-1].mixer.clipAction(clip);
+   action.play();
+  }
  });
- document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
+ document.querySelector('#status').textContent='CITY + BEACH · 36 ANIMATED NPCs';
  document.querySelector('#hint').textContent='Explore the city and meet the local people';
- document.querySelector('#credit').textContent='Low Poly Character Figures · CC0 1.0 · 36 strolling civilian NPCs';
+ document.querySelector('#credit').textContent='Low Poly Character Figures · CC0 1.0 · 36 animated civilian NPCs';
 },undefined,error=>{console.error('NPC model failed to load:',error)});
 
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
@@ -137,6 +149,6 @@ const interactButton=document.querySelector('#interact');
 interactButton.addEventListener('click',()=>{if(inside){inside=false;player.position.copy(returnPosition);interactButton.textContent='ENTER BUILDING';document.querySelector('#hint').textContent='Walk near a building entrance, then tap ENTER BUILDING';return}const distance=nearestBuildingDistance();if(distance<8){returnPosition.copy(player.position);inside=true;player.position.set(300,0,2);interactButton.textContent='EXIT BUILDING';document.querySelector('#hint').textContent='Inside building · tap EXIT BUILDING to leave'}else{document.querySelector('#hint').textContent='Get closer to a building — walk towards the nearby houses or shops'}});
 document.querySelector('#resetView').onclick=()=>{heading=0;camDist=7.2};document.querySelector('#nextTask').onclick=()=>{mission=(mission+1)%tasks.length;document.querySelector('#mission').textContent='TASK 0'+(mission+1)+' · '+tasks[mission]};
 document.querySelector('#play').onclick=()=>{document.querySelector('#start').remove()};
-let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;if(moving){heading-=joy.x*1.8*dt;const speed=-joy.y*(inside?3.2:4.4)*dt;player.position.x+=Math.sin(heading)*speed;player.position.z+=Math.cos(heading)*speed;player.rotation.y=heading;walkPhase+=dt*10;armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}else{armL.rotation.x*=.82;armR.rotation.x*=.82;legL.rotation.x*=.82;legR.rotation.x*=.82}npcActors.forEach(a=>{a.phase+=dt*a.speed;const angle=a.phase;a.mesh.position.x=a.x+Math.cos(angle)*a.radius;a.mesh.position.z=a.z+Math.sin(angle)*a.radius;a.mesh.position.y=a.baseY+Math.abs(Math.sin(a.phase*5))*.035;a.mesh.rotation.y=-angle+Math.PI/2});const target=new THREE.Vector3(player.position.x-Math.sin(heading)*camDist,inside?3.5:3.9,player.position.z-Math.cos(heading)*camDist);camera.position.lerp(target,.09);camera.lookAt(player.position.x,inside?1.2:1.1,player.position.z);if(!inside){const near=nearestBuildingDistance()<8;interactButton.textContent=near?'ENTER BUILDING':'BUILDING: WALK CLOSER';interactButton.style.opacity=near?'1':'.72'}document.querySelector('#status').textContent=inside?'INSIDE BUILDING':(moving?'ON FOOT · WALKING':'ON FOOT · CITY EXPLORER');renderer.render(scene,camera)}requestAnimationFrame(animate);
+let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;if(moving){heading-=joy.x*1.8*dt;const speed=-joy.y*(inside?3.2:4.4)*dt;player.position.x+=Math.sin(heading)*speed;player.position.z+=Math.cos(heading)*speed;player.rotation.y=heading;walkPhase+=dt*10;armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}else{armL.rotation.x*=.82;armR.rotation.x*=.82;legL.rotation.x*=.82;legR.rotation.x*=.82}npcActors.forEach(a=>{a.phase+=dt*a.speed;const angle=a.phase;a.mesh.position.x=a.x+Math.cos(angle)*a.radius;a.mesh.position.z=a.z+Math.sin(angle)*a.radius;a.mesh.position.y=a.baseY+Math.abs(Math.sin(a.phase*10))*.055;a.mesh.rotation.y=-angle+Math.PI/2;if(a.mixer){a.mixer.update(dt)}else{a.mesh.rotation.z=Math.sin(a.phase*5)*.035;a.mesh.rotation.x=Math.sin(a.phase*10)*.018;a.mesh.scale.y=2.05*(1+Math.abs(Math.sin(a.phase*10))*.008)}});const target=new THREE.Vector3(player.position.x-Math.sin(heading)*camDist,inside?3.5:3.9,player.position.z-Math.cos(heading)*camDist);camera.position.lerp(target,.09);camera.lookAt(player.position.x,inside?1.2:1.1,player.position.z);if(!inside){const near=nearestBuildingDistance()<8;interactButton.textContent=near?'ENTER BUILDING':'BUILDING: WALK CLOSER';interactButton.style.opacity=near?'1':'.72'}document.querySelector('#status').textContent=inside?'INSIDE BUILDING':(moving?'ON FOOT · WALKING':'ON FOOT · CITY EXPLORER');renderer.render(scene,camera)}requestAnimationFrame(animate);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
 </script></body></html>
