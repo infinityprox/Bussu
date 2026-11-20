@@ -397,6 +397,8 @@ const pedestrianCanCross=(now%18000)>11000;
    a.targetZ=player.position.z-Math.cos(followAngle)*2.1;
    a.pause=0;
   }
+ if(a.hiddenForVisit&&now>=a.visitUntil){a.hiddenForVisit=false;a.mesh.visible=true;a.mesh.position.set(a.targetX,0,a.targetZ);a.targetX=a.x+(Math.random()-.5)*a.roam*2;a.targetZ=a.z+(Math.random()-.5)*a.roam*2;a.pause=.25}
+ if(!a.hiddenForVisit&&a.pause<=0&&Math.random()<.00012){const destination=extraBuildings[Math.floor(Math.random()*extraBuildings.length)];a.targetX=destination.entry.x;a.targetZ=destination.entry.z;a.activity='buildingVisit'}
  // Pedestrians give moving vehicles extra room and briefly pause when one passes.
  const carNear=trafficCars.some(t=>Math.hypot(t.car.mesh.position.x-a.mesh.position.x,t.car.mesh.position.z-a.mesh.position.z)<2.8);
  if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
@@ -498,6 +500,7 @@ const pedestrianCanCross=(now%18000)>11000;
    a.pause=.12;
   }else{
    a.mesh.position.x=nextX;a.mesh.position.z=nextZ;
+   const visited=extraBuildings.find(b=>Math.hypot(a.mesh.position.x-b.entry.x,a.mesh.position.z-b.entry.z)<.78);if(visited&&!a.hiddenForVisit){a.hiddenForVisit=true;a.visitUntil=now+2200;a.mesh.visible=false;a.targetX=visited.entry.x+(Math.random()-.5)*1.1;a.targetZ=visited.entry.z-1.7;a.pause=2.3;a.activity='walk'}
    a.mesh.rotation.y=Math.atan2(dx,dz);
    a.phase+=dt*a.speed*7;
   }
