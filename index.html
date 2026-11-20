@@ -103,7 +103,7 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
 
 // Parking bays and streetlights.
 const parkingRoot=new THREE.Group();scene.add(parkingRoot);const parkingPaint=new THREE.MeshStandardMaterial({color:0xe8e3cf});
-for(const [px,pz] of [[-26,-27],[26,-27],[-26,27],[26,27],[-66,27],[66,-27]]){slab(13,.12,8,new THREE.MeshStandardMaterial({color:0x555b5e}),px,.035,pz,parkingRoot);for(let slot=0;slot<4;slot++)slab(.1,.025,7.1,parkingPaint,px-5+slot*3.3,.105,pz,parkingRoot)}
+for(const [px,pz] of [[96,-70],[96,-35],[96,0],[96,35],[96,70],[-96,-35],[-96,35]]){slab(13,.12,8,new THREE.MeshStandardMaterial({color:0x555b5e}),px,.035,pz,parkingRoot);for(let slot=0;slot<4;slot++)slab(.1,.025,7.1,parkingPaint,px-5+slot*3.3,.105,pz,parkingRoot)}
 const streetLights=[];const poleMat=new THREE.MeshStandardMaterial({color:0x303a43,metalness:.45,roughness:.55});
 for(let k=-2;k<=2;k++)for(let n=-2;n<=2;n++){if((k+n)%2!==0)continue;const x=k*40+((k%2)?10:-10),z=n*40+((n%2)?10:-10);const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,5.5,8),poleMat);pole.position.set(x,2.75,z);parkingRoot.add(pole);const arm=new THREE.Mesh(new THREE.BoxGeometry(1.15,.1,.12),poleMat);arm.position.set(x+.48,5.35,z);parkingRoot.add(arm);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshStandardMaterial({color:0xffe3a1,emissive:0xffc45b,emissiveIntensity:0}));bulb.position.set(x+.95,5.25,z);parkingRoot.add(bulb);const light=new THREE.PointLight(0xffd99a,0,12,2);light.position.set(x+.95,5.1,z);parkingRoot.add(light);streetLights.push({bulb,light})}
 const natureRoot=new THREE.Group();scene.add(natureRoot);
