@@ -7,8 +7,8 @@
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}
 </script>
 </head><body>
-<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">DOWNTOWN DISTRICT</div><div id="status" class="glass">EMPTY WORLD</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">No map assets loaded</div><div id="loading" class="glass">Building downtown environment…</div>
-<div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore a new 3D downtown with streets, apartments, shops, streetlights and enterable buildings.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
+<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">PIXEL MODERN CITY STREET</div><div id="status" class="glass">EMPTY WORLD</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">No map assets loaded</div><div id="loading" class="glass">Loading 91 CC0 city models…</div>
+<div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore 91 free CC0 city models: roads, buildings, cars and street furniture.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
 <script type="module">
 import * as THREE from 'three';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,75,190);
@@ -35,64 +35,34 @@ part(legL,new THREE.BoxGeometry(.19,.1,.3),shoe,0,-.53,.07);part(legR,new THREE.
 let inside=false,returnPosition=new THREE.Vector3(),walkPhase=0;
 function buildInterior(){const room=new THREE.Group();room.position.set(300,0,0);scene.add(room);const mat=new THREE.MeshStandardMaterial({color:0x9a8064});const floor=new THREE.Mesh(new THREE.BoxGeometry(10,.25,10),mat);floor.position.y=-.12;room.add(floor);const wallMat=new THREE.MeshStandardMaterial({color:0xe0d4bd});[[-5,0,.25,10],[5,0,.25,10],[0,-5,10,.25],[0,5,10,.25]].forEach(v=>{const w=new THREE.Mesh(new THREE.BoxGeometry(v[2],3,v[3]),wallMat);w.position.set(v[0],1.5,v[1]);room.add(w)});const table=new THREE.Mesh(new THREE.BoxGeometry(2,.18,1.2),new THREE.MeshStandardMaterial({color:0x68442b}));table.position.set(0,.9,-1);room.add(table);return room}
 buildInterior();
-// Modular downtown district: textured-looking concrete, glass, brick and shopfronts
-const city=new THREE.Group();scene.add(city);
-const concrete=[0x9a9b96,0x777f82,0xb2a99a,0x8b8178,0x66757b].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.92}));
-const glass=new THREE.MeshStandardMaterial({color:0x315365,metalness:.28,roughness:.22});
-const darkGlass=new THREE.MeshStandardMaterial({color:0x172b35,metalness:.18,roughness:.28});
-const brick=new THREE.MeshStandardMaterial({color:0x875d49,roughness:1});
-const roofMat=new THREE.MeshStandardMaterial({color:0x454b4e,roughness:1});
-const doorMat=new THREE.MeshStandardMaterial({color:0x263b43,roughness:.55});
-const windowFrame=new THREE.MeshStandardMaterial({color:0xd0c9b8,roughness:.8});
+// Pixel Modern City Street — 91 CC0 GLB assets in the assembled starter scene
 const buildingSpots=[];
-function addBuilding(x,z,w,d,h,style=0,front='z',name='BUILDING'){
- const g=new THREE.Group();g.position.set(x,0,z);city.add(g);
- const baseMat=concrete[style%concrete.length];
- slab(w,h,d,baseMat,0,h/2,0,g);
- slab(w+.35,.35,d+.35,roofMat,0,h+.17,0,g);
- const floors=Math.max(2,Math.floor(h/3.2)),cols=Math.max(2,Math.floor((front==='z'?w:d)/2.7));
- for(let f=0;f<floors;f++)for(let c=0;c<cols;c++){
-  const xx=front==='z'?(c-(cols-1)/2)*2.55: (front==='x'?d*.0:0);
-  const zz=front==='z'?d/2+.025:(c-(cols-1)/2)*2.55;
-  const yy=1.05+f*3.0;
-  const win=slab(front==='z'?1.35:.055,.95,front==='z'?.055:1.35,glass,front==='z'?xx:w/2+.03,yy,front==='z'?zz:zz,g);
-  if(front==='x')win.position.x=w/2+.03;
-  slab(front==='z'?1.48:.09,.09,front==='z'?.09:1.48,windowFrame,front==='z'?xx:w/2+.08,yy-.52,front==='z'?zz:zz,g);
+const cityRoot=new THREE.Group();scene.add(cityRoot);
+const cityLoader=new (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader();
+cityLoader.load('https://cdn.3dassets.dev/assets/29075/v1/model.glb',gltf=>{
+ const pack=gltf.scene;
+ pack.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material.side=THREE.FrontSide}}});
+ const bounds=new THREE.Box3().setFromObject(pack),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+ pack.position.x-=center.x;pack.position.z-=center.z;pack.position.y-=bounds.min.y;
+ cityRoot.add(pack);
+ // Entry interaction points are distributed around the assembled city blocks.
+ const spanX=Math.max(12,size.x),spanZ=Math.max(12,size.z);
+ for(let x=-spanX*.38;x<=spanX*.38;x+=Math.max(8,spanX*.25)){
+  for(let z=-spanZ*.38;z<=spanZ*.38;z+=Math.max(8,spanZ*.25)){
+   buildingSpots.push({x,z,r:4,name:'CITY BUILDING'});
+  }
  }
- // ground-floor shop windows and a clearly visible entrance
- const door=slab(1.25,2.35,.14,doorMat,front==='z'?0:w/2+.09,1.18,front==='z'?d/2+.1:0,g);
- if(front==='x')door.rotation.y=Math.PI/2;
- if(front==='z'){for(let s of [-1,1])slab(1.4,2.1,.08,darkGlass,s*2.0,1.1,d/2+.09,g)}
- else {for(let s of [-1,1])slab(.08,2.1,1.4,darkGlass,w/2+.08,1.1,s*2,g)}
- // parapet and rooftop service box
- slab(w*.55,1.1,d*.35,baseMat,0,h+.8,0,g);
- const sign=slab(Math.min(w*.65,7),.65,.18,new THREE.MeshStandardMaterial({color:style%2?0x315d65:0x8a573b,roughness:.7}),front==='z'?0:w/2+.12,h*.22,front==='z'?d/2+.12:0,g);
- if(front==='x')sign.rotation.y=Math.PI/2;
- buildingSpots.push({x,z,r:Math.max(w,d)*.55,name});
-}
-function addTree(x,z){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.25,2.5,7),new THREE.MeshStandardMaterial({color:0x60452f}));trunk.position.set(x,1.25,z);city.add(trunk);const crown=new THREE.Mesh(new THREE.SphereGeometry(1.65,9,7),new THREE.MeshStandardMaterial({color:0x526b4a,roughness:1}));crown.position.set(x,3.25,z);crown.scale.set(1,1.25,1);crown.castShadow=true;city.add(crown)}
-function addLamp(x,z,rot=0){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,5.4,7),new THREE.MeshStandardMaterial({color:0x30383b,metalness:.55,roughness:.5}));pole.position.set(x,2.7,z);city.add(pole);const arm=new THREE.Mesh(new THREE.BoxGeometry(.9,.09,.09),pole.material);arm.position.set(x+.35,5.25,z);city.add(arm);const head=new THREE.Mesh(new THREE.BoxGeometry(.48,.16,.3),new THREE.MeshStandardMaterial({color:0xe7d6a5,emissive:0x4b3920}));head.position.set(x+.72,5.15,z);city.add(head)}
-// Buildings arranged around the connected four-way downtown streets
-const lots=[
- [-16,-25,12,13,17,0,'z','CORNER CAFE'],[16,-25,13,12,25,1,'z','OFFICE TOWER'],
- [-16,25,13,12,21,2,'z','CITY HOTEL'],[16,25,12,13,15,3,'z','MARKET'],
- [-56,-16,15,13,20,4,'z','APARTMENTS'],[-56,16,14,13,13,0,'z','LOCAL SHOP'],
- [56,-16,14,13,28,1,'z','OFFICE'],[56,16,15,13,18,2,'z','APARTMENTS'],
- [-25,-56,13,15,16,3,'x','RESTAURANT'],[25,-56,13,15,23,4,'x','OFFICES'],
- [-25,56,13,15,19,0,'x','CLINIC'],[25,56,13,15,14,1,'x','STORE'],
- [-76,-25,15,14,24,2,'z','TOWER'],[76,25,15,14,22,3,'z','RESIDENCE'],
- [-76,25,14,15,15,4,'x','WORKSHOP'],[76,-25,14,15,17,0,'x','HOTEL']
-];
-lots.forEach(v=>addBuilding(...v));
-for(let z=-85;z<=85;z+=17){addTree(-10,z);addTree(10,z);addLamp(-7.1,z+5);addLamp(7.1,z-5)}
-for(let x=-85;x<=85;x+=17){if(Math.abs(x)>18){addTree(x,-10);addTree(x,10)}}
-document.querySelector('#mission').textContent='DOWNTOWN DISTRICT · FREE ROAM';
-document.querySelector('#credit').textContent='Procedural modular city · original Three.js geometry';
-
-document.querySelector('#status').textContent='DOWNTOWN · READY';
-document.querySelector('#mission').textContent='DOWNTOWN · FREE ROAM';
-document.querySelector('#credit').textContent='No map assets loaded';
-
+ scene.fog=new THREE.Fog(0x9bbdce,Math.max(90,Math.max(size.x,size.z)*.65),Math.max(220,Math.max(size.x,size.z)*2.2));
+ document.querySelector('#loading').style.display='none';
+ document.querySelector('#status').textContent='PIXEL CITY · READY';
+ document.querySelector('#mission').textContent='PIXEL MODERN CITY STREET · FREE ROAM';
+ document.querySelector('#credit').textContent='Pixel Modern City Street · CC0 1.0 · 91 GLB assets';
+ document.querySelector('#hint').textContent='Joystick: walk · Drag: rotate camera · Explore the city';
+},undefined,error=>{
+ console.error('City pack failed to load:',error);
+ document.querySelector('#loading').textContent='City pack failed to load. Check your connection and reload.';
+ document.querySelector('#status').textContent='MAP LOAD ERROR';
+});
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
 function moveJoy(e){const r=j.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),m=35;if(l>m){dx=dx/l*m;dy=dy/l*m}joy.x=dx/m;joy.y=dy/m;stick.style.transform='translate('+dx+'px,'+dy+'px)'}
