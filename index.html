@@ -12,14 +12,14 @@
 <script type="module">
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {USDLoader} from 'three/addons/loaders/USDLoader.js';
+
 const ROOT='https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,75,190);
 const camera=new THREE.PerspectiveCamera(56,innerWidth/innerHeight,.1,320);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.querySelector('#world').appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xd8efff,0x55634d,2.0));const sun=new THREE.DirectionalLight(0xffe2bd,3.2);sun.position.set(-22,35,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-35;sun.shadow.camera.right=35;sun.shadow.camera.top=35;sun.shadow.camera.bottom=-35;scene.add(sun);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(78,78),new THREE.MeshStandardMaterial({color:0x668b5a,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
-const loader=new GLTFLoader(),usdLoader=new USDLoader(),cache={};async function asset(path){if(cache[path])return cache[path];const gltf=await loader.loadAsync(ROOT+path+'.glb');cache[path]=gltf.scene;gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return gltf.scene}
+const loader=new GLTFLoader(),cache={};async function asset(path){if(cache[path])return cache[path];const gltf=await loader.loadAsync(ROOT+path+'.glb');cache[path]=gltf.scene;gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return gltf.scene}
 function addClone(model,x,z,scale=1,rot=0){const o=model.clone(true);o.position.set(x,0,z);o.scale.setScalar(scale);o.rotation.y=rot;scene.add(o);return o}
 const player=new THREE.Group();scene.add(player);player.position.set(0,0,0);
 function part(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
@@ -79,10 +79,10 @@ document.querySelector('#mission').textContent='NEW CITY · CENTRAL PARK DISTRIC
 // Load the user's uploaded apocalyptic city map as the main world.
 ground.visible=false;
 async function loadUserMap(){
- const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/Postwar_City_-_Exterior_Scene.usdz';
+ const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/japan_street.glb';
  try{
-  document.querySelector('#loading').textContent='Loading your Postwar city map…';
-  const map=await usdLoader.loadAsync(mapUrl);
+  document.querySelector('#loading').textContent='Loading Japan street environment…';
+  const gltf=await loader.loadAsync(mapUrl);\n  const map=gltf.scene;
   map.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(map);
   const size=bounds.getSize(new THREE.Vector3());
@@ -97,17 +97,17 @@ async function loadUserMap(){
   window.cityBuildingPositions=[];
   player.position.set(0,0,0);
   document.querySelector('#loading').style.display='none';
-  document.querySelector('#status').textContent='POSTWAR CITY · READY';
-  document.querySelector('#mission').textContent='POSTWAR CITY · EXPLORATION';
+  document.querySelector('#status').textContent='JAPAN STREET · READY';
+  document.querySelector('#mission').textContent='JAPAN STREET · EXPLORATION';
   document.querySelector('#hint').textContent='Joystick: explore your uploaded map · Drag: rotate camera';
-  document.querySelector('#credit').textContent='Map: Postwar City USDZ';
+  document.querySelector('#credit').textContent='Map: Japan Street GLB';
  }catch(e){
-  console.error('Postwar USDZ map load failed:',e);
+  console.error('Japan Street GLB map load failed:',e);
   const reason=(e&&e.message)?e.message:String(e);
   document.querySelector('#loading').style.display='block';
   document.querySelector('#loading').textContent='MAP ERROR: '+reason;
   document.querySelector('#status').textContent='MAP LOAD ERROR';
-  document.querySelector('#mission').textContent='POSTWAR CITY · LOAD FAILED';
+  document.querySelector('#mission').textContent='JAPAN STREET · LOAD FAILED';
  }
 }
 loadUserMap();
