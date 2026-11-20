@@ -365,15 +365,7 @@ function drawMinimap(){
  ctx.fillStyle='#9bb7a1';ctx.fillRect(-105*scale,-105*scale,210*scale,210*scale);
  ctx.fillStyle='#535a60';for(let k=-2;k<=2;k++){const p=k*40;ctx.fillRect(p*scale-6,-110*scale,12*scale,220*scale);ctx.fillRect(-110*scale,p*scale-6,220*scale,12*scale)}
   
- ctx.fillStyle='#f18b64';// Households may welcome adopted children over time; no sexual activity is simulated.
- familyGrowthClock+=dt;
- if(familyGrowthClock>72&&familyGrowthCount<4){
-  familyGrowthClock=0;
-  const eligible=npcActors.filter(a=>a.familyRole===0&&!a.isChild&&!a.hasWelcomedChild&&a.job==='Resident');
-  if(eligible.length){const family=eligible[Math.floor(Math.random()*eligible.length)];family.hasWelcomedChild=true;addFamilyChild(family)}
- }
- npcActors.forEach(a=>{
-  if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}ctx.fillRect(a.mesh.position.x*scale-2,a.mesh.position.z*scale-2,4,4)});
+ ctx.fillStyle='#f18b64';npcActors.forEach(a=>{ctx.fillRect(a.mesh.position.x*scale-2,a.mesh.position.z*scale-2,4,4)});
  ctx.fillStyle='#77dcff';trafficCars.forEach(t=>{ctx.fillRect(t.car.mesh.position.x*scale-3,t.car.mesh.position.z*scale-3,6,6)});
  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(player.position.x*scale,player.position.z*scale,5,0,Math.PI*2);ctx.fill();
  ctx.restore();
@@ -395,7 +387,16 @@ function makeCar(color,x,z){const car=new THREE.Group(),paint=new THREE.MeshStan
 for(let i=0;i<6;i++){const lane=i%2===0?-40:40,z=-85+i*27;trafficCars.push({car:makeCar([0xc74b3e,0xd5b45d,0x4c7c58,0x777f8c,0x704e88,0xe1e1e1][i],lane,z),lane,z,speed:5+(i%3)*1.4,dir:i%2===0?1:-1})}
 const vehicleButton=document.querySelector('#vehicleBtn');
 vehicleButton.addEventListener('click',()=>{if(inVehicle){inVehicle=false;player.visible=true;activeCar=null;player.position.x=playerCar.mesh.position.x+2.4;player.position.z=playerCar.mesh.position.z;vehicleButton.textContent='ENTER VEHICLE';document.querySelector('#hint').textContent='You left the car';return}if(Math.hypot(player.position.x-playerCar.mesh.position.x,player.position.z-playerCar.mesh.position.z)<7){inVehicle=true;activeCar=playerCar;player.visible=false;vehicleButton.textContent='EXIT VEHICLE';document.querySelector('#hint').textContent='Drive with joystick · drag to steer camera'}else document.querySelector('#hint').textContent='Walk close to the blue car to enter it'});
-let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;
+let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;
+// NPC relationships are represented through friendly dialogue, companionship and shared outings.
+familyGrowthClock+=dt;
+if(familyGrowthClock>72&&familyGrowthCount<4){
+ familyGrowthClock=0;
+ const eligible=npcActors.filter(a=>a.familyRole===0&&!a.isChild&&!a.hasWelcomedChild&&a.job==='Resident');
+ if(eligible.length){const family=eligible[Math.floor(Math.random()*eligible.length)];family.hasWelcomedChild=true;addFamilyChild(family)}
+}
+npcActors.forEach(a=>{if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
+const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;
 if(inVehicle&&activeCar){heading-=joy.x*1.25*dt;const drive=-joy.y*12*dt;activeCar.mesh.position.x+=Math.sin(heading)*drive;activeCar.mesh.position.z+=Math.cos(heading)*drive;activeCar.mesh.rotation.y=heading;activeCar.wheels.forEach(w=>w.rotation.x+=drive*2.5);player.position.copy(activeCar.mesh.position)}
 else if(moving&&!inside){heading-=joy.x*1.8*dt;const speed=-joy.y*(sprinting?7.2:4.4)*dt;const px=player.position.x+Math.sin(heading)*speed,pz=player.position.z+Math.cos(heading)*speed;const playerBlocked=extraBuildings.some(b=>Math.abs(px-b.group.position.x)<b.halfW&&Math.abs(pz-b.group.position.z)<b.halfD);if(!playerBlocked){player.position.x=px;player.position.z=pz;}player.rotation.y=heading;walkPhase+=dt*(sprinting?15:10);armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}
 else{armL.rotation.x*=.82;armR.rotation.x*=.82;legL.rotation.x*=.82;legR.rotation.x*=.82}
@@ -441,11 +442,11 @@ const pedestrianCanCross=(now%18000)>11000;
  if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
  // Nearby non-family pedestrians occasionally stop and face one another for a short chat.
  if(!a.socialCooldown&&Math.random()<.0015){
-  const friend=npcActors.find(b=>b!==a&&b.familyId!==a.familyId&&Math.hypot(b.mesh.position.x-a.mesh.position.x,b.mesh.position.z-a.mesh.position.z)<2.2);
+  const friend=npcActors.find(b=>b!==a&&!b.isChild&&!a.isChild&&b.familyId!==a.familyId&&Math.hypot(b.mesh.position.x-a.mesh.position.x,b.mesh.position.z-a.mesh.position.z)<2.2);
   if(friend){
    const chats=['Did you visit the new cafe?','The beach looks great today!','Are you heading to the park?','The city is busy today!','See you around!'];
    const line=chats[Math.floor(Math.random()*chats.length)];
-   a.socialCooldown=8;friend.socialCooldown=8;
+   a.socialCooldown=8;friend.socialCooldown=8;\n   if(!a.partner&&!friend.partner&&a.job==='Resident'&&friend.job==='Resident'&&Math.random()<.12){a.partner=friend;friend.partner=a;a.relationship='Partner';friend.relationship='Partner';a.talkLine=a.name+' and '+friend.name+' are now partners!';friend.talkLine='I enjoy spending time with '+a.name+'.';}\n   if(a.partner===friend){a.dateUntil=now+6500;friend.dateUntil=now+6500;a.activity='date';friend.activity='date';a.targetX=friend.targetX=132;a.targetZ=friend.targetZ=6;}
    a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
    friend.targetX=friend.mesh.position.x;friend.targetZ=friend.mesh.position.z;
    a.socialFriend=friend;friend.socialFriend=a;
