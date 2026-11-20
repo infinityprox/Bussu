@@ -288,6 +288,14 @@ npcActors.forEach(a=>{
   a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
   a.mesh.rotation.y=Math.atan2(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
  }
+ // Pedestrian spacing: gently steer around nearby people instead of walking through them.
+ let avoidX=0,avoidZ=0;
+ for(const other of npcActors){
+  if(other===a)continue;
+  const ox=a.mesh.position.x-other.mesh.position.x,oz=a.mesh.position.z-other.mesh.position.z,od=Math.hypot(ox,oz);
+  if(od>0.001&&od<1.05){const force=(1.05-od)/1.05;avoidX+=(ox/od)*force;avoidZ+=(oz/od)*force}
+ }
+ if(Math.abs(avoidX)+Math.abs(avoidZ)>.08){a.targetX+=avoidX*.9;a.targetZ+=avoidZ*.9}
  const dx=a.targetX-a.mesh.position.x,dz=a.targetZ-a.mesh.position.z,dist=Math.hypot(dx,dz);
  a.pause=Math.max(0,a.pause-dt);
  a.walking=dist>=0.45;
@@ -333,11 +341,12 @@ npcActors.forEach(a=>{
  if(a.mixer)a.mixer.update(dt);
  // Procedural gait keeps every figure visibly moving even when its GLB has no rig or walk clip.
  const gait=a.walking?Math.sin(a.phase):0;
+ const reacting=now<a.reactionUntil;
  // Articulated fallback limbs: alternating stride, natural arm swing and small idle gestures.
  if(a.armL&&a.armR&&a.legL&&a.legR){
   a.legL.rotation.x=gait*.62;a.legR.rotation.x=-gait*.62;
   a.armL.rotation.x=-gait*.48;a.armR.rotation.x=gait*.48;
-  const phoneTime=!a.walking&&a.idleMode==='phone'&&now>a.idleUntil;
+  const phoneTime=!a.walking&&a.idleMode==='phone'&&now<a.idleUntil;
   if(!a.walking&&a.idleTimer<=0){a.idleMode=['phone','look','stretch','wave'][Math.floor(Math.random()*4)];a.idleTimer=5+Math.random()*9;if(a.idleMode==='phone')a.idleUntil=now+3500}
   if(!a.walking&&a.idleMode==='stretch'){a.armL.rotation.z=-.8*Math.sin(now*.002);a.armR.rotation.z=.8*Math.sin(now*.002)}
   if(!a.walking&&a.idleMode==='wave'){a.armR.rotation.z=-.9-Math.sin(now*.006)*.25}
