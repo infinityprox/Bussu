@@ -77,6 +77,7 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
    const sill=new THREE.Mesh(new THREE.BoxGeometry(1.55,.12,.2),trimMat);sill.position.set(wx,kind==='shop'?2.25:2.85,front-.04);g.add(sill);
   }
   const door=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.35,.16),doorMat);door.position.set(0,1.17,front-.07);g.add(door);
+  if(kind==='house'){const balcony=new THREE.Group();const deck=new THREE.Mesh(new THREE.BoxGeometry(3.1,.16,1.05),trimMat);deck.position.set(0,3.15,front-.58);balcony.add(deck);for(const bx of [-1.45,0,1.45]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.07,.72,.07),doorMat);rail.position.set(bx,3.58,front-1.02);balcony.add(rail)}const topRail=new THREE.Mesh(new THREE.BoxGeometry(3,.08,.08),doorMat);topRail.position.set(0,3.94,front-1.02);balcony.add(topRail);g.add(balcony);const tank=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.9,12),new THREE.MeshStandardMaterial({color:0x647b86,metalness:.35,roughness:.55}));tank.position.set(w*.25,h+1.15,d*.12);g.add(tank);const garden=new THREE.Mesh(new THREE.BoxGeometry(w+2,.16,2.1),new THREE.MeshStandardMaterial({color:0x557b45,roughness:1}));garden.position.set(0,.08,front-2.5);g.add(garden);for(const gx of [-w*.36,-w*.12,w*.12,w*.36]){const bush=new THREE.Mesh(new THREE.SphereGeometry(.48,8,6),new THREE.MeshStandardMaterial({color:0x39734a}));bush.position.set(gx,.48,front-2.45);g.add(bush)}const fenceMat=new THREE.MeshStandardMaterial({color:0xe5dfce});for(const fx of [-w/2-.25,w/2+.25]){const fence=new THREE.Mesh(new THREE.BoxGeometry(.12,.85,2.5),fenceMat);fence.position.set(fx,.42,front-2.45);g.add(fence)}}
   if(kind==='shop'){
    const awning=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.28,1.15),new THREE.MeshStandardMaterial({color:[0xc95c4b,0x3f8b85,0xd29b43,0x657bb2][index%4]}));awning.position.set(0,3.75,front-.48);g.add(awning);
    const sign=new THREE.Mesh(new THREE.BoxGeometry(4.2,.72,.18),shopSignMat);sign.position.set(0,4.55,front-.13);g.add(sign);
@@ -100,6 +101,11 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
  ];
  neighbourhoodLayout.forEach((p,i)=>addNeighbourBuilding(p[0],p[1],p[2],i));
 
+// Parking bays and streetlights.
+const parkingRoot=new THREE.Group();scene.add(parkingRoot);const parkingPaint=new THREE.MeshStandardMaterial({color:0xe8e3cf});
+for(const [px,pz] of [[-26,-27],[26,-27],[-26,27],[26,27],[-66,27],[66,-27]]){slab(13,.12,8,new THREE.MeshStandardMaterial({color:0x555b5e}),px,.035,pz,parkingRoot);for(let slot=0;slot<4;slot++)slab(.1,.025,7.1,parkingPaint,px-5+slot*3.3,.105,pz,parkingRoot)}
+const streetLights=[];const poleMat=new THREE.MeshStandardMaterial({color:0x303a43,metalness:.45,roughness:.55});
+for(let k=-2;k<=2;k++)for(let n=-2;n<=2;n++){if((k+n)%2!==0)continue;const x=k*40+((k%2)?10:-10),z=n*40+((n%2)?10:-10);const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,5.5,8),poleMat);pole.position.set(x,2.75,z);parkingRoot.add(pole);const arm=new THREE.Mesh(new THREE.BoxGeometry(1.15,.1,.12),poleMat);arm.position.set(x+.48,5.35,z);parkingRoot.add(arm);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshStandardMaterial({color:0xffe3a1,emissive:0xffc45b,emissiveIntensity:0}));bulb.position.set(x+.95,5.25,z);parkingRoot.add(bulb);const light=new THREE.PointLight(0xffd99a,0,12,2);light.position.set(x+.95,5.1,z);parkingRoot.add(light);streetLights.push({bulb,light})}
 const natureRoot=new THREE.Group();scene.add(natureRoot);
 const cityLoader=new (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader();
 // Never leave the loading overlay stuck forever on slow mobile connections.
@@ -358,14 +364,14 @@ const vehicleButton=document.querySelector('#vehicleBtn');
 vehicleButton.addEventListener('click',()=>{if(inVehicle){inVehicle=false;player.visible=true;activeCar=null;player.position.x=playerCar.mesh.position.x+2.4;player.position.z=playerCar.mesh.position.z;vehicleButton.textContent='ENTER VEHICLE';document.querySelector('#hint').textContent='You left the car';return}if(Math.hypot(player.position.x-playerCar.mesh.position.x,player.position.z-playerCar.mesh.position.z)<7){inVehicle=true;activeCar=playerCar;player.visible=false;vehicleButton.textContent='EXIT VEHICLE';document.querySelector('#hint').textContent='Drive with joystick · drag to steer camera'}else document.querySelector('#hint').textContent='Walk close to the blue car to enter it'});
 let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;
 if(inVehicle&&activeCar){heading-=joy.x*1.25*dt;const drive=-joy.y*12*dt;activeCar.mesh.position.x+=Math.sin(heading)*drive;activeCar.mesh.position.z+=Math.cos(heading)*drive;activeCar.mesh.rotation.y=heading;activeCar.wheels.forEach(w=>w.rotation.x+=drive*2.5);player.position.copy(activeCar.mesh.position)}
-else if(moving&&!inside){heading-=joy.x*1.8*dt;const speed=-joy.y*(sprinting?7.2:4.4)*dt;player.position.x+=Math.sin(heading)*speed;player.position.z+=Math.cos(heading)*speed;player.rotation.y=heading;walkPhase+=dt*(sprinting?15:10);armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}
+else if(moving&&!inside){heading-=joy.x*1.8*dt;const speed=-joy.y*(sprinting?7.2:4.4)*dt;const px=player.position.x+Math.sin(heading)*speed,pz=player.position.z+Math.cos(heading)*speed;const playerBlocked=extraBuildings.some(b=>Math.abs(px-b.group.position.x)<b.halfW&&Math.abs(pz-b.group.position.z)<b.halfD);if(!playerBlocked){player.position.x=px;player.position.z=pz;}player.rotation.y=heading;walkPhase+=dt*(sprinting?15:10);armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}
 else{armL.rotation.x*=.82;armR.rotation.x*=.82;legL.rotation.x*=.82;legR.rotation.x*=.82}
 trafficCars.forEach(t=>{t.z+=t.speed*t.dir*dt;if(t.z>110)t.z=-110;if(t.z< -110)t.z=110;t.car.mesh.position.z=t.z;t.car.wheels.forEach(w=>w.rotation.x+=t.speed*dt*2)});
 if(!inVehicle){jumpVelocity-=14*dt;jumpHeight=Math.max(0,jumpHeight+jumpVelocity*dt);if(jumpHeight===0)jumpVelocity=0;player.position.y=jumpHeight*2.2}
  
 drawMinimap();
 dayClock=(dayClock+dt/210)%(Math.PI*2);
- weatherClock+=dt;
+ weatherClock+=dt;const nightFactor=1-daylight;streetLights.forEach(s=>{s.light.intensity=nightFactor>.55?1.45:0;s.bulb.material.emissiveIntensity=nightFactor>.55?1.8:0});extraBuildings.forEach(b=>{if(b.kind==='shop')b.isOpen=daylight>.18});
  if(weatherClock>75){weatherClock=0;rainActive=Math.random()<.28}
  if(!window.__cityRain){
   const rainGeo=new THREE.BufferGeometry(),rainCount=260,rainPositions=new Float32Array(rainCount*3);
