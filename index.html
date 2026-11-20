@@ -4,7 +4,7 @@
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101a27;color:#fff;font-family:system-ui,sans-serif;touch-action:none}#world{position:absolute;inset:0}.glass{background:linear-gradient(145deg,#101a27e8,#172b3be0);border:1px solid #ffffff35;border-radius:14px;box-shadow:0 8px 24px #0006;backdrop-filter:blur(12px)}#brand{position:absolute;top:13px;left:13px;padding:9px 13px;font-weight:900;letter-spacing:.12em;font-size:13px;pointer-events:none}#brand span{color:#75dcff}#mission{position:absolute;top:13px;left:50%;transform:translateX(-50%);padding:9px 12px;max-width:52%;text-align:center;font-size:10px;pointer-events:none}#status{position:absolute;left:13px;top:58px;padding:7px 10px;font-size:10px;letter-spacing:.1em;pointer-events:none}#hint{position:absolute;bottom:calc(12px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);padding:9px 12px;font-size:10px;white-space:nowrap;pointer-events:none}#joystick{position:absolute;left:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:104px;height:104px;border-radius:50%;background:radial-gradient(circle,#ffffff18,#09131e99);border:1px solid #ffffff66;box-shadow:inset 0 0 25px #0007;pointer-events:auto}#stick{position:absolute;left:30px;top:30px;width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,#f5fbff,#8eafc2);box-shadow:0 4px 15px #0009;border:1px solid #fff}#actions{position:absolute;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;pointer-events:auto}button{touch-action:manipulation;pointer-events:auto;border:1px solid #ffffff55;border-radius:12px;background:linear-gradient(145deg,#24658a,#12334e);color:white;padding:10px 11px;font-weight:800;min-width:102px;box-shadow:0 6px 18px #0007;font-size:10px}button:active{filter:brightness(1.3);transform:scale(.97)}#start{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(120deg,#0b1724dc,#0b1724a6);backdrop-filter:blur(5px);z-index:5}#start .card{max-width:350px;margin:20px;padding:27px;border-radius:22px;background:linear-gradient(145deg,#1d3447,#111f2d);border:1px solid #ffffff35;text-align:center;box-shadow:0 25px 80px #0009}#start h1{font-size:31px;margin:0 0 8px}#start h1 span{color:#76ddff}#start p{color:#c4d5e1;font-size:13px;line-height:1.6}#start button{background:linear-gradient(145deg,#2699c8,#17618b);width:100%;margin-top:12px;padding:15px}#loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:12px 18px;font-size:12px;z-index:3}#credit{position:absolute;bottom:4px;right:8px;font-size:9px;color:#fff;text-shadow:0 1px 4px #000;pointer-events:auto}@media(min-width:700px){#joystick{left:32px;bottom:28px;width:116px;height:116px}#stick{left:35px;top:35px}#actions{right:30px;bottom:28px;gap:8px}#actions button{padding:12px 13px}}
 </style>
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}
 </script>
 </head><body>
 <div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">DOWNTOWN DISTRICT · DAYTIME</div><div id="status" class="glass">LOADING 3D CITY</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">3D models: Low Poly City Kit · CC0 1.0</div><div id="loading" class="glass">Loading free 3D city assets…</div>
@@ -12,14 +12,14 @@
 <script type="module">
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {USDZLoader} from 'three/addons/loaders/USDZLoader.js';
+import {USDLoader} from 'three/addons/loaders/USDLoader.js';
 const ROOT='https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,75,190);
 const camera=new THREE.PerspectiveCamera(56,innerWidth/innerHeight,.1,320);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.querySelector('#world').appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xd8efff,0x55634d,2.0));const sun=new THREE.DirectionalLight(0xffe2bd,3.2);sun.position.set(-22,35,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-35;sun.shadow.camera.right=35;sun.shadow.camera.top=35;sun.shadow.camera.bottom=-35;scene.add(sun);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(78,78),new THREE.MeshStandardMaterial({color:0x668b5a,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
-const loader=new GLTFLoader(),usdzLoader=new USDZLoader(),cache={};async function asset(path){if(cache[path])return cache[path];const gltf=await loader.loadAsync(ROOT+path+'.glb');cache[path]=gltf.scene;gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return gltf.scene}
+const loader=new GLTFLoader(),usdLoader=new USDLoader(),cache={};async function asset(path){if(cache[path])return cache[path];const gltf=await loader.loadAsync(ROOT+path+'.glb');cache[path]=gltf.scene;gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return gltf.scene}
 function addClone(model,x,z,scale=1,rot=0){const o=model.clone(true);o.position.set(x,0,z);o.scale.setScalar(scale);o.rotation.y=rot;scene.add(o);return o}
 const player=new THREE.Group();scene.add(player);player.position.set(0,0,0);
 function part(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
@@ -82,7 +82,7 @@ async function loadUserMap(){
  const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/Postwar_City_-_Exterior_Scene.usdz';
  try{
   document.querySelector('#loading').textContent='Loading your Postwar city map…';
-  const map=await usdzLoader.loadAsync(mapUrl);
+  const map=await usdLoader.loadAsync(mapUrl);
   map.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(map);
   const size=bounds.getSize(new THREE.Vector3());
@@ -103,7 +103,7 @@ async function loadUserMap(){
   document.querySelector('#credit').textContent='Map: Postwar City USDZ';
  }catch(e){
   console.error('Your GLB map could not be loaded:',e);
-  document.querySelector('#loading').textContent='USDZ map failed. This loader needs a USDA-based USDZ file; please try a GLB export if it does not load.';
+  document.querySelector('#loading').textContent='USDZ map failed to parse. Check the model file and try a GLB export if needed.';
   document.querySelector('#status').textContent='MAP LOAD ERROR';
  }
 }
