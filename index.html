@@ -408,7 +408,7 @@ const pedestrianCanCross=(now%18000)>11000;
  if(rainActive&&a!==companionNPC&&!a.isSheltered&&a.activity!=='sheltering'){const shelter=extraBuildings.reduce((best,b)=>!best||Math.hypot(b.entry.x-a.mesh.position.x,b.entry.z-a.mesh.position.z)<Math.hypot(best.entry.x-a.mesh.position.x,best.entry.z-a.mesh.position.z)?b:best,null);if(shelter){a.targetX=shelter.entry.x;a.targetZ=shelter.entry.z;a.activity='sheltering';a.pause=0}}
  if(a.umbrella)a.umbrella.visible=rainActive&&a.activity!=='sitting';
  if(!rainActive&&a.isSheltered){a.isSheltered=false;a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam;a.pause=.2}
- if(!rainActive&&a.pause<=0&&Math.random()<.00010){const destination=extraBuildings[Math.floor(Math.random()*extraBuildings.length)];a.targetX=destination.entry.x;a.targetZ=destination.entry.z;a.activity='buildingVisit'}
+ if(!rainActive&&a.pause<=0&&Math.random()<.00010){const openBuildings=extraBuildings.filter(b=>b.kind!=='shop'||b.isOpen);const destination=openBuildings[Math.floor(Math.random()*openBuildings.length)];if(destination){a.targetX=destination.entry.x;a.targetZ=destination.entry.z;a.activity='buildingVisit'}}
  // Pedestrians give moving vehicles extra room and briefly pause when one passes.
  const carNear=trafficCars.some(t=>Math.hypot(t.car.mesh.position.x-a.mesh.position.x,t.car.mesh.position.z-a.mesh.position.z)<2.8);
  if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
@@ -490,7 +490,7 @@ const pedestrianCanCross=(now%18000)>11000;
      tz=a.homeZ+off[1]+(Math.random()-.5)*2.2;
      if(job==='Student'){tx=schoolEntry.x;tz=schoolEntry.z;}
      if(job==='Shopkeeper'||job==='Cook'){const shop=extraBuildings.find(b=>b.kind==='shop'&&b!==extraBuildings[extraBuildings.length-1]);if(shop){tx=shop.entry.x;tz=shop.entry.z;}}
-     if(job==='Visitor'&&daylight>.45){tx=132;tz=(a.familyId%3-1)*9;}
+     if(job==='Visitor'&&daylight>.45){tx=132;tz=(a.familyId%3-1)*9;}\n     if(job==='Resident'||job==='Cyclist'||job==='Artist'||job==='Musician'){const footpath=snapToSidewalk(tx,tz);tx=footpath.x;tz=footpath.z;}
     }
     a.targetX=tx;a.targetZ=tz;a.routineTimer=12+Math.random()*13;a.pause=.3;
    }else{
