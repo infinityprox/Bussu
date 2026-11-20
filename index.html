@@ -21,7 +21,7 @@ scene.add(new THREE.HemisphereLight(0xd8efff,0x55634d,2.0));const sun=new THREE.
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(78,78),new THREE.MeshStandardMaterial({color:0x668b5a,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
 const loader=new GLTFLoader(),cache={};async function asset(path){if(cache[path])return cache[path];const gltf=await loader.loadAsync(ROOT+path+'.glb');cache[path]=gltf.scene;gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return gltf.scene}
 function addClone(model,x,z,scale=1,rot=0){const o=model.clone(true);o.position.set(x,0,z);o.scale.setScalar(scale);o.rotation.y=rot;scene.add(o);return o}
-const player=new THREE.Group();scene.add(player);player.position.set(0,0,0);
+const player=new THREE.Group();player.scale.setScalar(2.2);scene.add(player);player.position.set(0,0,0);
 function part(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
 const skin=new THREE.MeshStandardMaterial({color:0xc98e68}),shirt=new THREE.MeshStandardMaterial({color:0x176b91}),pants=new THREE.MeshStandardMaterial({color:0x26384c}),shoe=new THREE.MeshStandardMaterial({color:0x17202b});
 part(player,new THREE.CylinderGeometry(.25,.3,.72,10),shirt,0,1.05,0);part(player,new THREE.SphereGeometry(.22,12,10),skin,0,1.62,0);
