@@ -81,7 +81,7 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
   if(kind==='shop'){
    const awning=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.28,1.15),new THREE.MeshStandardMaterial({color:[0xc95c4b,0x3f8b85,0xd29b43,0x657bb2][index%4]}));awning.position.set(0,3.75,front-.48);g.add(awning);
    const sign=new THREE.Mesh(new THREE.BoxGeometry(4.2,.72,.18),shopSignMat);sign.position.set(0,4.55,front-.13);g.add(sign);
-   const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=96;const sc=signCanvas.getContext('2d');sc.fillStyle='#173e50';sc.fillRect(0,0,512,96);sc.fillStyle='#ffffff';sc.font='bold 48px sans-serif';sc.textAlign='center';sc.fillText(['MARKET','CAFE','BOOKS','BAKERY','GROCERY','FLOWERS'][index%6],256,65);
+   const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=96;const sc=signCanvas.getContext('2d');sc.fillStyle='#173e50';sc.fillRect(0,0,512,96);sc.fillStyle='#ffffff';sc.font='bold 48px sans-serif';sc.textAlign='center';sc.fillText(index===17?'SCHOOL':['MARKET','CAFE','BOOKS','BAKERY','GROCERY','FLOWERS'][index%6],256,65);
    const signTex=new THREE.CanvasTexture(signCanvas);const label=new THREE.Mesh(new THREE.PlaneGeometry(4.05,.62),new THREE.MeshBasicMaterial({map:signTex,transparent:true}));label.position.set(0,4.55,front-.24);g.add(label);
   }else{
    const porch=new THREE.Mesh(new THREE.BoxGeometry(3.2,.18,1.6),trimMat);porch.position.set(0,.12,front-.7);g.add(porch);
@@ -100,6 +100,8 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
   [-58,58,'shop'],[-22,58,'house'],[22,58,'shop'],[58,58,'house']
  ];
  neighbourhoodLayout.forEach((p,i)=>addNeighbourBuilding(p[0],p[1],p[2],i));
+// A school gives student pedestrians a daily destination in the north-east block.
+addNeighbourBuilding(82,82,'shop',17);const schoolEntry=extraBuildings[extraBuildings.length-1].entry;
 
 // Parking bays and streetlights.
 const parkingRoot=new THREE.Group();scene.add(parkingRoot);const parkingPaint=new THREE.MeshStandardMaterial({color:0xe8e3cf});
@@ -205,6 +207,8 @@ const npcActors=[];
 const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!','Have you visited the beach?','The park is lovely today.','Good to see you!'];
 const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya','Reyansh','Ira','Vivaan','Kiara','Arnav','Myra','Dhruv','Avni','Rudra','Siya','Neil','Anika','Yuvan','Rhea','Atharv','Tia','Krish','Navya'];
 const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician'];
+// Snap pedestrian spawn points to the nearest sidewalk strip along the street grid.
+function snapToSidewalk(x,z){let best={x,z,d:Infinity};for(let k=-2;k<=2;k++)for(const side of [-1,1]){const sx=k*40+side*8.6,sz=k*40+side*8.6,dx=Math.abs(x-sx),dz=Math.abs(z-sz);if(dx<best.d)best={x:sx,z,d:dx};if(dz<best.d)best={x,z:sz,d:dz}}return{x:best.x,z:best.z}}
 const speechCanvas=document.createElement('canvas');speechCanvas.width=512;speechCanvas.height=128;
 const speechCtx=speechCanvas.getContext('2d');
 function paintSpeech(message){
@@ -219,7 +223,7 @@ const speechBubble=new THREE.Sprite(new THREE.SpriteMaterial({map:speechTexture,
 speechBubble.scale.set(3.1,.78,1);speechBubble.visible=false;scene.add(speechBubble);
 let activeGreeting=null;
 let interactedNPC=null,interactedUntil=0,companionNPC=null,weatherClock=0,rainActive=false;
-const npcPlacements=[
+const npcPlacementsRaw=[
  // Downtown sidewalks and shop fronts
  [-4,0,-5],[-2,0,-7],[2,0,-7],[4,0,-5],
  [-5,0,1],[5,0,1],[-4,0,6],[4,0,6],
@@ -231,7 +235,8 @@ const npcPlacements=[
  [30,0,-12],[34,0,-6],[38,0,2],[42,0,8],[34,0,15],[46,0,-4],
  // Plaza and civic district
  [-27,0,-24],[-22,0,-27],[-16,0,-25],[22,0,-24],[27,0,-19],[25,0,24]
-];
+].map(p=>{const q=snapToSidewalk(p[0],p[2]);return[q.x,0,q.z]});
+const npcPlacements=npcPlacementsRaw;
 const cityBenches=[];
 function spawnFallbackNPCs(){
  if(npcActors.length)return;
@@ -301,7 +306,7 @@ renderer.domElement.addEventListener('click',event=>{
   else if(!companionNPC){companionNPC=actor;actor.isCompanion=true;actor.talkLine=actor.name+': I will explore with you!'}
   else actor.talkLine=actor.name+': Nice to see you again! Friendship '+actor.friendship;
  const lines=npcDialogues[actor.job]||npcDialogues.Resident;
- actor.talkLine=actor.name+': '+lines[Math.floor(Math.random()*lines.length)];
+ actor.talkLine=actor.mood+' '+actor.name+' · Friendship '+actor.friendship+': '+lines[Math.floor(Math.random()*lines.length)];
  actor.reactionType='👋';actor.reactionUntil=interactedUntil;
  actor.targetX=actor.mesh.position.x;actor.targetZ=actor.mesh.position.z;actor.pause=5.2;
  actor.mesh.rotation.y=Math.atan2(player.position.x-actor.mesh.position.x,player.position.z-actor.mesh.position.z);
@@ -424,6 +429,8 @@ const pedestrianCanCross=(now%18000)>11000;
  }
  a.socialCooldown=Math.max(0,(a.socialCooldown||0)-dt);
  a.greetCooldown=Math.max(0,(a.greetCooldown||0)-dt);
+  a.photoCooldown=Math.max(0,(a.photoCooldown||0)-dt);
+  if(a.photoCooldown<=0&&!a.walking&&a.job==='Visitor'&&Math.random()<.012){a.reactionType='📸';a.reactionUntil=now+2300;a.photoCooldown=35+Math.random()*30;a.talkLine=a.name+': Taking a photo of this view!}
  a.playerNearby=playerDistance<3.1;
  if(a.playerNearby&&a.greetCooldown<=0){
   a.greetCooldown=11+Math.random()*8;
@@ -481,6 +488,9 @@ const pedestrianCanCross=(now%18000)>11000;
      const off=offsets[job]||[0,0];
      tx=a.homeX+off[0]+(Math.random()-.5)*2.2;
      tz=a.homeZ+off[1]+(Math.random()-.5)*2.2;
+     if(job==='Student'){tx=schoolEntry.x;tz=schoolEntry.z;}
+     if(job==='Shopkeeper'||job==='Cook'){const shop=extraBuildings.find(b=>b.kind==='shop'&&b!==extraBuildings[extraBuildings.length-1]);if(shop){tx=shop.entry.x;tz=shop.entry.z;}}
+     if(job==='Visitor'&&daylight>.45){tx=132;tz=(a.familyId%3-1)*9;}
     }
     a.targetX=tx;a.targetZ=tz;a.routineTimer=12+Math.random()*13;a.pause=.3;
    }else{
