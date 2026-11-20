@@ -167,7 +167,7 @@ const speechTexture=new THREE.CanvasTexture(speechCanvas);
 const speechBubble=new THREE.Sprite(new THREE.SpriteMaterial({map:speechTexture,transparent:true,depthTest:false}));
 speechBubble.scale.set(3.1,.78,1);speechBubble.visible=false;scene.add(speechBubble);
 let activeGreeting=null;
-let interactedNPC=null,interactedUntil=0;
+let interactedNPC=null,interactedUntil=0,companionNPC=null,weatherClock=0,rainActive=false;
 const npcPlacements=[
  // Downtown sidewalks and shop fronts
  [-4,0,-5],[-2,0,-7],[2,0,-7],[4,0,-5],
@@ -233,6 +233,11 @@ renderer.domElement.addEventListener('click',event=>{
  const actor=npcActors.find(a=>a.mesh===root);
  if(!actor||Math.hypot(actor.mesh.position.x-player.position.x,actor.mesh.position.z-player.position.z)>22)return;
  interactedNPC=actor;interactedUntil=performance.now()+5200;
+  actor.friendship=(actor.friendship||0)+1;
+  actor.mood=['😊','😎','🤔','🤩'][Math.min(3,Math.floor((actor.friendship||0)/3))];
+  if(companionNPC===actor){companionNPC=null;actor.isCompanion=false;actor.talkLine=actor.name+': I will continue exploring. '}
+  else if(!companionNPC){companionNPC=actor;actor.isCompanion=true;actor.talkLine=actor.name+': I will explore with you!'}
+  else actor.talkLine=actor.name+': Nice to see you again! Friendship '+actor.friendship;
  const lines=npcDialogues[actor.job]||npcDialogues.Resident;
  actor.talkLine=actor.name+': '+lines[Math.floor(Math.random()*lines.length)];
  actor.reactionType='👋';actor.reactionUntil=interactedUntil;
@@ -293,9 +298,31 @@ trafficCars.forEach(t=>{t.z+=t.speed*t.dir*dt;if(t.z>110)t.z=-110;if(t.z< -110)t
 if(!inVehicle){jumpVelocity-=14*dt;jumpHeight=Math.max(0,jumpHeight+jumpVelocity*dt);if(jumpHeight===0)jumpVelocity=0;player.position.y=jumpHeight*2.2}
  
 drawMinimap();
-dayClock=(dayClock+dt/210)%(Math.PI*2);const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
+dayClock=(dayClock+dt/210)%(Math.PI*2);
+ weatherClock+=dt;
+ if(weatherClock>75){weatherClock=0;rainActive=Math.random()<.28}
+ if(!window.__cityRain){
+  const rainGeo=new THREE.BufferGeometry(),rainCount=260,rainPositions=new Float32Array(rainCount*3);
+  for(let i=0;i<rainCount;i++){rainPositions[i*3]=(Math.random()-.5)*95;rainPositions[i*3+1]=Math.random()*22;rainPositions[i*3+2]=(Math.random()-.5)*95}
+  rainGeo.setAttribute('position',new THREE.BufferAttribute(rainPositions,3));
+  window.__cityRain=new THREE.Points(rainGeo,new THREE.PointsMaterial({color:0xb8d9ef,size:.075,transparent:true,opacity:.65}));
+  scene.add(window.__cityRain);
+ }
+ window.__cityRain.visible=rainActive;
+ if(rainActive){
+  const rainPos=window.__cityRain.geometry.attributes.position;
+  for(let i=0;i<rainPos.count;i++){let y=rainPos.getY(i)-dt*17;if(y<0)y=20+Math.random()*3;rainPos.setY(i,y)}
+  rainPos.needsUpdate=true;
+ }const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
 npcActors.forEach(a=>{
  const playerDistance=Math.hypot(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
+  // A recruited companion follows at a comfortable distance.
+  if(a===companionNPC&&playerDistance>2.8){
+   const followAngle=Math.atan2(a.mesh.position.x-player.position.x,a.mesh.position.z-player.position.z);
+   a.targetX=player.position.x-Math.sin(followAngle)*2.1;
+   a.targetZ=player.position.z-Math.cos(followAngle)*2.1;
+   a.pause=0;
+  }
  // Pedestrians give moving vehicles extra room and briefly pause when one passes.
  const carNear=trafficCars.some(t=>Math.hypot(t.car.mesh.position.x-a.mesh.position.x,t.car.mesh.position.z-a.mesh.position.z)<2.8);
  if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
