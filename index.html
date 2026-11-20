@@ -403,6 +403,28 @@ renderer.domElement.addEventListener('click',event=>{
 // The visible built-in crowd is used directly so NPC visibility never depends on a remote character file.
 
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0,inVehicle=false,activeCar=null,dayClock=0,sprinting=false,jumpVelocity=0,jumpHeight=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
+// Local checkpoint: restore the player's exploration progress on the next visit.
+const CITY_SAVE_KEY='citylife3d-save-v1';
+let saveClock=0;
+function saveCityProgress(){
+ try{
+  const checkpoint={x:player.position.x,z:player.position.z,heading,camDist,mission,dayClock,version:1};
+  localStorage.setItem(CITY_SAVE_KEY,JSON.stringify(checkpoint));
+ }catch(error){console.warn('City progress could not be saved:',error)}
+}
+try{
+ const checkpoint=JSON.parse(localStorage.getItem(CITY_SAVE_KEY)||'null');
+ if(checkpoint&&checkpoint.version===1&&Number.isFinite(checkpoint.x)&&Number.isFinite(checkpoint.z)){
+  player.position.set(THREE.MathUtils.clamp(checkpoint.x,-420,420),0,THREE.MathUtils.clamp(checkpoint.z,-260,260));
+  heading=Number.isFinite(checkpoint.heading)?checkpoint.heading:0;
+  camDist=THREE.MathUtils.clamp(Number(checkpoint.camDist)||8.2,5,18);
+  mission=Number.isInteger(checkpoint.mission)?Math.max(0,Math.min(tasks.length-1,checkpoint.mission)):0;
+  dayClock=Number.isFinite(checkpoint.dayClock)?checkpoint.dayClock:0;
+  document.querySelector('#mission').textContent='TASK 0'+(mission+1)+' · '+tasks[mission];
+ }
+}catch(error){console.warn('Saved city progress could not be restored:',error)}
+addEventListener('pagehide',saveCityProgress);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveCityProgress()});
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
 function moveJoy(e){const r=j.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),m=35;if(l>m){dx=dx/l*m;dy=dy/l*m}joy.x=dx/m;joy.y=dy/m;stick.style.transform='translate('+dx+'px,'+dy+'px)'}
 j.addEventListener('pointerdown',e=>{j.setPointerCapture(e.pointerId);moveJoy(e)});j.addEventListener('pointermove',e=>{if(e.buttons)moveJoy(e)});function resetJoy(){joy={x:0,y:0};stick.style.transform='translate(0,0)'}j.addEventListener('pointerup',resetJoy);j.addEventListener('pointercancel',resetJoy);
@@ -453,7 +475,7 @@ function makeCar(color,x,z){const car=new THREE.Group(),paint=new THREE.MeshStan
 for(let i=0;i<6;i++){const lane=i%2===0?-40:40,z=-85+i*27;trafficCars.push({car:makeCar([0xc74b3e,0xd5b45d,0x4c7c58,0x777f8c,0x704e88,0xe1e1e1][i],lane,z),lane,z,speed:5+(i%3)*1.4,dir:i%2===0?1:-1})}
 const vehicleButton=document.querySelector('#vehicleBtn');
 vehicleButton.addEventListener('click',()=>{if(inVehicle){inVehicle=false;player.visible=true;activeCar=null;player.position.x=playerCar.mesh.position.x+2.4;player.position.z=playerCar.mesh.position.z;vehicleButton.textContent='ENTER VEHICLE';document.querySelector('#hint').textContent='You left the car';return}if(Math.hypot(player.position.x-playerCar.mesh.position.x,player.position.z-playerCar.mesh.position.z)<7){inVehicle=true;activeCar=playerCar;player.visible=false;vehicleButton.textContent='EXIT VEHICLE';document.querySelector('#hint').textContent='Drive with joystick · drag to steer camera'}else document.querySelector('#hint').textContent='Walk close to the blue car to enter it'});
-let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;
+let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;saveClock+=dt;if(saveClock>=4){saveClock=0;saveCityProgress()}
 // NPC relationships are represented through friendly dialogue, companionship and shared outings.
 familyGrowthClock+=dt;
 if(familyGrowthClock>72&&familyGrowthCount<4){
