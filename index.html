@@ -92,9 +92,17 @@ cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
 // This model is intentionally static: the source pack has no rig or skinning.
 const npcRoot=new THREE.Group();scene.add(npcRoot);
 const npcPlacements=[
+ // Downtown sidewalks and shop fronts
  [-9,0,-10],[-4,0,-12],[4,0,-12],[9,0,-9],
  [-11,0,2],[11,0,3],[-8,0,12],[8,0,12],
- [-15,0,20],[15,0,20],[-19,0,-18],[19,0,-18]
+ [-15,0,20],[15,0,20],[-19,0,-18],[19,0,-18],
+ // Extra pedestrians along the main streets and intersections
+ [-18,0,-6],[-14,0,-8],[-6,0,-18],[2,0,-19],[12,0,-15],[18,0,-10],
+ [-18,0,8],[-13,0,15],[-3,0,18],[5,0,19],[14,0,14],[19,0,7],
+ // Beach promenade and coastal area
+ [30,0,-12],[34,0,-6],[38,0,2],[42,0,8],[34,0,15],[46,0,-4],
+ // Plaza and civic district
+ [-27,0,-24],[-22,0,-27],[-16,0,-25],[22,0,-24],[27,0,-19],[25,0,24]
 ];
 cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
  const base=gltf.scene;
@@ -113,9 +121,9 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
   });
   npcRoot.add(npc);
  });
- document.querySelector('#status').textContent='CITY + BEACH · 12 NPCs';
+ document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
  document.querySelector('#hint').textContent='Explore the city and meet the local people';
- document.querySelector('#credit').textContent='Low Poly Character Figures · CC0 1.0 · static civilian NPCs';
+ document.querySelector('#credit').textContent='Low Poly Character Figures · CC0 1.0 · 36 static civilian NPCs';
 },undefined,error=>{console.error('NPC model failed to load:',error)});
 
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
