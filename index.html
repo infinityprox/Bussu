@@ -354,6 +354,7 @@ npcActors.forEach(a=>{
  if(a.mixer)a.mixer.update(dt);
  // Procedural gait keeps every figure visibly moving even when its GLB has no rig or walk clip.
  const gait=a.walking?Math.sin(a.phase):0;
+ const reacting=now<a.reactionUntil;
  // Articulated fallback limbs: alternating stride, natural arm swing and small idle gestures.
  if(a.armL&&a.armR&&a.legL&&a.legR){
   a.legL.rotation.x=gait*.62;a.legR.rotation.x=-gait*.62;
@@ -368,7 +369,6 @@ npcActors.forEach(a=>{
   a.idleTimer-=dt;
  }
  // Small readable reactions: wave, laugh, cheer or pretend to take a photo.
- const reacting=now<a.reactionUntil;
  const reactionWave=reacting&&a.reactionType==='👋';
  const reactionLaugh=reacting&&a.reactionType==='😂';
  const reactionCheer=reacting&&a.reactionType==='🙌';
