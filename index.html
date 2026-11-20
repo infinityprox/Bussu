@@ -184,6 +184,16 @@ const npcPlacements=[
 function spawnFallbackNPCs(){
  if(npcActors.length)return;
  const skinTones=[0xd6a078,0x9b684b,0xe0b18a,0xb77c58],shirts=[0x2878b8,0xc45a45,0x4f936b,0xd3a83c,0x7356a8,0xe1e1e1];
+ const cityBenches=[];
+const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),benchLegMat=new THREE.MeshStandardMaterial({color:0x303b46,roughness:.8});
+[[-10,0,25],[10,0,25],[-30,0,5],[30,0,20],[0,0,35]].forEach(([x,y,z])=>{
+ const bench=new THREE.Group();bench.position.set(x,y,z);
+ const seat=new THREE.Mesh(new THREE.BoxGeometry(2.1,.13,.55),benchMat);seat.position.y=.72;bench.add(seat);
+ const back=new THREE.Mesh(new THREE.BoxGeometry(2.1,.65,.12),benchMat);back.position.set(0,1.05,-.22);bench.add(back);
+ for(const sx of [-.82,.82]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,.72,.42),benchLegMat);leg.position.set(sx,.36,0);bench.add(leg)}
+ bench.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+ scene.add(bench);cityBenches.push({x,z,mesh:bench});
+});
  npcPlacements.forEach((p,i)=>{
   const person=new THREE.Group(),skin=new THREE.MeshStandardMaterial({color:skinTones[i%4],roughness:.8}),shirt=new THREE.MeshStandardMaterial({color:shirts[i%6],roughness:.8}),pants=new THREE.MeshStandardMaterial({color:i%2?0x303b50:0x454545,roughness:.9});
   const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.25,.48,4,8),shirt);torso.position.y=1.02;person.add(torso);
@@ -204,7 +214,7 @@ function spawnFallbackNPCs(){
   const phone=new THREE.Mesh(new THREE.BoxGeometry(.075,.13,.018),new THREE.MeshStandardMaterial({color:0x17212b,metalness:.35,roughness:.35}));phone.position.set(.36,1.02,.08);phone.visible=false;person.add(phone);
   person.scale.setScalar(1.45);person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
   person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
-  npcActors.push({mesh:person,...limbs,phone,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%18],job:npcJobs[i%9],phase:i*1.73,speed:.8+(i%5)*.15,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9});
+  npcActors.push({mesh:person,...limbs,phone,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%18],job:npcJobs[i%9],phase:i*1.73,speed:.8+(i%5)*.15,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null});
  });
  document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
 }
@@ -369,7 +379,18 @@ npcActors.forEach(a=>{
  if(Math.abs(avoidX)+Math.abs(avoidZ)>.08){a.targetX+=avoidX*.9;a.targetZ+=avoidZ*.9}
  const dx=a.targetX-a.mesh.position.x,dz=a.targetZ-a.mesh.position.z,dist=Math.hypot(dx,dz);
  a.pause=Math.max(0,a.pause-dt);
- a.walking=dist>=0.45;
+ a.activityTimer-=dt;
+ if(!a.benchTarget&&a.activityTimer<=0&&a.familyRole===0&&a!==companionNPC&&!rainActive){
+  const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];
+  if(Math.hypot(bench.x-a.mesh.position.x,bench.z-a.mesh.position.z)<24){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench'}
+  a.activityTimer=22+Math.random()*28;
+ }
+ if(a.benchTarget&&Math.hypot(a.mesh.position.x-a.benchTarget.x,a.mesh.position.z-a.benchTarget.z)<.85){
+  a.activity='sitting';a.pause=0;a.mesh.position.set(a.benchTarget.x,0,a.benchTarget.z);a.mesh.rotation.y=Math.PI;
+  if(!a.sitUntil)a.sitUntil=now+6500+Math.random()*6000;
+ }
+ if(a.activity==='sitting'&&now>a.sitUntil){a.activity='walk';a.benchTarget=null;a.sitUntil=0;a.targetX=a.x+(Math.random()-.5)*a.roam*2;a.targetZ=a.z+(Math.random()-.5)*a.roam*2;a.activityTimer=18}
+ a.walking=dist>=0.45&&a.activity!=='sitting';
  if(!a.walking){
   if(a.pause<=0&&a.familyRole===0){
    // Residents follow a simple daily routine: work and leisure by day, then head home at night.
@@ -412,6 +433,8 @@ npcActors.forEach(a=>{
  if(a.mixer)a.mixer.update(dt);
  // Procedural gait keeps every figure visibly moving even when its GLB has no rig or walk clip.
  const gait=a.walking?Math.sin(a.phase):0;
+ if(a.activity==='sitting'&&a.legL&&a.legR){a.legL.rotation.x=-1.05;a.legR.rotation.x=-1.05;a.armL.rotation.x=.12;a.armR.rotation.x=.12;}
+ if(a.activity!=='sitting'&&a.legL&&a.legR){a.legL.rotation.x=gait*.62;a.legR.rotation.x=-gait*.62;}
  const reacting=now<a.reactionUntil;
  // Articulated fallback limbs: alternating stride, natural arm swing and small idle gestures.
  if(a.armL&&a.armR&&a.legL&&a.legR){
