@@ -146,10 +146,18 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
  base.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
  npcPlacements.forEach((p,i)=>{
   const npc=base.clone(true);
-  npc.position.set(p[0],p[1],p[2]);
   npc.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
   const isChild=i%3===2;
-  npc.scale.setScalar(isChild?1.35:2.05);
+  // Normalize each model to a consistent real-world height, then place its feet on the ground.
+  npc.updateMatrixWorld(true);
+  const rawBounds=new THREE.Box3().setFromObject(npc);
+  const rawHeight=Math.max(.01,rawBounds.getSize(new THREE.Vector3()).y);
+  const targetHeight=isChild?1.15:1.75;
+  npc.scale.setScalar(targetHeight/rawHeight);
+  npc.position.set(p[0],p[1],p[2]);
+  npc.updateMatrixWorld(true);
+  const groundedBounds=new THREE.Box3().setFromObject(npc);
+  npc.position.y+=p[1]-groundedBounds.min.y;
   npc.traverse(o=>{
    if(o.isMesh){
     o.castShadow=true;o.receiveShadow=true;
@@ -167,7 +175,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
    phase:i*1.73, speed:isChild?0.95:0.75+(i%5)*0.16,
    roam:5.5+(i%4)*1.2, targetX:p[0], targetZ:p[2],
    pause:Math.random()*2, baseRotation:npc.rotation.y,
-   mixer, walkAction, walking:false
+   mixer, walkAction, walking:false, baseScale:targetHeight/rawHeight
   });
  });
  document.querySelector('#status').textContent='CITY + BEACH · 36 ANIMATED NPCs';
@@ -220,8 +228,7 @@ let last=performance.now();function animate(now){requestAnimationFrame(animate);
  if(!a.walkAction){
   a.mesh.rotation.x=a.walking?Math.sin(a.phase*2)*.045:0;
   a.mesh.rotation.z=a.walking?gait*.055:Math.sin(now*.001+a.phase)*.008;
-  const baseScale=a.familyRole===2?1.35:2.05;
-  a.mesh.scale.y=baseScale*(1+(a.walking?Math.abs(Math.sin(a.phase*2))*.018:0));
+  a.mesh.scale.y=a.baseScale*(1+(a.walking?Math.abs(Math.sin(a.phase*2))*.018:0));
  }
 });const target=new THREE.Vector3(player.position.x-Math.sin(heading)*camDist,inside?3.5:3.9,player.position.z-Math.cos(heading)*camDist);camera.position.lerp(target,.09);camera.lookAt(player.position.x,inside?1.2:1.1,player.position.z);if(!inside){const near=nearestBuildingDistance()<8;interactButton.textContent=near?'ENTER BUILDING':'BUILDING: WALK CLOSER';interactButton.style.opacity=near?'1':'.72'}document.querySelector('#status').textContent=inside?'INSIDE BUILDING':(moving?'ON FOOT · WALKING':'ON FOOT · CITY EXPLORER');renderer.render(scene,camera)}requestAnimationFrame(animate);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
