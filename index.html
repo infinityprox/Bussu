@@ -140,12 +140,17 @@ cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  const cityMid=cityBoundsForParks.getCenter(new THREE.Vector3());parkCenterX=cityMid.x;parkCenterZ=cityMid.z;
  const parkX=Math.max(-88,cityBoundsForParks.min.x-13);
  parkSpots=[[parkX,cityMid.z-25],[parkX,cityMid.z],[parkX,cityMid.z+25],[cityMid.x,Math.max(-88,cityBoundsForParks.min.z-13)]];
+ function isSafeTreeSite(x,z){
+  const clearAxis=v=>{const d=Math.abs(v-Math.round(v/40)*40);return d>=8.5&&Math.abs(d-9.2)>=2.7};
+  return clearAxis(x)&&clearAxis(z);
+ }
  const trunkMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:1});
  const leafMats=[0x477b49,0x568b50,0x3f7047].map(color=>new THREE.MeshStandardMaterial({color,roughness:1}));
  parkSpots.forEach((spot,i)=>{
   const park=new THREE.Group();
   for(let n=0;n<5;n++){
    const x=(n%3-1)*5+(Math.random()-.5)*1.8,z=(Math.floor(n/3)-.5)*7+(Math.random()-.5)*1.8,height=2.8+Math.random()*1.2;
+   const worldX=spot[0]+x,worldZ=spot[1]+z;if(!isSafeTreeSite(worldX,worldZ))continue;
    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.28,height,7),trunkMat);
    trunk.position.set(x,height/2,z);trunk.castShadow=true;park.add(trunk);
    const crown=new THREE.Mesh(new THREE.ConeGeometry(1.55+Math.random()*.35,3.1,7),leafMats[(n+i)%leafMats.length]);
@@ -246,7 +251,7 @@ else{
   }else{expBuilding(root,x,z,10,6+(i%2)*2,9,theme.colors[i%theme.colors.length],theme.roof)}
  });
 }
-for(let i=0;i<10;i++){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.2,.28,2.2,7),new THREE.MeshStandardMaterial({color:0x76543a}));trunk.position.set(-48+(i%5)*23,1.1,-45+Math.floor(i/5)*90);root.add(trunk);const crown=new THREE.Mesh(new THREE.SphereGeometry(1.6,8,7),new THREE.MeshStandardMaterial({color:0x547b4c}));crown.position.set(trunk.position.x,3,trunk.position.z);root.add(crown)}
+/* No roadside trees in expansion districts. */
 const sign=document.createElement('canvas');sign.width=512;sign.height=128;const c=sign.getContext('2d');c.fillStyle='#172d3b';c.fillRect(0,0,512,128);c.fillStyle='#fff';c.font='bold 48px sans-serif';c.textAlign='center';c.fillText(name.toUpperCase(),256,82);const board=new THREE.Mesh(new THREE.PlaneGeometry(18,4.5),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sign)}));board.position.set(0,9,-52);root.add(board);return root}
 addExpansionDistrict('Tokyo Downtown',-180,{ground:0x68755d,colors:[0xbac4c8,0x9cabb5,0xd0c5b4,0x777f91],roof:0x3c4a58,apartments:true});
 addExpansionDistrict('Japanese Village',-90,{ground:0x71865b,colors:[0xd8c49e,0xb9c8ba,0xc6b39b,0x9eaa91],roof:0x8b4e3c});
@@ -439,7 +444,7 @@ function makeCar(color,x,z){const car=new THREE.Group(),paint=new THREE.MeshStan
  function lamp(color,emissive){return new THREE.Mesh(new THREE.SphereGeometry(.16,12,10),new THREE.MeshStandardMaterial({color,emissive,emissiveIntensity:1.4}))}
  function addTrafficSignal(x,z,rotation=0){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,4.2,8),new THREE.MeshStandardMaterial({color:0x414b54,metalness:.35,roughness:.6}));pole.position.set(x,2.1,z);scene.add(pole);const housing=new THREE.Mesh(new THREE.BoxGeometry(.72,1.75,.48),new THREE.MeshStandardMaterial({color:0x20262d}));housing.position.set(x,4.05,z);housing.rotation.y=rotation;scene.add(housing);const lamps=[lamp(0xff3028,0x9c1008),lamp(0xffc247,0x9a6500),lamp(0x35e875,0x0b8c35)];lamps.forEach((v,i)=>{v.position.set(x,4.62-i*.57,z+.27);scene.add(v)});vehicleSignals.push({lamps,x,z})}
  function addPedestrianSignal(x,z){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,2.5,8),new THREE.MeshStandardMaterial({color:0x4c5660}));pole.position.set(x,1.25,z);scene.add(pole);const housing=new THREE.Mesh(new THREE.BoxGeometry(.55,.85,.35),new THREE.MeshStandardMaterial({color:0x202a32}));housing.position.set(x,2.7,z);scene.add(housing);const red=lamp(0xff3028,0x9c1008),green=lamp(0x35e875,0x0b8c35);red.position.set(x,2.9,z+.2);green.position.set(x,2.48,z+.2);scene.add(red,green);pedestrianSignals.push({red,green})}
- [-40,40].forEach(x=>[-40,40].forEach(z=>{addTrafficSignal(x-8,z-8);addTrafficSignal(x+8,z+8,Math.PI);addPedestrianSignal(x-9.2,z);addPedestrianSignal(x+9.2,z);addPedestrianSignal(x,z-9.2);addPedestrianSignal(x,z+9.2)}));
+ [-40,40].forEach(x=>[-40,40].forEach(z=>{addTrafficSignal(x-9.2,z-9.2);addTrafficSignal(x+9.2,z+9.2,Math.PI);addPedestrianSignal(x-10.8,z-10.8);addPedestrianSignal(x+10.8,z-10.8);addPedestrianSignal(x-10.8,z+10.8);addPedestrianSignal(x+10.8,z+10.8)}));
  const playerCar=makeCar(0x2879a5,0,5),trafficCars=[];
 for(let i=0;i<6;i++){const lane=i%2===0?-40:40,z=-85+i*27;trafficCars.push({car:makeCar([0xc74b3e,0xd5b45d,0x4c7c58,0x777f8c,0x704e88,0xe1e1e1][i],lane,z),lane,z,speed:5+(i%3)*1.4,dir:i%2===0?1:-1})}
 const vehicleButton=document.querySelector('#vehicleBtn');
