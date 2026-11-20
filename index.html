@@ -371,6 +371,7 @@ if(!inVehicle){jumpVelocity-=14*dt;jumpHeight=Math.max(0,jumpHeight+jumpVelocity
  
 drawMinimap();
 dayClock=(dayClock+dt/210)%(Math.PI*2);
+ const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);
  weatherClock+=dt;const nightFactor=1-daylight;streetLights.forEach(s=>{s.light.intensity=nightFactor>.55?1.45:0;s.bulb.material.emissiveIntensity=nightFactor>.55?1.8:0});extraBuildings.forEach(b=>{if(b.kind==='shop')b.isOpen=daylight>.18});
  if(weatherClock>75){weatherClock=0;rainActive=Math.random()<.28}
  if(!window.__cityRain){
@@ -385,7 +386,7 @@ dayClock=(dayClock+dt/210)%(Math.PI*2);
   const rainPos=window.__cityRain.geometry.attributes.position;
   for(let i=0;i<rainPos.count;i++){let y=rainPos.getY(i)-dt*17;if(y<0)y=20+Math.random()*3;rainPos.setY(i,y)}
   rainPos.needsUpdate=true;
- }const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
+ }sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
 const pedestrianCanCross=(now%18000)>11000;
  pedestrianSignals.forEach(s=>{s.red.visible=!pedestrianCanCross;s.green.visible=pedestrianCanCross});
  npcActors.forEach(a=>{
