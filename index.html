@@ -75,20 +75,39 @@ document.querySelector('#loading').style.display='none';
 document.querySelector('#status').textContent='NEW DOWNTOWN MAP · READY';
 document.querySelector('#mission').textContent='NEW CITY · CENTRAL PARK DISTRICT';
 }catch(e){console.error(e);document.querySelector('#loading').textContent='City assets failed to load. Check internet and refresh.'}}
-buildCity();
-// Downloaded neighborhood scene from lowpoly.download free GLB library.
-async function loadOnlineNeighborhood(){
+// Load the user's uploaded apocalyptic city map as the main world.
+ground.visible=false;
+async function loadUserMap(){
+ const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/apocalyptic_city.glb';
  try{
-  const gltf=await loader.loadAsync('https://lowpoly.download/assets/3d/hero-everyday.download.glb');
-  const neighborhood=gltf.scene;
-  neighborhood.scale.setScalar(1.15);
-  neighborhood.position.set(0,.05,-3);
-  neighborhood.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
-  scene.add(neighborhood);
-  document.querySelector('#credit').textContent='Online GLB scene · lowpoly.download';
- }catch(e){console.warn('Online neighborhood scene unavailable; modular city assets remain active.',e)}
+  document.querySelector('#loading').textContent='Loading your apocalyptic city map…';
+  const gltf=await loader.loadAsync(mapUrl);
+  const map=gltf.scene;
+  map.updateMatrixWorld(true);
+  const bounds=new THREE.Box3().setFromObject(map);
+  const size=bounds.getSize(new THREE.Vector3());
+  const center=bounds.getCenter(new THREE.Vector3());
+  const maxDimension=Math.max(size.x,size.y,size.z);
+  if(!Number.isFinite(maxDimension)||maxDimension<=0)throw new Error('The GLB has no visible 3D geometry.');
+  const scale=Math.min(1,120/maxDimension);
+  map.scale.setScalar(scale);
+  map.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);
+  map.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+  scene.add(map);
+  window.cityBuildingPositions=[];
+  player.position.set(0,0,0);
+  document.querySelector('#loading').style.display='none';
+  document.querySelector('#status').textContent='YOUR MAP · READY';
+  document.querySelector('#mission').textContent='APOCALYPTIC CITY · EXPLORATION';
+  document.querySelector('#hint').textContent='Joystick: explore your uploaded map · Drag: rotate camera';
+  document.querySelector('#credit').textContent='Map: assets/apocalyptic_city.glb';
+ }catch(e){
+  console.error('Your GLB map could not be loaded:',e);
+  document.querySelector('#loading').textContent='Map failed to load. Check that the GLB is public and try again.';
+  document.querySelector('#status').textContent='MAP LOAD ERROR';
+ }
 }
-loadOnlineNeighborhood();
+loadUserMap();
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
 function moveJoy(e){const r=j.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),m=35;if(l>m){dx=dx/l*m;dy=dy/l*m}joy.x=dx/m;joy.y=dy/m;stick.style.transform='translate('+dx+'px,'+dy+'px)'}
