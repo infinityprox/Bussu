@@ -195,6 +195,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
    roam:5.5+(i%4)*1.2, targetX:p[0], targetZ:p[2],
    pause:Math.random()*2, baseRotation:npc.rotation.y,
    routineTimer:3+Math.random()*12, homeX:p[0], homeZ:p[2],
+   reactionCooldown:4+Math.random()*10, reactionUntil:0, reactionType:'', reactionPhase:Math.random()*6,
    mixer, walkAction, walking:false, baseScale:targetHeight/rawHeight
   });
  });
@@ -281,7 +282,13 @@ npcActors.forEach(a=>{
  a.playerNearby=playerDistance<3.1;
  if(a.playerNearby&&a.greetCooldown<=0){
   a.greetCooldown=11+Math.random()*8;
-  a.talkLine=a.name+': '+npcGreetings[Math.floor(Math.random()*npcGreetings.length)];
+  const greetings=[
+   ['👋', 'Hi there!'],['😊','Welcome to our city!'],['🙌','Good to see you!'],
+   ['📸','This place is perfect for a photo!'],['😂','What a lovely day!']
+  ];
+  const greet=greetings[Math.floor(Math.random()*greetings.length)];
+  a.reactionType=greet[0];a.reactionUntil=now+2100;a.reactionPhase=0;
+  a.talkLine=greet[0]+' '+a.name+': '+greet[1];
  }
  if(playerDistance<closestNPCDistance){closestNPC=a;closestNPCDistance=playerDistance}
  if(a.playerNearby&&a.mesh.position.distanceTo(player.position)<3.1){
@@ -333,7 +340,17 @@ npcActors.forEach(a=>{
  if(a.mixer)a.mixer.update(dt);
  // Procedural gait keeps every figure visibly moving even when its GLB has no rig or walk clip.
  const gait=a.walking?Math.sin(a.phase):0;
- a.mesh.position.y=a.baseY+(a.walking?Math.abs(Math.sin(a.phase*2))*.07:Math.sin(now*.001+a.phase)*.012);
+ // Small readable reactions: wave, laugh, cheer or pretend to take a photo.
+ const reacting=now<a.reactionUntil;
+ const reactionWave=reacting&&a.reactionType==='👋';
+ const reactionLaugh=reacting&&a.reactionType==='😂';
+ const reactionCheer=reacting&&a.reactionType==='🙌';
+ const reactionPhoto=reacting&&a.reactionType==='📸';
+ a.mesh.position.y=a.baseY+(a.walking?Math.abs(Math.sin(a.phase*2))*.07:Math.sin(now*.001+a.phase)*.012)+(reactionLaugh?Math.abs(Math.sin(now*.012))*.13:reactionCheer?Math.abs(Math.sin(now*.009))*.09:0);
+ if(!a.walkAction){
+  a.mesh.rotation.x=a.walking?Math.sin(a.phase*2)*.045:(reactionPhoto?-.12:reactionLaugh?Math.sin(now*.012)*.08:0);
+  a.mesh.rotation.z=a.walking?gait*.055:(reactionWave?Math.sin(now*.014)*.09:reactionCheer?Math.sin(now*.01)*.07:Math.sin(now*.001+a.phase)*.008);
+ }
  if(!a.walkAction){
   a.mesh.rotation.x=a.walking?Math.sin(a.phase*2)*.045:0;
   a.mesh.rotation.z=a.walking?gait*.055:Math.sin(now*.001+a.phase)*.008;
