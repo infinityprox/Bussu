@@ -132,6 +132,16 @@ const npcActors=[];
 const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!','Have you visited the beach?','The park is lovely today.','Good to see you!'];
 const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya'];
 const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician'];
+// Shared role-label textures make each pedestrian's job clearly visible at close range.
+const roleTextures={};
+npcJobs.forEach((job,index)=>{
+ const c=document.createElement('canvas');c.width=384;c.height=96;
+ const x=c.getContext('2d');
+ x.fillStyle='rgba(8,22,34,.88)';x.beginPath();x.roundRect(5,5,374,86,22);x.fill();
+ x.strokeStyle=['#77d9ff','#f4c36b','#a9e6a0','#b9a4ff','#ffd1a6'][index%5];x.lineWidth=5;x.stroke();
+ x.fillStyle='#fff';x.font='bold 36px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText(job.toUpperCase(),192,49,340);
+ roleTextures[job]=new THREE.CanvasTexture(c);
+});
 
 const speechCanvas=document.createElement('canvas');speechCanvas.width=512;speechCanvas.height=128;
 const speechCtx=speechCanvas.getContext('2d');
@@ -184,6 +194,8 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
    }
   });
   npcRoot.add(npc);
+  const roleLabel=new THREE.Sprite(new THREE.SpriteMaterial({map:roleTextures[npcJobs[i%npcJobs.length]],transparent:true,depthTest:false}));
+  roleLabel.scale.set(1.65,.42,1);roleLabel.visible=false;scene.add(roleLabel);
   const walkClip=gltf.animations.find(c=>/walk|walking|run|jog/i.test(c.name));
   const mixer=walkClip?new THREE.AnimationMixer(npc):null;
   const walkAction=mixer?mixer.clipAction(walkClip):null;
@@ -196,7 +208,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
    pause:Math.random()*2, baseRotation:npc.rotation.y,
    routineTimer:3+Math.random()*12, homeX:p[0], homeZ:p[2],
    reactionCooldown:4+Math.random()*10, reactionUntil:0, reactionType:'', reactionPhase:Math.random()*6,
-   mixer, walkAction, walking:false, baseScale:targetHeight/rawHeight
+   roleLabel, mixer, walkAction, walking:false, baseScale:targetHeight/rawHeight
   });
  });
  document.querySelector('#status').textContent='CITY + BEACH · 36 ANIMATED NPCs';
@@ -259,6 +271,10 @@ drawMinimap();
 dayClock=(dayClock+dt/210)%(Math.PI*2);const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
 npcActors.forEach(a=>{
  const playerDistance=Math.hypot(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
+ a.roleLabel.visible=playerDistance<10;
+ if(a.roleLabel.visible){
+  a.roleLabel.position.set(a.mesh.position.x,a.mesh.position.y+2.15+Math.sin(now*.002+a.phase)*.045,a.mesh.position.z);
+ }
  // Pedestrians give moving vehicles extra room and briefly pause when one passes.
  const carNear=trafficCars.some(t=>Math.hypot(t.car.mesh.position.x-a.mesh.position.x,t.car.mesh.position.z-a.mesh.position.z)<2.8);
  if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
