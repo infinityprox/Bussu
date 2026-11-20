@@ -276,6 +276,25 @@ const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),ben
  document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
 }
 spawnFallbackNPCs();
+// Non-sexual family growth: a household may welcome an adopted child NPC off-screen.
+let familyGrowthClock=0,familyGrowthCount=0;
+const childNames=['Aadi','Ishita','Vihaan','Anvi','Om','Sara'];
+const childSkin=[0xd6a078,0x9b684b,0xe0b18a,0xb77c58];
+function addFamilyChild(family){
+ const child=new THREE.Group();
+ const skin=new THREE.MeshStandardMaterial({color:childSkin[familyGrowthCount%childSkin.length],roughness:.9});
+ const shirt=new THREE.MeshStandardMaterial({color:[0x58a6d8,0xe08a68,0x79b77b,0xb18bd1][familyGrowthCount%4],roughness:.85});
+ const pants=new THREE.MeshStandardMaterial({color:0x394b68,roughness:.9});
+ const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.22,.38,3,7),shirt);torso.position.y=.78;child.add(torso);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),skin);head.position.y=1.23;child.add(head);
+ const hair=new THREE.Mesh(new THREE.SphereGeometry(.225,10,7,0,Math.PI*2,0,Math.PI*.48),new THREE.MeshStandardMaterial({color:0x30251f}));hair.position.y=1.31;child.add(hair);
+ const legL=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.28,2,6),pants),legR=legL.clone();legL.position.set(-.105,.32,0);legR.position.set(.105,.32,0);child.add(legL,legR);
+ const armL=new THREE.Mesh(new THREE.CapsuleGeometry(.06,.28,2,6),shirt),armR=armL.clone();armL.position.set(-.27,.82,0);armR.position.set(.27,.82,0);child.add(armL,armR);
+ child.scale.setScalar(.78);child.position.set(family.mesh.position.x+1,0,family.mesh.position.z+1);npcRoot.add(child);
+ const name=childNames[familyGrowthCount%childNames.length];familyGrowthCount++;
+ npcActors.push({mesh:child,armL,armR,legL,legR,phone:null,umbrella:null,x:child.position.x,z:child.position.z,baseY:0,baseScale:.78,familyId:family.familyId,familyRole:3,name,job:'Child',phase:Math.random()*6,speed:.62,roam:3,targetX:child.position.x,targetZ:child.position.z,pause:0,baseRotation:0,routineTimer:8,homeX:family.homeX,homeZ:family.homeZ,reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4,activity:'walk',activityTimer:10,benchTarget:null,friendship:0,mood:'😊',isSheltered:false,photoCooldown:30,isChild:true,ageStage:0,ageClock:0});
+ family.reactionType='🎉';family.reactionUntil=performance.now()+3200;family.talkLine=family.name+' welcomes '+name+' to the family!';
+}
 // Tap a pedestrian to start a short, job-aware conversation.
 const npcRaycaster=new THREE.Raycaster(),npcPointer=new THREE.Vector2();
 const npcDialogues={
@@ -346,7 +365,15 @@ function drawMinimap(){
  ctx.fillStyle='#9bb7a1';ctx.fillRect(-105*scale,-105*scale,210*scale,210*scale);
  ctx.fillStyle='#535a60';for(let k=-2;k<=2;k++){const p=k*40;ctx.fillRect(p*scale-6,-110*scale,12*scale,220*scale);ctx.fillRect(-110*scale,p*scale-6,220*scale,12*scale)}
   
- ctx.fillStyle='#f18b64';npcActors.forEach(a=>{ctx.fillRect(a.mesh.position.x*scale-2,a.mesh.position.z*scale-2,4,4)});
+ ctx.fillStyle='#f18b64';// Households may welcome adopted children over time; no sexual activity is simulated.
+ familyGrowthClock+=dt;
+ if(familyGrowthClock>72&&familyGrowthCount<4){
+  familyGrowthClock=0;
+  const eligible=npcActors.filter(a=>a.familyRole===0&&!a.isChild&&!a.hasWelcomedChild&&a.job==='Resident');
+  if(eligible.length){const family=eligible[Math.floor(Math.random()*eligible.length)];family.hasWelcomedChild=true;addFamilyChild(family)}
+ }
+ npcActors.forEach(a=>{
+  if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}ctx.fillRect(a.mesh.position.x*scale-2,a.mesh.position.z*scale-2,4,4)});
  ctx.fillStyle='#77dcff';trafficCars.forEach(t=>{ctx.fillRect(t.car.mesh.position.x*scale-3,t.car.mesh.position.z*scale-3,6,6)});
  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(player.position.x*scale,player.position.z*scale,5,0,Math.PI*2);ctx.fill();
  ctx.restore();
