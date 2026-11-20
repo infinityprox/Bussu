@@ -266,7 +266,7 @@ const expConnector=new THREE.Mesh(new THREE.BoxGeometry(120,.16,14),expRoadMat);
 const npcRoot=new THREE.Group();scene.add(npcRoot);
 const npcActors=[];
 const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!','Have you visited the beach?','The park is lovely today.','Good to see you!'];
-const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya','Reyansh','Ira','Vivaan','Kiara','Arnav','Myra','Dhruv','Avni','Rudra','Siya','Neil','Anika','Yuvan','Rhea','Atharv','Tia','Krish','Navya'];
+const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya','Reyansh','Ira','Vivaan','Kiara','Arnav','Myra','Dhruv','Avni','Rudra','Siya','Neil','Anika','Yuvan','Rhea','Atharv','Tia','Krish','Navya','Vihaan','Saanvi','Ayaan','Ishita','Manav','Kavya','Parth','Zoya','Ritvik','Amaira','Shaurya','Anvi','Om','Ishani','Veer','Aarohi','Dhruvika','Nikhil','Tanvi','Rishi','Pihu','Samar','Aadhya','Yash','Lavanya','Neilam'];
 const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician'];
 // Snap pedestrian spawn points to the nearest sidewalk strip along the street grid.
 function snapToSidewalk(x,z){let best={x,z,d:Infinity};for(let k=-2;k<=2;k++)for(const side of [-1,1]){const sx=k*40+side*9.2,sz=k*40+side*9.2,dx=Math.abs(x-sx),dz=Math.abs(z-sz);if(dx<best.d)best={x:sx,z,d:dx};if(dz<best.d)best={x,z:sz,d:dz}}return{x:best.x,z:best.z}}
@@ -296,7 +296,11 @@ const npcPlacementsRaw=[
  // Beach promenade and coastal area
  [30,0,-12],[34,0,-6],[38,0,2],[42,0,8],[34,0,15],[46,0,-4],
  // Plaza and civic district
- [-27,0,-24],[-22,0,-27],[-16,0,-25],[22,0,-24],[27,0,-19],[25,0,24]
+ [-27,0,-24],[-22,0,-27],[-16,0,-25],[22,0,-24],[27,0,-19],[25,0,24],
+ // Additional residents and visitors distributed along clear sidewalk strips
+ [-34,0,-31],[-29,0,-12],[-24,0,33],[-11,0,31],[-6,0,35],[7,0,32],
+ [13,0,34],[24,0,31],[31,0,27],[35,0,13],[33,0,-28],[25,0,-35],
+ [14,0,-33],[4,0,-31],[-8,0,-34],[-17,0,32],[-32,0,18],[-35,0,-2]
 ].map(p=>{const q=snapToSidewalk(p[0],p[2]);return[q.x,0,q.z]});
 const npcPlacements=npcPlacementsRaw;
 const cityBenches=[];
@@ -339,7 +343,7 @@ const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),ben
   person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
   npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],gender,job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18});
  });
- document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
+ document.querySelector('#status').textContent='CITY + BEACH · '+npcActors.length+' NPCs';
 }
 spawnFallbackNPCs();
 // Non-sexual family growth: a household may welcome an adopted child NPC off-screen.
