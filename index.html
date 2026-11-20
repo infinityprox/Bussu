@@ -13,8 +13,8 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 const ROOT='https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/';
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,42,115);
-const camera=new THREE.PerspectiveCamera(56,innerWidth/innerHeight,.1,220);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,75,190);
+const camera=new THREE.PerspectiveCamera(56,innerWidth/innerHeight,.1,320);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.querySelector('#world').appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xd8efff,0x55634d,2.0));const sun=new THREE.DirectionalLight(0xffe2bd,3.2);sun.position.set(-22,35,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-35;sun.shadow.camera.right=35;sun.shadow.camera.top=35;sun.shadow.camera.bottom=-35;scene.add(sun);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(78,78),new THREE.MeshStandardMaterial({color:0x668b5a,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
@@ -37,52 +37,64 @@ async function buildCity(){try{
 const [road,cross,grass,apt,tall,house,shop,restaurant,tree,car]=await Promise.all([
 asset('ruas/asfalto_reta'),asset('ruas/asfalto_cruzamento'),asset('terreno/grama'),asset('residencial/predio_apartamentos'),asset('residencial/predio_alto'),asset('residencial/casa_sobrado'),asset('comercial/loja_esquina'),asset('comercial/restaurante'),asset('terreno/arvores_mata'),asset('veiculos/carro')
 ]);
-for(let x=-5;x<=5;x++)for(let z=-5;z<=5;z++){const tile=grass.clone(true);tile.position.set(x*2,-.02,z*2);scene.add(tile)}
-for(let k=-4;k<=4;k+=4){for(let n=-5;n<=5;n++){addClone(road,n*2,k*2,1,Math.PI/2);addClone(road,k*2,n*2,1,0)}}
-for(let x=-4;x<=4;x+=4)for(let z=-4;z<=4;z+=4)addClone(cross,x*2,z*2,1,0);
-const buildings=[apt,tall,house,shop,restaurant];
-const spots=[[-13,-13],[-5,-13],[5,-13],[13,-13],[-13,-5],[-5,-5],[5,-5],[13,-5],[-13,5],[-5,5],[5,5],[13,5],[-13,13],[-5,13],[5,13],[13,13]];
-spots.forEach((p,i)=>addClone(buildings[i%buildings.length],p[0],p[1],1.15,(i%4)*Math.PI/2));
-for(let i=0;i<16;i++){const x=(i%4)*9-13.5,z=Math.floor(i/4)*9-13.5;addClone(tree,x,z,1,0)}
-// Street furniture: instanced lamps keep the mobile scene lightweight.
-const poleMat=new THREE.MeshStandardMaterial({color:0x34424a,metalness:.45,roughness:.55});
-const lampMat=new THREE.MeshStandardMaterial({color:0xffe8ad,emissive:0xffc45c,emissiveIntensity:1.1});
-const poleGeo=new THREE.CylinderGeometry(.055,.075,3.5,7),lampGeo=new THREE.SphereGeometry(.19,8,6);
-const lampPositions=[];
-for(let z=-16;z<=16;z+=8){lampPositions.push([-2.2,1.75,z],[2.2,1.75,z])}
-for(let x=-16;x<=16;x+=8){lampPositions.push([x,1.75,-2.2],[x,1.75,2.2])}
-const poles=new THREE.InstancedMesh(poleGeo,poleMat,lampPositions.length),lamps=new THREE.InstancedMesh(lampGeo,lampMat,lampPositions.length),dummy=new THREE.Object3D();
-lampPositions.forEach((p,i)=>{dummy.position.set(p[0],1.75,p[2]);dummy.updateMatrix();poles.setMatrixAt(i,dummy.matrix);dummy.position.set(p[0],3.52,p[2]);lamps.setMatrixAt(i,dummy.matrix)});
+// New map: expanded 5 x 5 downtown grid with a central civic plaza and park district.
+ground.geometry.dispose();
+ground.geometry=new THREE.PlaneGeometry(150,150);
+ground.position.set(0,-.08,0);
+for(let x=-37;x<=37;x+=2)for(let z=-37;z<=37;z+=2){const tile=grass.clone(true);tile.position.set(x,-.02,z);scene.add(tile)}
+// Wide avenue loop and cross streets.
+for(let k=-5;k<=5;k++){for(let n=-18;n<=18;n++) {
+ if(k%2===0){addClone(road,n*2,k*12,1,Math.PI/2)}
+ if(n%2===0){addClone(road,k*12,n*2,1,0)}
+}}
+for(let x=-5;x<=5;x+=2)for(let z=-5;z<=5;z+=2)addClone(cross,x*6,z*6,1,0);
+// Building blocks around the avenues, leaving the central plaza open.
+const buildingModels=[apt,tall,house,shop,restaurant];
+const buildingPositions=[];
+for(let bx=-30;bx<=30;bx+=12){for(let bz=-30;bz<=30;bz+=12){
+ if(Math.abs(bx)<8&&Math.abs(bz)<8)continue;
+ const model=buildingModels[(Math.abs(bx/12)+Math.abs(bz/12))%buildingModels.length];
+ addClone(model,bx+(bx<0?-2:2),bz+(bz<0?-2:2),1.35,((Math.abs(bx+bz)/12)%4)*Math.PI/2);
+ buildingPositions.push([bx+(bx<0?-2:2),bz+(bz<0?-2:2)]);
+}}
+window.cityBuildingPositions=buildingPositions;
+// Central green park with a plaza and tree rows.
+const park=new THREE.Mesh(new THREE.BoxGeometry(18,.12,18),new THREE.MeshStandardMaterial({color:0x477e50,roughness:1}));park.position.set(0,.02,0);scene.add(park);
+const plaza=new THREE.Mesh(new THREE.BoxGeometry(8,.16,8),new THREE.MeshStandardMaterial({color:0xb8b7a7,roughness:1}));plaza.position.set(0,.12,0);scene.add(plaza);
+for(let i=-3;i<=3;i+=2){addClone(tree,i*2,11,1.15,0);addClone(tree,i*2,-11,1.15,0);addClone(tree,11,i*2,1.15,0);addClone(tree,-11,i*2,1.15,0)}
+// Street furniture and traffic signals, instanced for mobile performance.
+const poleMat=new THREE.MeshStandardMaterial({color:0x34424a,metalness:.35,roughness:.6}),lampMat=new THREE.MeshStandardMaterial({color:0xffe8ad,emissive:0xffc45c,emissiveIntensity:.8});
+const poleGeo=new THREE.CylinderGeometry(.055,.075,3.5,7),lampGeo=new THREE.SphereGeometry(.18,8,6),positions=[];
+for(let z=-36;z<=36;z+=12){positions.push([-3,1.75,z],[3,1.75,z])}
+for(let x=-36;x<=36;x+=12){positions.push([x,1.75,-3],[x,1.75,3])}
+const poles=new THREE.InstancedMesh(poleGeo,poleMat,positions.length),lamps=new THREE.InstancedMesh(lampGeo,lampMat,positions.length),dummy=new THREE.Object3D();
+positions.forEach((p,i)=>{dummy.position.set(p[0],1.75,p[2]);dummy.updateMatrix();poles.setMatrixAt(i,dummy.matrix);dummy.position.set(p[0],3.5,p[2]);lamps.setMatrixAt(i,dummy.matrix)});
 scene.add(poles,lamps);
-const signalMat=new THREE.MeshStandardMaterial({color:0x25313a}),redMat=new THREE.MeshStandardMaterial({color:0xe34b42,emissive:0x8a1710,emissiveIntensity:.35}),greenMat=new THREE.MeshStandardMaterial({color:0x57d18b,emissive:0x155d34,emissiveIntensity:.3});
-for(const [sx,sz] of [[-8,-8],[8,-8],[-8,8],[8,8]]){const box=new THREE.Mesh(new THREE.BoxGeometry(.28,.8,.25),signalMat);box.position.set(sx+1.05,.95,sz+1.05);scene.add(box);const a=new THREE.Mesh(new THREE.SphereGeometry(.09,7,6),redMat);a.position.set(sx+1.05,1.18,sz+1.19);scene.add(a);const b=new THREE.Mesh(new THREE.SphereGeometry(.09,7,6),greenMat);b.position.set(sx+1.05,.87,sz+1.19);scene.add(b)}
-// Distant skyline makes the playable district feel part of a larger city.
-const skylineMats=[0x718796,0x8799a2,0x566d7d,0x9a9b91].map(color=>new THREE.MeshStandardMaterial({color,roughness:1}));
-for(let i=0;i<28;i++){const angle=i/28*Math.PI*2,radius=53+(i%3)*5,w=4+(i%3)*1.4,h=9+(i*7%19),d=4+(i%4);const tower=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),skylineMats[i%skylineMats.length]);tower.position.set(Math.cos(angle)*radius,h/2-0.05,Math.sin(angle)*radius);scene.add(tower);if(i%3===0){const crown=new THREE.Mesh(new THREE.BoxGeometry(w*.72,.45,d*.72),skylineMats[(i+1)%skylineMats.length]);crown.position.set(tower.position.x,h+.18,tower.position.z);scene.add(crown)}}
-carModel=car.clone(true);carModel.scale.setScalar(1.25);carRoot.add(carModel);carRoot.position.set(0,0,2);
-document.querySelector('#loading').style.display='none';document.querySelector('#status').textContent='ON ROAD · CITY EXPLORER';
-}catch(e){console.error(e);document.querySelector('#loading').textContent='Could not load city models. Check internet and refresh.'}}
+carModel=car.clone(true);carModel.scale.setScalar(1.3);carRoot.add(carModel);carRoot.position.set(0,0,5);
+document.querySelector('#loading').style.display='none';
+document.querySelector('#status').textContent='NEW DOWNTOWN MAP · READY';
+document.querySelector('#mission').textContent='NEW CITY · CENTRAL PARK DISTRICT';
+}catch(e){console.error(e);document.querySelector('#loading').textContent='City assets failed to load. Check internet and refresh.'}}
 buildCity();
-// Lightweight Village Hall landmark, streamed from Polyfork's optimized GLB CDN.
-async function loadVillageHall(){
+// Downloaded neighborhood scene from lowpoly.download free GLB library.
+async function loadOnlineNeighborhood(){
  try{
-  const gltf=await loader.loadAsync('https://polyfork.dev/cdn/village-hall-c6d3c8.glb');
-  const model=gltf.scene;
-  model.scale.setScalar(1);
-  model.position.set(29,0,29);
-  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
-  scene.add(model);
-  document.querySelector('#mission').textContent='DOWNTOWN LANDMARK · VILLAGE HALL';
-  document.querySelector('#credit').textContent='Village Hall · Polyfork · low-poly GLB';
- }catch(e){console.warn('Village Hall model could not load; check internet connection.',e)}
+  const gltf=await loader.loadAsync('https://lowpoly.download/assets/3d/hero-everyday.download.glb');
+  const neighborhood=gltf.scene;
+  neighborhood.scale.setScalar(1.15);
+  neighborhood.position.set(0,.05,-3);
+  neighborhood.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+  scene.add(neighborhood);
+  document.querySelector('#credit').textContent='Online GLB scene · lowpoly.download';
+ }catch(e){console.warn('Online neighborhood scene unavailable; modular city assets remain active.',e)}
 }
-loadVillageHall();
+loadOnlineNeighborhood();
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
 function moveJoy(e){const r=j.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),m=35;if(l>m){dx=dx/l*m;dy=dy/l*m}joy.x=dx/m;joy.y=dy/m;stick.style.transform='translate('+dx+'px,'+dy+'px)'}
 j.addEventListener('pointerdown',e=>{j.setPointerCapture(e.pointerId);moveJoy(e)});j.addEventListener('pointermove',e=>{if(e.buttons)moveJoy(e)});function resetJoy(){joy={x:0,y:0};stick.style.transform='translate(0,0)'}j.addEventListener('pointerup',resetJoy);j.addEventListener('pointercancel',resetJoy);
 renderer.domElement.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY}});addEventListener('pointerup',()=>drag=null);addEventListener('pointermove',e=>{if(drag){heading-=(e.clientX-drag.x)*.006;drag={x:e.clientX,y:e.clientY}}});
-const buildingSpots=[[-13,-13],[-5,-13],[5,-13],[13,-13],[-13,-5],[-5,-5],[5,-5],[13,-5],[-13,5],[-5,5],[5,5],[13,5],[-13,13],[-5,13],[5,13],[13,13]];
+const buildingSpots=window.cityBuildingPositions||[[-14,-14],[14,-14],[-14,14],[14,14]];
 function nearestBuildingDistance(){let best=Infinity;for(const p of buildingSpots){const d=Math.hypot(player.position.x-p[0],player.position.z-p[1]);if(d<best)best=d}return best}
 const interactButton=document.querySelector('#interact');
 interactButton.addEventListener('click',()=>{if(inside){inside=false;player.position.copy(returnPosition);interactButton.textContent='ENTER BUILDING';document.querySelector('#hint').textContent='Walk near any building, then tap ENTER BUILDING';return}const distance=nearestBuildingDistance();if(distance<8){returnPosition.copy(player.position);inside=true;player.position.set(42,0,2);interactButton.textContent='EXIT BUILDING';document.querySelector('#hint').textContent='Inside building · tap EXIT BUILDING to leave'}else{document.querySelector('#hint').textContent='Get closer to a building — walk towards the nearby houses or shops'}});
