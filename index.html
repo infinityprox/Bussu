@@ -129,6 +129,20 @@ cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
 // The source meshes are unrigged, so each pedestrian strolls around a small patrol loop.
 const npcRoot=new THREE.Group();scene.add(npcRoot);
 const npcActors=[];
+const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!','Have you visited the beach?','The park is lovely today.','Good to see you!'];
+const speechCanvas=document.createElement('canvas');speechCanvas.width=512;speechCanvas.height=128;
+const speechCtx=speechCanvas.getContext('2d');
+function paintSpeech(message){
+ speechCtx.clearRect(0,0,512,128);
+ speechCtx.fillStyle='rgba(9,25,39,.94)';speechCtx.beginPath();speechCtx.roundRect(8,8,496,104,24);speechCtx.fill();
+ speechCtx.fillStyle='#8fe4ff';speechCtx.beginPath();speechCtx.moveTo(225,110);speechCtx.lineTo(256,127);speechCtx.lineTo(280,110);speechCtx.fill();
+ speechCtx.fillStyle='#fff';speechCtx.font='bold 34px system-ui';speechCtx.textAlign='center';speechCtx.fillText(message,256,73,455);
+}
+paintSpeech('Hello there!');
+const speechTexture=new THREE.CanvasTexture(speechCanvas);
+const speechBubble=new THREE.Sprite(new THREE.SpriteMaterial({map:speechTexture,transparent:true,depthTest:false}));
+speechBubble.scale.set(3.1,.78,1);speechBubble.visible=false;scene.add(speechBubble);
+let activeGreeting=null;
 const npcPlacements=[
  // Downtown sidewalks and shop fronts
  [-9,0,-10],[-4,0,-12],[4,0,-12],[9,0,-9],
@@ -236,7 +250,20 @@ trafficCars.forEach(t=>{t.z+=t.speed*t.dir*dt;if(t.z>110)t.z=-110;if(t.z< -110)t
 if(!inVehicle){jumpVelocity-=14*dt;jumpHeight=Math.max(0,jumpHeight+jumpVelocity*dt);if(jumpHeight===0)jumpVelocity=0;player.position.y=jumpHeight*2.2}
  
 drawMinimap();
-dayClock=(dayClock+dt/210)%(Math.PI*2);const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);npcActors.forEach(a=>{
+dayClock=(dayClock+dt/210)%(Math.PI*2);const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
+npcActors.forEach(a=>{
+ const playerDistance=Math.hypot(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
+ a.greetCooldown=Math.max(0,(a.greetCooldown||0)-dt);
+ a.playerNearby=playerDistance<3.1;
+ if(a.playerNearby&&a.greetCooldown<=0){
+  a.greetCooldown=11+Math.random()*8;
+  a.talkLine=npcGreetings[Math.floor(Math.random()*npcGreetings.length)];
+ }
+ if(playerDistance<closestNPCDistance){closestNPC=a;closestNPCDistance=playerDistance}
+ if(a.playerNearby&&a.mesh.position.distanceTo(player.position)<3.1){
+  a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
+  a.mesh.rotation.y=Math.atan2(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
+ }
  const dx=a.targetX-a.mesh.position.x,dz=a.targetZ-a.mesh.position.z,dist=Math.hypot(dx,dz);
  a.pause=Math.max(0,a.pause-dt);
  a.walking=dist>=0.45;
@@ -269,6 +296,16 @@ dayClock=(dayClock+dt/210)%(Math.PI*2);const daylight=Math.max(.12,(Math.sin(day
   a.mesh.rotation.z=a.walking?gait*.055:Math.sin(now*.001+a.phase)*.008;
   a.mesh.scale.y=a.baseScale*(1+(a.walking?Math.abs(Math.sin(a.phase*2))*.018:0));
  }
-});const target=new THREE.Vector3(player.position.x-Math.sin(heading)*camDist,inside?3.5:3.9,player.position.z-Math.cos(heading)*camDist);camera.position.lerp(target,.09);camera.lookAt(player.position.x,inside?1.2:1.1,player.position.z);if(!inside){const near=nearestBuildingDistance()<8;interactButton.textContent=near?'ENTER BUILDING':'BUILDING: WALK CLOSER';interactButton.style.opacity=near?'1':'.72'}document.querySelector('#status').textContent=inside?'INSIDE BUILDING':(inVehicle?'DRIVING · CITY TRAFFIC':(sprinting&&moving?'SPRINTING · CITY EXPLORER':(moving?'ON FOOT · WALKING':(daylight<.3?'NIGHT · CITY EXPLORER':'DAY · CITY EXPLORER'))));renderer.render(scene,camera)}requestAnimationFrame(animate);
+});
+if(closestNPC&&closestNPCDistance<3.1){
+ if(activeGreeting!==closestNPC){
+  activeGreeting=closestNPC;
+  paintSpeech(closestNPC.talkLine||npcGreetings[Math.floor(Math.random()*npcGreetings.length)]);
+  speechTexture.needsUpdate=true;
+ }
+ speechBubble.visible=true;
+ speechBubble.position.set(closestNPC.mesh.position.x,closestNPC.mesh.position.y+2.5,closestNPC.mesh.position.z);
+}else{speechBubble.visible=false;activeGreeting=null}
+const target=new THREE.Vector3(player.position.x-Math.sin(heading)*camDist,inside?3.5:3.9,player.position.z-Math.cos(heading)*camDist);camera.position.lerp(target,.09);camera.lookAt(player.position.x,inside?1.2:1.1,player.position.z);if(!inside){const near=nearestBuildingDistance()<8;interactButton.textContent=near?'ENTER BUILDING':'BUILDING: WALK CLOSER';interactButton.style.opacity=near?'1':'.72'}document.querySelector('#status').textContent=inside?'INSIDE BUILDING':(inVehicle?'DRIVING · CITY TRAFFIC':(sprinting&&moving?'SPRINTING · CITY EXPLORER':(moving?'ON FOOT · WALKING':(daylight<.3?'NIGHT · CITY EXPLORER':'DAY · CITY EXPLORER'))));renderer.render(scene,camera)}requestAnimationFrame(animate);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
 </script></body></html>
