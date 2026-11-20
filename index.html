@@ -47,6 +47,15 @@ const buildingSpots=[];
 const cityRoot=new THREE.Group();scene.add(cityRoot);
 const natureRoot=new THREE.Group();scene.add(natureRoot);
 const cityLoader=new (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader();
+// Never leave the loading overlay stuck forever on slow mobile connections.
+// This only dismisses the overlay; late asset responses can still populate the scene.
+let cityLoadFinished=false;
+setTimeout(()=>{
+ if(!cityLoadFinished){
+  const loading=document.querySelector('#loading');
+  if(loading){loading.textContent='Map is taking longer than expected. You can still enter; the city may appear when loading finishes.';loading.style.display='none'}
+ }
+},18000);
 cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  const pack=gltf.scene;
  pack.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material.side=THREE.FrontSide}}});
