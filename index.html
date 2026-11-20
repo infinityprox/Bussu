@@ -216,7 +216,7 @@ addExpansionDistrict('Airport',0,{ground:0x77816e,airport:true});
 addExpansionDistrict('Industrial Port',120,{ground:0x6d7968,port:true});
 addExpansionDistrict('Beach Island',240,{ground:0xc7b98e,colors:[0xe1c59a,0xf0dfbf,0x9bc4c0,0xe3ad83],roof:0x9b624b});
 // Highway and pedestrian paths connect the original city edge to the new district spine.
-const expConnector=new THREE.Mesh(new THREE.BoxGeometry(260,.16,14),expRoadMat);expConnector.position.set(230,.025,0);expansionRoot.add(expConnector);for(const side of [-1,1]){const path=new THREE.Mesh(new THREE.BoxGeometry(260,.18,3.2),expWalkMat);path.position.set(230,.04,side*9.2);expansionRoot.add(path)}
+const expConnector=new THREE.Mesh(new THREE.BoxGeometry(260,.16,14),expRoadMat);expConnector.position.set(230,.025,0);expansionRoot.add(expConnector);for(const side of [-1,1]){const path=new THREE.Mesh(new THREE.BoxGeometry(260,.18,3.2),expWalkMat);path.position.set(230,.04,side*9.2);expansionRoot.add(path)}const expSpine=new THREE.Mesh(new THREE.BoxGeometry(14,.16,600),expRoadMat);expSpine.position.set(360,.025,0);expansionRoot.add(expSpine);for(const side of [-1,1]){const path=new THREE.Mesh(new THREE.BoxGeometry(3.2,.18,600),expWalkMat);path.position.set(360+side*9.2,.04,0);expansionRoot.add(path)}
 
 // Low Poly Character Figures — civilian NPC crowd (CC0 1.0).
 // The source meshes are unrigged, so each pedestrian strolls around a small patrol loop.
