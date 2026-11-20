@@ -55,6 +55,49 @@ anatomyPart(new THREE.SphereGeometry(.28,16,12),neutralMat,-1.1,.35,1);anatomyPa
 // Voxel City Districts — CC0 starter scene with 171 GLB models
 const buildingSpots=[];
 const cityRoot=new THREE.Group();scene.add(cityRoot);
+
+ // Extra neighbourhood: lightweight procedural houses and shopfronts.
+ // Kept separate from downloaded GLB assets so the district still appears if a model fails.
+ const extraDistrict=new THREE.Group();scene.add(extraDistrict);
+ const houseWallMats=[0xd9b98f,0xc7d5d9,0xe0c6b1,0xc5c6a5,0xd8d0bd].map(color=>new THREE.MeshStandardMaterial({color,roughness:.9}));
+ const roofMats=[0x914f3d,0x4d5966,0x7d5944,0x5c765b].map(color=>new THREE.MeshStandardMaterial({color,roughness:.95}));
+ const windowMat=new THREE.MeshStandardMaterial({color:0x8fd0e4,roughness:.25,metalness:.12});
+ const doorMat=new THREE.MeshStandardMaterial({color:0x60412f,roughness:.85});
+ const trimMat=new THREE.MeshStandardMaterial({color:0xf1e6d2,roughness:.8});
+ const shopSignMat=new THREE.MeshStandardMaterial({color:0x24566a,roughness:.7});
+ const extraBuildings=[];
+ function addNeighbourBuilding(x,z,kind,index){
+  const g=new THREE.Group();g.position.set(x,0,z);
+  const w=kind==='shop'?9:8.2,d=kind==='shop'?7:8.4,h=kind==='shop'?5.2:5.8;
+  const wall=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),houseWallMats[index%houseWallMats.length]);wall.position.y=h/2;wall.castShadow=true;wall.receiveShadow=true;g.add(wall);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(kind==='shop'?6.5:6.2,kind==='shop'?2.2:2.8,4),roofMats[index%roofMats.length]);roof.rotation.y=Math.PI/4;roof.position.y=h+(kind==='shop'?1:1.35);roof.castShadow=true;g.add(roof);
+  const front=-d/2-.045;
+  for(const wx of [-w*.27,w*.27]){
+   const win=new THREE.Mesh(new THREE.BoxGeometry(1.35,1.25,.12),windowMat);win.position.set(wx,kind==='shop'?2.9:3.5,front);g.add(win);
+   const sill=new THREE.Mesh(new THREE.BoxGeometry(1.55,.12,.2),trimMat);sill.position.set(wx,kind==='shop'?2.25:2.85,front-.04);g.add(sill);
+  }
+  const door=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.35,.16),doorMat);door.position.set(0,1.17,front-.07);g.add(door);
+  if(kind==='shop'){
+   const awning=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.28,1.15),new THREE.MeshStandardMaterial({color:[0xc95c4b,0x3f8b85,0xd29b43,0x657bb2][index%4]}));awning.position.set(0,3.75,front-.48);g.add(awning);
+   const sign=new THREE.Mesh(new THREE.BoxGeometry(4.2,.72,.18),shopSignMat);sign.position.set(0,4.55,front-.13);g.add(sign);
+   const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=96;const sc=signCanvas.getContext('2d');sc.fillStyle='#173e50';sc.fillRect(0,0,512,96);sc.fillStyle='#ffffff';sc.font='bold 48px sans-serif';sc.textAlign='center';sc.fillText(['MARKET','CAFE','BOOKS','BAKERY','GROCERY','FLOWERS'][index%6],256,65);
+   const signTex=new THREE.CanvasTexture(signCanvas);const label=new THREE.Mesh(new THREE.PlaneGeometry(4.05,.62),new THREE.MeshBasicMaterial({map:signTex,transparent:true}));label.position.set(0,4.55,front-.24);g.add(label);
+  }else{
+   const porch=new THREE.Mesh(new THREE.BoxGeometry(3.2,.18,1.6),trimMat);porch.position.set(0,.12,front-.7);g.add(porch);
+   const canopy=new THREE.Mesh(new THREE.BoxGeometry(2.1,.16,1.1),roofMats[(index+1)%roofMats.length]);canopy.position.set(0,2.7,front-.55);g.add(canopy);
+  }
+  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+  extraDistrict.add(g);
+  const entry={x,z:z-d/2-2.4,r:3.9,name:kind==='shop'?'SHOP':'HOUSE',group:g};
+  buildingSpots.push(entry);extraBuildings.push({group:g,kind,entry});
+ }
+ const neighbourhoodLayout=[
+  [-43,-36,'house'],[-28,-42,'shop'],[-12,-43,'house'],[8,-43,'shop'],[27,-40,'house'],[44,-34,'shop'],
+  [-44,34,'shop'],[-28,42,'house'],[-8,43,'shop'],[13,43,'house'],[31,40,'shop'],[46,32,'house'],
+  [-55,-8,'house'],[55,8,'shop'],[-54,15,'shop'],[54,-16,'house']
+ ];
+ neighbourhoodLayout.forEach((p,i)=>addNeighbourBuilding(p[0],p[1],p[2],i));
+
 const natureRoot=new THREE.Group();scene.add(natureRoot);
 const cityLoader=new (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader();
 // Never leave the loading overlay stuck forever on slow mobile connections.
