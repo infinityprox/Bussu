@@ -490,7 +490,8 @@ const pedestrianCanCross=(now%18000)>11000;
   if(od>0.001&&od<1.05){const force=(1.05-od)/1.05;avoidX+=(ox/od)*force;avoidZ+=(oz/od)*force}
  }
  if(Math.abs(avoidX)+Math.abs(avoidZ)>.08){a.targetX+=avoidX*.9;a.targetZ+=avoidZ*.9}
- const dx=a.targetX-a.mesh.position.x,dz=a.targetZ-a.mesh.position.z,dist=Math.hypot(dx,dz);
+ if(a.mesh.position.x>105){a.targetX=132;a.targetZ=Math.round(a.targetZ/9.2)*9.2}else{let laneX=Infinity,laneZ=Infinity;for(let k=-2;k<=2;k++)for(const side of [-1,1]){laneX=Math.abs(a.mesh.position.x-(k*40+side*9.2))<Math.abs(a.mesh.position.x-laneX)?k*40+side*9.2:laneX;laneZ=Math.abs(a.mesh.position.z-(k*40+side*9.2))<Math.abs(a.mesh.position.z-laneZ)?k*40+side*9.2:laneZ}if(Math.abs(a.mesh.position.x-laneX)<=Math.abs(a.mesh.position.z-laneZ)){a.targetX=laneX;a.targetZ=THREE.MathUtils.clamp(a.targetZ,-100,100)}else{a.targetZ=laneZ;a.targetX=THREE.MathUtils.clamp(a.targetX,-100,100)}}
+  const dx=a.targetX-a.mesh.position.x,dz=a.targetZ-a.mesh.position.z,dist=Math.hypot(dx,dz);
  a.pause=Math.max(0,a.pause-dt);
  const crossingRed=[-40,40].some(lane=>Math.abs(a.mesh.position.x-lane)<2.2&&(a.targetX-lane)*(a.mesh.position.x-lane)<0&&Math.abs(a.targetX-lane)>2.2)||[-40,40].some(lane=>Math.abs(a.mesh.position.z-lane)<2.2&&(a.targetZ-lane)*(a.mesh.position.z-lane)<0&&Math.abs(a.targetZ-lane)>2.2);
  if(crossingRed&&!pedestrianCanCross)a.pause=Math.max(a.pause,.22);
@@ -544,7 +545,7 @@ const pedestrianCanCross=(now%18000)>11000;
  }else{
   const step=Math.min(dist,a.speed*dt);
   const rawX=a.mesh.position.x+dx/dist*step,rawZ=a.mesh.position.z+dz/dist*step;
-  const walkway=constrainToSidewalk(rawX,rawZ),nextX=walkway.x,nextZ=walkway.z;
+  const nextX=rawX,nextZ=rawZ;
   const blocked=extraBuildings.some(b=>Math.abs(nextX-b.group.position.x)<b.halfW&&Math.abs(nextZ-b.group.position.z)<b.halfD);
   if(blocked){
    a.targetX=a.mesh.position.x+(Math.random()<.5?-1:1)*(2.5+Math.random()*2);
