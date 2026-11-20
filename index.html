@@ -156,8 +156,8 @@ speechBubble.scale.set(3.1,.78,1);speechBubble.visible=false;scene.add(speechBub
 let activeGreeting=null;
 const npcPlacements=[
  // Downtown sidewalks and shop fronts
- [-9,0,-10],[-4,0,-12],[4,0,-12],[9,0,-9],
- [-11,0,2],[11,0,3],[-8,0,12],[8,0,12],
+ [-4,0,-5],[-2,0,-7],[2,0,-7],[4,0,-5],
+ [-5,0,1],[5,0,1],[-4,0,6],[4,0,6],
  [-15,0,20],[15,0,20],[-19,0,-18],[19,0,-18],
  // Extra pedestrians along the main streets and intersections
  [-18,0,-6],[-14,0,-8],[-6,0,-18],[2,0,-19],[12,0,-15],[18,0,-10],
@@ -171,62 +171,23 @@ function spawnFallbackNPCs(){
  if(npcActors.length)return;
  const skinTones=[0xd6a078,0x9b684b,0xe0b18a,0xb77c58],shirts=[0x2878b8,0xc45a45,0x4f936b,0xd3a83c,0x7356a8,0xe1e1e1];
  npcPlacements.forEach((p,i)=>{
-  const person=new THREE.Group(),skin=new THREE.MeshStandardMaterial({color:skinTones[i%4]}),shirt=new THREE.MeshStandardMaterial({color:shirts[i%6]}),pants=new THREE.MeshStandardMaterial({color:i%2?0x303b50:0x454545});
+  const person=new THREE.Group(),skin=new THREE.MeshStandardMaterial({color:skinTones[i%4],roughness:.8}),shirt=new THREE.MeshStandardMaterial({color:shirts[i%6],roughness:.8}),pants=new THREE.MeshStandardMaterial({color:i%2?0x303b50:0x454545,roughness:.9});
   const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.25,.48,4,8),shirt);torso.position.y=1.02;person.add(torso);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.17,12,10),skin);head.position.y=1.52;person.add(head);
-  const hair=new THREE.Mesh(new THREE.SphereGeometry(.175,12,8,0,Math.PI*2,0,Math.PI*.55),new THREE.MeshStandardMaterial({color:0x29201b}));hair.position.y=1.57;person.add(hair);
-  for(const side of [-1,1]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.38,3,6),skin);arm.position.set(side*.31,1.04,0);person.add(arm);const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.48,3,6),pants);leg.position.set(side*.12,.43,0);person.add(leg)}
-  person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
-  npcActors.push({mesh:person,x:p[0],z:p[2],baseY:0,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%18],job:npcJobs[i%9],phase:i*1.73,speed:.8+(i%5)*.15,roam:6,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:5,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6});
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),skin);head.position.y=1.52;person.add(head);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(.175,16,10,0,Math.PI*2,0,Math.PI*.55),new THREE.MeshStandardMaterial({color:i%3?0x29201b:0x171717}));hair.position.y=1.57;person.add(hair);
+  for(const side of [-1,1]){
+   const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.38,4,8),skin);arm.position.set(side*.31,1.04,0);person.add(arm);
+   const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.48,4,8),pants);leg.position.set(side*.12,.43,0);person.add(leg);
+   const shoe=new THREE.Mesh(new THREE.BoxGeometry(.15,.09,.25),new THREE.MeshStandardMaterial({color:0x242424}));shoe.position.set(side*.12,.12,.045);person.add(shoe);
+  }
+  person.scale.setScalar(1.45);person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
+  person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
+  npcActors.push({mesh:person,x:p[0],z:p[2],baseY:0,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%18],job:npcJobs[i%9],phase:i*1.73,speed:.8+(i%5)*.15,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6});
  });
  document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
 }
-const npcFallbackTimer=setTimeout(spawnFallbackNPCs,6500);
-cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
- clearTimeout(npcFallbackTimer);
- if(npcActors.length)return;
- const base=gltf.scene;
- base.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
- npcPlacements.forEach((p,i)=>{
-  const npc=base.clone(true);
-  npc.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
-  const isChild=i%3===2;
-  // Normalize each model to a consistent real-world height, then place its feet on the ground.
-  npc.updateMatrixWorld(true);
-  const rawBounds=new THREE.Box3().setFromObject(npc);
-  const rawHeight=Math.max(.01,rawBounds.getSize(new THREE.Vector3()).y);
-  const targetHeight=isChild?1.15:1.75;
-  npc.scale.setScalar(targetHeight/rawHeight);
-  npc.position.set(p[0],p[1],p[2]);
-  npc.updateMatrixWorld(true);
-  const groundedBounds=new THREE.Box3().setFromObject(npc);
-  npc.position.y+=p[1]-groundedBounds.min.y;
-  npc.traverse(o=>{
-   if(o.isMesh){
-    o.castShadow=true;o.receiveShadow=true;
-    if(Array.isArray(o.material))o.material=o.material.map(m=>m.clone());
-    else if(o.material)o.material=o.material.clone();
-   }
-  });
-  npcRoot.add(npc);
-  const walkClip=gltf.animations.find(c=>/walk|walking|run|jog/i.test(c.name));
-  const mixer=walkClip?new THREE.AnimationMixer(npc):null;
-  const walkAction=mixer?mixer.clipAction(walkClip):null;
-  if(walkAction)walkAction.play();
-  npcActors.push({
-   mesh:npc, x:p[0], z:p[2], baseY:p[1], familyId:Math.floor(i/3), familyRole:i%3,
-   name:npcNames[i%npcNames.length], job:npcJobs[i%npcJobs.length],
-   phase:i*1.73, speed:isChild?0.95:0.75+(i%5)*0.16,
-   roam:5.5+(i%4)*1.2, targetX:p[0], targetZ:p[2],
-   pause:Math.random()*2, baseRotation:npc.rotation.y,
-   routineTimer:3+Math.random()*12, homeX:p[0], homeZ:p[2],
-   reactionCooldown:4+Math.random()*10, reactionUntil:0, reactionType:'', reactionPhase:Math.random()*6,
-  });
- });
- document.querySelector('#status').textContent='CITY + BEACH · 36 ANIMATED NPCs';
- document.querySelector('#hint').textContent='Explore the city and meet the local people';
- document.querySelector('#credit').textContent='Voxel City + Beach + Stylized Trees and Rocks Kit · CC0 · 36 roaming NPCs';
-},undefined,error=>{console.error('NPC model failed to load:',error);spawnFallbackNPCs()});
+spawnFallbackNPCs();
+// The visible built-in crowd is used directly so NPC visibility never depends on a remote character file.
 
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0,inVehicle=false,activeCar=null,dayClock=0,sprinting=false,jumpVelocity=0,jumpHeight=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
