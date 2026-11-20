@@ -44,6 +44,7 @@ anatomyPart(new THREE.SphereGeometry(.28,16,12),neutralMat,-1.1,.35,1);anatomyPa
 // Voxel City Districts — CC0 starter scene with 171 GLB models
 const buildingSpots=[];
 const cityRoot=new THREE.Group();scene.add(cityRoot);
+const natureRoot=new THREE.Group();scene.add(natureRoot);
 const cityLoader=new (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader();
 cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  const pack=gltf.scene;
@@ -51,6 +52,35 @@ cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  const bounds=new THREE.Box3().setFromObject(pack),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
  pack.position.x-=center.x;pack.position.z-=center.z;pack.position.y-=bounds.min.y;
  cityRoot.add(pack);
+ // Add four landscaped park pockets from the CC0 Stylized Trees and Rocks Kit.
+ const cityBoundsForParks=new THREE.Box3().setFromObject(cityRoot);
+ const cityMid=cityBoundsForParks.getCenter(new THREE.Vector3());
+ cityLoader.load('https://cdn.3dassets.dev/assets/38765/v1/model.glb',parkGltf=>{
+  const groveBase=parkGltf.scene;
+  groveBase.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
+  const groveBounds=new THREE.Box3().setFromObject(groveBase);
+  const groveCenter=groveBounds.getCenter(new THREE.Vector3());
+  groveBase.position.x-=groveCenter.x;
+  groveBase.position.z-=groveCenter.z;
+  groveBase.position.y-=groveBounds.min.y;
+  const parkX=Math.max(-88,cityBoundsForParks.min.x-13);
+  const parkSpots=[
+   [parkX,cityMid.z-25],
+   [parkX,cityMid.z],
+   [parkX,cityMid.z+25],
+   [cityMid.x,Math.max(-88,cityBoundsForParks.min.z-13)]
+  ];
+  parkSpots.forEach((spot,i)=>{
+   const park=groveBase.clone(true);
+   const scale=i===1?.82:.9;
+   park.scale.setScalar(scale);
+   park.position.set(spot[0],0,spot[1]);
+   natureRoot.add(park);
+  });
+  document.querySelector('#status').textContent='CITY + BEACH + 4 GREEN PARKS';
+  document.querySelector('#hint').textContent='Explore downtown, the beach and the new landscaped parks';
+ },undefined,error=>console.error('Park assets failed to load:',error));
+
  // Entry interaction points are distributed around the assembled city blocks.
  // Build entry points from the largest assembled district/building groups.
  pack.updateMatrixWorld(true);
@@ -143,7 +173,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
  });
  document.querySelector('#status').textContent='CITY + BEACH · 36 ANIMATED NPCs';
  document.querySelector('#hint').textContent='Explore the city and meet the local people';
- document.querySelector('#credit').textContent='Low Poly Character Figures · CC0 1.0 · 36 free-roaming civilian NPCs';
+ document.querySelector('#credit').textContent='Voxel City + Beach + Stylized Trees and Rocks Kit · CC0 · 36 roaming NPCs';
 },undefined,error=>{console.error('NPC model failed to load:',error)});
 
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
