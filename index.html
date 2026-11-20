@@ -67,6 +67,7 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
  const shopSignMat=new THREE.MeshStandardMaterial({color:0x24566a,roughness:.7});
  const extraBuildings=[],shopDoors=[];
  function isSafeBuildingSite(x,z,w,d){
+  if(x< -100||x>100||z< -100||z>100)return false;
   const roadHalf=6.5,walkHalf=1.7,rx=Math.round(x/40)*40,rz=Math.round(z/40)*40;
   if(Math.abs(x-rx)<w/2+roadHalf+1||Math.abs(z-rz)<d/2+roadHalf+1)return false;
   for(let k=-2;k<=2;k++)for(const side of [-1,1]){const lane=k*40+side*9.2;if(Math.abs(x-lane)<w/2+walkHalf+.15||Math.abs(z-lane)<d/2+walkHalf+.15)return false}
@@ -88,6 +89,7 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
   if(kind==='shop'){
    const awning=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.28,1.15),new THREE.MeshStandardMaterial({color:[0xc95c4b,0x3f8b85,0xd29b43,0x657bb2][index%4]}));awning.position.set(0,3.75,front-.48);g.add(awning);
    const sign=new THREE.Mesh(new THREE.BoxGeometry(4.2,.72,.18),shopSignMat);sign.position.set(0,4.55,front-.13);g.add(sign);
+   for(const lx of [-3.2,3.2]){const lantern=new THREE.Mesh(new THREE.CylinderGeometry(.22,.28,.62,8),new THREE.MeshStandardMaterial({color:0xd94f43,emissive:0x43110d,roughness:.65}));lantern.position.set(lx,3.25,front-.62);g.add(lantern);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,.08,8),doorMat);cap.position.set(lx,3.6,front-.62);g.add(cap)}
    const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=96;const sc=signCanvas.getContext('2d');sc.fillStyle='#173e50';sc.fillRect(0,0,512,96);sc.fillStyle='#ffffff';sc.font='bold 48px sans-serif';sc.textAlign='center';sc.fillText(index===15||index===17?'SCHOOL':['MARKET','CAFE','BOOKS','BAKERY','GROCERY','FLOWERS'][index%6],256,65);
    const signTex=new THREE.CanvasTexture(signCanvas);const label=new THREE.Mesh(new THREE.PlaneGeometry(4.05,.62),new THREE.MeshBasicMaterial({map:signTex,transparent:true}));label.position.set(0,4.55,front-.24);g.add(label);
   }else{
@@ -233,8 +235,17 @@ function expBuilding(root,x,z,w,h,d,color,roof){const body=new THREE.Mesh(new TH
 function addExpansionDistrict(name,z,theme){const root=new THREE.Group();root.position.set(165,0,z);expansionRoot.add(root);const land=new THREE.Mesh(new THREE.PlaneGeometry(112,112),new THREE.MeshStandardMaterial({color:theme.ground,roughness:1}));land.rotation.x=-Math.PI/2;land.position.y=-.08;root.add(land);for(const p of [-30,0,30]){const road=new THREE.Mesh(new THREE.BoxGeometry(112,.14,9),expRoadMat);road.position.set(0,.02,p);root.add(road);for(const side of [-1,1]){const walk=new THREE.Mesh(new THREE.BoxGeometry(112,.18,3),expWalkMat);walk.position.set(0,.04,p+side*6.2);root.add(walk)}}for(const x of [-30,0,30]){const road=new THREE.Mesh(new THREE.BoxGeometry(9,.14,112),expRoadMat);road.position.set(x,.02,0);root.add(road)}
 if(theme.airport){const runway=new THREE.Mesh(new THREE.BoxGeometry(23,.12,104),expRoadMat);runway.position.set(42,.02,0);root.add(runway);for(let z0=-44;z0<=44;z0+=11){const mark=new THREE.Mesh(new THREE.BoxGeometry(1,.04,5),new THREE.MeshStandardMaterial({color:0xffffff}));mark.position.set(42,.11,z0);root.add(mark)}expBuilding(root,-40,0,28,10,24,0xc5cbd0,0x687782);expBuilding(root,-40,-31,18,6,13,0xb8c4c9,0x64717a);expBuilding(root,-40,31,18,6,13,0xb8c4c9,0x64717a)}
 else if(theme.port){const water=new THREE.Mesh(new THREE.BoxGeometry(28,.08,112),new THREE.MeshStandardMaterial({color:0x287c9c,metalness:.25,roughness:.3}));water.position.set(48,.01,0);root.add(water);for(let z0=-36;z0<=36;z0+=24){expBuilding(root,28,z0,12,7,15,0xc18a55,0x55473c);const crane=new THREE.Mesh(new THREE.BoxGeometry(1,15,1),new THREE.MeshStandardMaterial({color:0xe0a33a}));crane.position.set(17,7.5,z0);root.add(crane);const arm=new THREE.Mesh(new THREE.BoxGeometry(13,.7,.7),crane.material);arm.position.set(22,14,z0);root.add(arm)}}
-else{for(let i=0;i<18;i++){const x=((i%6)-2.5)*16,z=(Math.floor(i/6)-1)*27;expBuilding(root,x,z,8+(i%3)*2,5+(i%4)*2,8,theme.colors[i%theme.colors.length],theme.roof)}
- if(theme.apartments){for(const [ax,az] of [[45,-45],[-45,45]]){const tower=new THREE.Group(),wall=new THREE.Mesh(new THREE.BoxGeometry(13,17,12),new THREE.MeshStandardMaterial({color:ax>0?0xb8c3c8:0xd5c5ad,roughness:.9}));wall.position.y=8.5;tower.add(wall);const roof=new THREE.Mesh(new THREE.BoxGeometry(13.6,.55,12.6),new THREE.MeshStandardMaterial({color:0x46545e}));roof.position.y=17.25;tower.add(roof);for(let floor=0;floor<4;floor++)for(let col=0;col<3;col++){const win=new THREE.Mesh(new THREE.BoxGeometry(2.1,1.35,.08),expWindowMat);win.position.set(-4+col*4,2.5+floor*3.5,6.06);tower.add(win);const balcony=new THREE.Mesh(new THREE.BoxGeometry(2.5,.12,.9),new THREE.MeshStandardMaterial({color:0x64747a}));balcony.position.set(-4+col*4,1.75+floor*3.5,6.45);tower.add(balcony)}tower.position.set(ax,0,az);tower.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});root.add(tower)}}}
+else{
+ const lots=[[-45,-45],[45,-45],[-45,45],[45,45]];
+ lots.forEach(([x,z],i)=>{
+  if(theme.apartments&&(i===0||i===3)){
+   const tower=new THREE.Group(),wall=new THREE.Mesh(new THREE.BoxGeometry(13,17,12),new THREE.MeshStandardMaterial({color:i===0?0xb8c3c8:0xd5c5ad,roughness:.9}));wall.position.y=8.5;tower.add(wall);
+   const roof=new THREE.Mesh(new THREE.BoxGeometry(13.6,.55,12.6),new THREE.MeshStandardMaterial({color:0x46545e}));roof.position.y=17.25;tower.add(roof);
+   for(let floor=0;floor<4;floor++)for(let col=0;col<3;col++){const win=new THREE.Mesh(new THREE.BoxGeometry(2.1,1.35,.08),expWindowMat);win.position.set(-4+col*4,2.5+floor*3.5,6.06);tower.add(win);const balcony=new THREE.Mesh(new THREE.BoxGeometry(2.5,.12,.9),new THREE.MeshStandardMaterial({color:0x64747a}));balcony.position.set(-4+col*4,1.75+floor*3.5,6.45);tower.add(balcony)}
+   tower.position.set(x,0,z);tower.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});root.add(tower);
+  }else{expBuilding(root,x,z,10,6+(i%2)*2,9,theme.colors[i%theme.colors.length],theme.roof)}
+ });
+}
 for(let i=0;i<10;i++){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.2,.28,2.2,7),new THREE.MeshStandardMaterial({color:0x76543a}));trunk.position.set(-48+(i%5)*23,1.1,-45+Math.floor(i/5)*90);root.add(trunk);const crown=new THREE.Mesh(new THREE.SphereGeometry(1.6,8,7),new THREE.MeshStandardMaterial({color:0x547b4c}));crown.position.set(trunk.position.x,3,trunk.position.z);root.add(crown)}
 const sign=document.createElement('canvas');sign.width=512;sign.height=128;const c=sign.getContext('2d');c.fillStyle='#172d3b';c.fillRect(0,0,512,128);c.fillStyle='#fff';c.font='bold 48px sans-serif';c.textAlign='center';c.fillText(name.toUpperCase(),256,82);const board=new THREE.Mesh(new THREE.PlaneGeometry(18,4.5),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sign)}));board.position.set(0,9,-52);root.add(board);return root}
 addExpansionDistrict('Tokyo Downtown',-180,{ground:0x68755d,colors:[0xbac4c8,0x9cabb5,0xd0c5b4,0x777f91],roof:0x3c4a58,apartments:true});
