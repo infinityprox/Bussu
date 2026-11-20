@@ -396,16 +396,12 @@ function drawMinimap(){
 // Simple player car and ambient road traffic.
 function makeCar(color,x,z){const car=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color,metalness:.2,roughness:.45}),glass=new THREE.MeshStandardMaterial({color:0x9bc4d4,roughness:.25}),rubber=new THREE.MeshStandardMaterial({color:0x17191d});const body=new THREE.Mesh(new THREE.BoxGeometry(1.8,.55,3.5),paint);body.position.y=.62;car.add(body);const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.42,.72,1.7),glass);cabin.position.set(0,1.18,-.15);car.add(cabin);const wheels=[];for(const sx of [-.94,.94])for(const sz of [-1.12,1.12]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.2,12),rubber);w.rotation.z=Math.PI/2;w.position.set(sx,.38,sz);car.add(w);wheels.push(w)}car.position.set(x,0,z);scene.add(car);return{mesh:car,wheels}}
 
- // Pedestrian signals: red means wait; green means cross.
- const pedestrianSignals=[];
- function addPedestrianSignal(x,z){
-  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.12,3.2,8),new THREE.MeshStandardMaterial({color:0x4c5660}));pole.position.set(x,1.6,z);scene.add(pole);
-  const housing=new THREE.Mesh(new THREE.BoxGeometry(.62,1.15,.42),new THREE.MeshStandardMaterial({color:0x202a32}));housing.position.set(x,3.45,z);scene.add(housing);
-  const red=new THREE.Mesh(new THREE.SphereGeometry(.17,12,10),new THREE.MeshStandardMaterial({color:0xff3028,emissive:0x9c1008}));
-  const green=new THREE.Mesh(new THREE.SphereGeometry(.17,12,10),new THREE.MeshStandardMaterial({color:0x35e875,emissive:0x0b8c35}));
-  red.position.set(x,3.72,z+.23);green.position.set(x,3.18,z+.23);scene.add(red,green);pedestrianSignals.push({red,green});
- }
- [-40,40].forEach(x=>[-12,12].forEach(z=>addPedestrianSignal(x+(x<0?-2:2),z)));
+ // Coordinated vehicle and pedestrian signals at every downtown junction.
+ const pedestrianSignals=[],vehicleSignals=[];
+ function lamp(color,emissive){return new THREE.Mesh(new THREE.SphereGeometry(.16,12,10),new THREE.MeshStandardMaterial({color,emissive,emissiveIntensity:1.4}))}
+ function addTrafficSignal(x,z,rotation=0){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,4.2,8),new THREE.MeshStandardMaterial({color:0x414b54,metalness:.35,roughness:.6}));pole.position.set(x,2.1,z);scene.add(pole);const housing=new THREE.Mesh(new THREE.BoxGeometry(.72,1.75,.48),new THREE.MeshStandardMaterial({color:0x20262d}));housing.position.set(x,4.05,z);housing.rotation.y=rotation;scene.add(housing);const lamps=[lamp(0xff3028,0x9c1008),lamp(0xffc247,0x9a6500),lamp(0x35e875,0x0b8c35)];lamps.forEach((v,i)=>{v.position.set(x,4.62-i*.57,z+.27);scene.add(v)});vehicleSignals.push({lamps,x,z})}
+ function addPedestrianSignal(x,z){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,2.5,8),new THREE.MeshStandardMaterial({color:0x4c5660}));pole.position.set(x,1.25,z);scene.add(pole);const housing=new THREE.Mesh(new THREE.BoxGeometry(.55,.85,.35),new THREE.MeshStandardMaterial({color:0x202a32}));housing.position.set(x,2.7,z);scene.add(housing);const red=lamp(0xff3028,0x9c1008),green=lamp(0x35e875,0x0b8c35);red.position.set(x,2.9,z+.2);green.position.set(x,2.48,z+.2);scene.add(red,green);pedestrianSignals.push({red,green})}
+ [-40,40].forEach(x=>[-40,40].forEach(z=>{addTrafficSignal(x-8,z-8);addTrafficSignal(x+8,z+8,Math.PI);addPedestrianSignal(x-9.2,z);addPedestrianSignal(x+9.2,z);addPedestrianSignal(x,z-9.2);addPedestrianSignal(x,z+9.2)}));
  const playerCar=makeCar(0x2879a5,0,5),trafficCars=[];
 for(let i=0;i<6;i++){const lane=i%2===0?-40:40,z=-85+i*27;trafficCars.push({car:makeCar([0xc74b3e,0xd5b45d,0x4c7c58,0x777f8c,0x704e88,0xe1e1e1][i],lane,z),lane,z,speed:5+(i%3)*1.4,dir:i%2===0?1:-1})}
 const vehicleButton=document.querySelector('#vehicleBtn');
@@ -423,7 +419,7 @@ const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;
 if(inVehicle&&activeCar){heading-=joy.x*1.25*dt;const drive=-joy.y*12*dt;activeCar.mesh.position.x+=Math.sin(heading)*drive;activeCar.mesh.position.z+=Math.cos(heading)*drive;activeCar.mesh.rotation.y=heading;activeCar.wheels.forEach(w=>w.rotation.x+=drive*2.5);player.position.copy(activeCar.mesh.position)}
 else if(moving&&!inside){heading-=joy.x*1.8*dt;const speed=-joy.y*(sprinting?7.2:4.4)*dt;const px=player.position.x+Math.sin(heading)*speed,pz=player.position.z+Math.cos(heading)*speed;const playerBlocked=extraBuildings.some(b=>Math.abs(px-b.group.position.x)<b.halfW&&Math.abs(pz-b.group.position.z)<b.halfD);if(!playerBlocked){player.position.x=px;player.position.z=pz;}player.rotation.y=heading;walkPhase+=dt*(sprinting?15:10);armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}
 else{armL.rotation.x*=.82;armR.rotation.x*=.82;legL.rotation.x*=.82;legR.rotation.x*=.82}
-trafficCars.forEach(t=>{t.z+=t.speed*t.dir*dt;if(t.z>110)t.z=-110;if(t.z< -110)t.z=110;t.car.mesh.position.z=t.z;t.car.wheels.forEach(w=>w.rotation.x+=t.speed*dt*2)});
+trafficCars.forEach(t=>{const approaching=[-40,40].some(z=>Math.abs(t.z-z)<8);const stopped=approaching&&!vehicleGreen;if(!stopped){t.z+=t.speed*t.dir*dt;if(t.z>110)t.z=-110;if(t.z< -110)t.z=110}t.car.mesh.position.z=t.z;t.car.wheels.forEach(w=>{if(!stopped)w.rotation.x+=t.speed*dt*2})});
 if(!inVehicle){jumpVelocity-=14*dt;jumpHeight=Math.max(0,jumpHeight+jumpVelocity*dt);if(jumpHeight===0)jumpVelocity=0;player.position.y=jumpHeight*2.2}
  
 drawMinimap();
@@ -444,8 +440,9 @@ dayClock=(dayClock+dt/210)%(Math.PI*2);
   for(let i=0;i<rainPos.count;i++){let y=rainPos.getY(i)-dt*17;if(y<0)y=20+Math.random()*3;rainPos.setY(i,y)}
   rainPos.needsUpdate=true;
  }sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
-const pedestrianCanCross=(now%18000)>11000;
- pedestrianSignals.forEach(s=>{s.red.visible=!pedestrianCanCross;s.green.visible=pedestrianCanCross});
+const signalPhase=now%20000,vehicleGreen=signalPhase<8000,vehicleYellow=signalPhase>=8000&&signalPhase<10000,pedestrianCanCross=signalPhase>=11000&&signalPhase<19000;
+  vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.lamps[1].visible=vehicleYellow;s.lamps[2].visible=vehicleGreen});
+  pedestrianSignals.forEach(s=>{s.red.visible=!pedestrianCanCross;s.green.visible=pedestrianCanCross});
  npcActors.forEach(a=>{
  const playerDistance=Math.hypot(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
   // A recruited companion follows at a comfortable distance.
