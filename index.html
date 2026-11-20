@@ -92,9 +92,11 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
   buildingSpots.push(entry);extraBuildings.push({group:g,kind,entry,halfW:w/2+.8,halfD:d/2+.8});
  }
  const neighbourhoodLayout=[
-  [-43,-36,'house'],[-28,-42,'shop'],[-12,-43,'house'],[8,-43,'shop'],[27,-40,'house'],[44,-34,'shop'],
-  [-44,34,'shop'],[-28,42,'house'],[-8,43,'shop'],[13,43,'house'],[31,40,'shop'],[46,32,'house'],
-  [-55,-8,'house'],[55,8,'shop'],[-54,15,'shop'],[54,-16,'house']
+  // Place every building well inside a city block, away from the main road strips.
+  [-58,-58,'house'],[-22,-58,'shop'],[22,-58,'house'],[58,-58,'shop'],
+  [-58,-22,'shop'],[-22,-22,'house'],[22,-22,'shop'],[58,-22,'house'],
+  [-58,22,'house'],[-22,22,'shop'],[22,22,'house'],[58,22,'shop'],
+  [-58,58,'shop'],[-22,58,'house'],[22,58,'shop'],[58,58,'house']
  ];
  neighbourhoodLayout.forEach((p,i)=>addNeighbourBuilding(p[0],p[1],p[2],i));
 
