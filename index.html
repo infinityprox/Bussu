@@ -102,9 +102,12 @@ async function loadUserMap(){
   document.querySelector('#hint').textContent='Joystick: explore your uploaded map · Drag: rotate camera';
   document.querySelector('#credit').textContent='Map: Postwar City USDZ';
  }catch(e){
-  console.error('Your GLB map could not be loaded:',e);
-  document.querySelector('#loading').textContent='USDZ map failed to parse. Check the model file and try a GLB export if needed.';
+  console.error('Postwar USDZ map load failed:',e);
+  const reason=(e&&e.message)?e.message:String(e);
+  document.querySelector('#loading').style.display='block';
+  document.querySelector('#loading').textContent='MAP ERROR: '+reason;
   document.querySelector('#status').textContent='MAP LOAD ERROR';
+  document.querySelector('#mission').textContent='POSTWAR CITY · LOAD FAILED';
  }
 }
 loadUserMap();
