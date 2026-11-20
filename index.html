@@ -7,8 +7,8 @@
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}
 </script>
 </head><body>
-<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">PIXEL MODERN CITY STREET</div><div id="status" class="glass">EMPTY WORLD</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">No map assets loaded</div><div id="loading" class="glass">Loading 91 CC0 city models…</div>
-<div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore 91 free CC0 city models: roads, buildings, cars and street furniture.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
+<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">VOXEL CITY DISTRICTS</div><div id="status" class="glass">EMPTY WORLD</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">No map assets loaded</div><div id="loading" class="glass">Loading 171 CC0 voxel models…</div>
+<div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore residential, commercial and civic districts built from 171 free CC0 voxel models.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
 <script type="module">
 import * as THREE from 'three';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,75,190);
@@ -35,32 +35,39 @@ part(legL,new THREE.BoxGeometry(.19,.1,.3),shoe,0,-.53,.07);part(legR,new THREE.
 let inside=false,returnPosition=new THREE.Vector3(),walkPhase=0;
 function buildInterior(){const room=new THREE.Group();room.position.set(300,0,0);scene.add(room);const mat=new THREE.MeshStandardMaterial({color:0x9a8064});const floor=new THREE.Mesh(new THREE.BoxGeometry(10,.25,10),mat);floor.position.y=-.12;room.add(floor);const wallMat=new THREE.MeshStandardMaterial({color:0xe0d4bd});[[-5,0,.25,10],[5,0,.25,10],[0,-5,10,.25],[0,5,10,.25]].forEach(v=>{const w=new THREE.Mesh(new THREE.BoxGeometry(v[2],3,v[3]),wallMat);w.position.set(v[0],1.5,v[1]);room.add(w)});const table=new THREE.Mesh(new THREE.BoxGeometry(2,.18,1.2),new THREE.MeshStandardMaterial({color:0x68442b}));table.position.set(0,.9,-1);room.add(table);return room}
 buildInterior();
-// Pixel Modern City Street — 91 CC0 GLB assets in the assembled starter scene
+// Voxel City Districts — CC0 starter scene with 171 GLB models
 const buildingSpots=[];
 const cityRoot=new THREE.Group();scene.add(cityRoot);
 const cityLoader=new (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader();
-cityLoader.load('https://cdn.3dassets.dev/assets/29075/v1/model.glb',gltf=>{
+cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  const pack=gltf.scene;
  pack.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material.side=THREE.FrontSide}}});
  const bounds=new THREE.Box3().setFromObject(pack),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
  pack.position.x-=center.x;pack.position.z-=center.z;pack.position.y-=bounds.min.y;
  cityRoot.add(pack);
  // Entry interaction points are distributed around the assembled city blocks.
- const spanX=Math.max(12,size.x),spanZ=Math.max(12,size.z);
- for(let x=-spanX*.38;x<=spanX*.38;x+=Math.max(8,spanX*.25)){
-  for(let z=-spanZ*.38;z<=spanZ*.38;z+=Math.max(8,spanZ*.25)){
-   buildingSpots.push({x,z,r:4,name:'CITY BUILDING'});
+ // Build entry points from the largest assembled district/building groups.
+ pack.updateMatrixWorld(true);
+ for(const node of pack.children){
+  const box=new THREE.Box3().setFromObject(node),dims=box.getSize(new THREE.Vector3());
+  if(dims.y>2.2 && dims.x>2.5 && dims.z>2.5 && dims.x<55 && dims.z<55){
+   const c=box.getCenter(new THREE.Vector3());
+   buildingSpots.push({x:c.x,z:box.max.z+2.2,r:3.8,name:'CITY BUILDING'});
   }
+ }
+ if(!buildingSpots.length){
+  const spanX=Math.max(12,size.x),spanZ=Math.max(12,size.z);
+  buildingSpots.push({x:0,z:spanZ*.25,r:4,name:'CITY DISTRICT'});
  }
  scene.fog=new THREE.Fog(0x9bbdce,Math.max(90,Math.max(size.x,size.z)*.65),Math.max(220,Math.max(size.x,size.z)*2.2));
  document.querySelector('#loading').style.display='none';
- document.querySelector('#status').textContent='PIXEL CITY · READY';
- document.querySelector('#mission').textContent='PIXEL MODERN CITY STREET · FREE ROAM';
- document.querySelector('#credit').textContent='Pixel Modern City Street · CC0 1.0 · 91 GLB assets';
+ document.querySelector('#status').textContent='VOXEL CITY · READY';
+ document.querySelector('#mission').textContent='VOXEL CITY DISTRICTS · FREE ROAM';
+ document.querySelector('#credit').textContent='Voxel City Districts · CC0 1.0 · 171 GLB models';
  document.querySelector('#hint').textContent='Joystick: walk · Drag: rotate camera · Explore the city';
 },undefined,error=>{
  console.error('City pack failed to load:',error);
- document.querySelector('#loading').textContent='City pack failed to load. Check your connection and reload.';
+ document.querySelector('#loading').textContent='Voxel City Districts failed to load. Check your connection and reload.';
  document.querySelector('#status').textContent='MAP LOAD ERROR';
 });
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
