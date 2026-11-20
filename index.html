@@ -264,7 +264,17 @@ npcActors.forEach(a=>{
  // Nearby non-family pedestrians occasionally stop and face one another for a short chat.
  if(!a.socialCooldown&&Math.random()<.0015){
   const friend=npcActors.find(b=>b!==a&&b.familyId!==a.familyId&&Math.hypot(b.mesh.position.x-a.mesh.position.x,b.mesh.position.z-a.mesh.position.z)<2.2);
-  if(friend){a.socialCooldown=8;friend.socialCooldown=8;a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;friend.targetX=friend.mesh.position.x;friend.targetZ=friend.mesh.position.z;a.socialFriend=friend}
+  if(friend){
+   const chats=['Did you visit the new cafe?','The beach looks great today!','Are you heading to the park?','The city is busy today!','See you around!'];
+   const line=chats[Math.floor(Math.random()*chats.length)];
+   a.socialCooldown=8;friend.socialCooldown=8;
+   a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
+   friend.targetX=friend.mesh.position.x;friend.targetZ=friend.mesh.position.z;
+   a.socialFriend=friend;friend.socialFriend=a;
+   a.talkLine=a.name+': '+line;friend.talkLine=friend.name+': '+['Absolutely!','Sounds good!','Maybe later!','Yes, let’s go!'][Math.floor(Math.random()*4)];
+   a.mesh.rotation.y=Math.atan2(friend.mesh.position.x-a.mesh.position.x,friend.mesh.position.z-a.mesh.position.z);
+   friend.mesh.rotation.y=Math.atan2(a.mesh.position.x-friend.mesh.position.x,a.mesh.position.z-friend.mesh.position.z);
+  }
  }
  a.socialCooldown=Math.max(0,(a.socialCooldown||0)-dt);
  a.greetCooldown=Math.max(0,(a.greetCooldown||0)-dt);
@@ -338,7 +348,18 @@ if(closestNPC&&closestNPCDistance<3.1){
  }
  speechBubble.visible=true;
  speechBubble.position.set(closestNPC.mesh.position.x,closestNPC.mesh.position.y+2.5,closestNPC.mesh.position.z);
-}else{speechBubble.visible=false;activeGreeting=null}
+}else{
+ activeGreeting=null;
+ const social=npcActors.find(a=>a.socialFriend&&a.socialCooldown>0&&a.socialFriend.socialCooldown>0&&Math.hypot(player.position.x-(a.mesh.position.x+a.socialFriend.mesh.position.x)/2,player.position.z-(a.mesh.position.z+a.socialFriend.mesh.position.z)/2)<12);
+ if(social){
+  const friend=social.socialFriend;
+  const speaker=Math.floor(now/2200)%2===0?social:friend;
+  paintSpeech(speaker.talkLine||speaker.name+': chatting');
+  speechTexture.needsUpdate=true;
+  speechBubble.visible=true;
+  speechBubble.position.set((social.mesh.position.x+friend.mesh.position.x)/2,(social.mesh.position.y+friend.mesh.position.y)/2+2.5,(social.mesh.position.z+friend.mesh.position.z)/2);
+ }else speechBubble.visible=false;
+}
 const target=new THREE.Vector3(player.position.x-Math.sin(heading)*camDist,inside?3.5:3.9,player.position.z-Math.cos(heading)*camDist);camera.position.lerp(target,.09);camera.lookAt(player.position.x,inside?1.2:1.1,player.position.z);if(!inside){const near=nearestBuildingDistance()<8;interactButton.textContent=near?'ENTER BUILDING':'BUILDING: WALK CLOSER';interactButton.style.opacity=near?'1':'.72'}document.querySelector('#status').textContent=inside?'INSIDE BUILDING':(inVehicle?'DRIVING · CITY TRAFFIC':(sprinting&&moving?'SPRINTING · CITY EXPLORER':(moving?'ON FOOT · WALKING':(daylight<.3?'NIGHT · CITY EXPLORER':'DAY · CITY EXPLORER'))));renderer.render(scene,camera)}requestAnimationFrame(animate);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
 </script></body></html>
