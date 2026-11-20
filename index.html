@@ -7,20 +7,15 @@
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}
 </script>
 </head><body>
-<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">DOWNTOWN DISTRICT · DAYTIME</div><div id="status" class="glass">LOADING 3D CITY</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">3D models: Low Poly City Kit · CC0 1.0</div><div id="loading" class="glass">Loading free 3D city assets…</div>
-<div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>A mobile 3D city built with free downloadable GLB game assets. This kit is stylized low-poly art and loads models online.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
+<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">EMPTY TEST WORLD</div><div id="status" class="glass">EMPTY WORLD</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">No map assets loaded</div><div id="loading" class="glass">Loading free 3D city assets…</div>
+<div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>A clean, empty 3D world with no city or map models.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
 <script type="module">
 import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-
-const ROOT='https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,75,190);
 const camera=new THREE.PerspectiveCamera(56,innerWidth/innerHeight,.1,320);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.querySelector('#world').appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xd8efff,0x55634d,2.0));const sun=new THREE.DirectionalLight(0xffe2bd,3.2);sun.position.set(-22,35,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-35;sun.shadow.camera.right=35;sun.shadow.camera.top=35;sun.shadow.camera.bottom=-35;scene.add(sun);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(78,78),new THREE.MeshStandardMaterial({color:0x668b5a,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
-const loader=new GLTFLoader(),cache={};async function asset(path){if(cache[path])return cache[path];const gltf=await loader.loadAsync(ROOT+path+'.glb');cache[path]=gltf.scene;gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return gltf.scene}
-function addClone(model,x,z,scale=1,rot=0){const o=model.clone(true);o.position.set(x,0,z);o.scale.setScalar(scale);o.rotation.y=rot;scene.add(o);return o}
 const player=new THREE.Group();player.scale.setScalar(2.2);scene.add(player);player.position.set(0,0,0);
 function part(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
 const skin=new THREE.MeshStandardMaterial({color:0xc98e68}),shirt=new THREE.MeshStandardMaterial({color:0x176b91}),pants=new THREE.MeshStandardMaterial({color:0x26384c}),shoe=new THREE.MeshStandardMaterial({color:0x17202b});
@@ -33,96 +28,18 @@ part(legL,new THREE.BoxGeometry(.19,.1,.3),shoe,0,-.53,.07);part(legR,new THREE.
 let inside=false,returnPosition=new THREE.Vector3(),walkPhase=0;
 function buildInterior(){const room=new THREE.Group();room.position.set(42,0,0);scene.add(room);const mat=new THREE.MeshStandardMaterial({color:0x9a8064});const floor=new THREE.Mesh(new THREE.BoxGeometry(10,.25,10),mat);floor.position.y=-.12;room.add(floor);const wallMat=new THREE.MeshStandardMaterial({color:0xe0d4bd});[[-5,0,.25,10],[5,0,.25,10],[0,-5,10,.25],[0,5,10,.25]].forEach(v=>{const w=new THREE.Mesh(new THREE.BoxGeometry(v[2],3,v[3]),wallMat);w.position.set(v[0],1.5,v[1]);room.add(w)});const table=new THREE.Mesh(new THREE.BoxGeometry(2,.18,1.2),new THREE.MeshStandardMaterial({color:0x68442b}));table.position.set(0,.9,-1);room.add(table);return room}
 buildInterior();
-const carRoot=new THREE.Group();scene.add(carRoot);let carModel=null;
-async function buildCity(){try{
-const [road,cross,grass,apt,tall,house,shop,restaurant,tree,car]=await Promise.all([
-asset('ruas/asfalto_reta'),asset('ruas/asfalto_cruzamento'),asset('terreno/grama'),asset('residencial/predio_apartamentos'),asset('residencial/predio_alto'),asset('residencial/casa_sobrado'),asset('comercial/loja_esquina'),asset('comercial/restaurante'),asset('terreno/arvores_mata'),asset('veiculos/carro')
-]);
-// New map: expanded 5 x 5 downtown grid with a central civic plaza and park district.
-ground.geometry.dispose();
-ground.geometry=new THREE.PlaneGeometry(150,150);
-ground.position.set(0,-.08,0);
-for(let x=-37;x<=37;x+=2)for(let z=-37;z<=37;z+=2){const tile=grass.clone(true);tile.position.set(x,-.02,z);scene.add(tile)}
-// Wide avenue loop and cross streets.
-for(let k=-5;k<=5;k++){for(let n=-18;n<=18;n++) {
- if(k%2===0){addClone(road,n*2,k*12,1,Math.PI/2)}
- if(n%2===0){addClone(road,k*12,n*2,1,0)}
-}}
-for(let x=-5;x<=5;x+=2)for(let z=-5;z<=5;z+=2)addClone(cross,x*6,z*6,1,0);
-// Building blocks around the avenues, leaving the central plaza open.
-const buildingModels=[apt,tall,house,shop,restaurant];
-const buildingPositions=[];
-for(let bx=-30;bx<=30;bx+=12){for(let bz=-30;bz<=30;bz+=12){
- if(Math.abs(bx)<8&&Math.abs(bz)<8)continue;
- const model=buildingModels[(Math.abs(bx/12)+Math.abs(bz/12))%buildingModels.length];
- addClone(model,bx+(bx<0?-2:2),bz+(bz<0?-2:2),1.35,((Math.abs(bx+bz)/12)%4)*Math.PI/2);
- buildingPositions.push([bx+(bx<0?-2:2),bz+(bz<0?-2:2)]);
-}}
-window.cityBuildingPositions=buildingPositions;
-// Central green park with a plaza and tree rows.
-const park=new THREE.Mesh(new THREE.BoxGeometry(18,.12,18),new THREE.MeshStandardMaterial({color:0x477e50,roughness:1}));park.position.set(0,.02,0);scene.add(park);
-const plaza=new THREE.Mesh(new THREE.BoxGeometry(8,.16,8),new THREE.MeshStandardMaterial({color:0xb8b7a7,roughness:1}));plaza.position.set(0,.12,0);scene.add(plaza);
-for(let i=-3;i<=3;i+=2){addClone(tree,i*2,11,1.15,0);addClone(tree,i*2,-11,1.15,0);addClone(tree,11,i*2,1.15,0);addClone(tree,-11,i*2,1.15,0)}
-// Street furniture and traffic signals, instanced for mobile performance.
-const poleMat=new THREE.MeshStandardMaterial({color:0x34424a,metalness:.35,roughness:.6}),lampMat=new THREE.MeshStandardMaterial({color:0xffe8ad,emissive:0xffc45c,emissiveIntensity:.8});
-const poleGeo=new THREE.CylinderGeometry(.055,.075,3.5,7),lampGeo=new THREE.SphereGeometry(.18,8,6),positions=[];
-for(let z=-36;z<=36;z+=12){positions.push([-3,1.75,z],[3,1.75,z])}
-for(let x=-36;x<=36;x+=12){positions.push([x,1.75,-3],[x,1.75,3])}
-const poles=new THREE.InstancedMesh(poleGeo,poleMat,positions.length),lamps=new THREE.InstancedMesh(lampGeo,lampMat,positions.length),dummy=new THREE.Object3D();
-positions.forEach((p,i)=>{dummy.position.set(p[0],1.75,p[2]);dummy.updateMatrix();poles.setMatrixAt(i,dummy.matrix);dummy.position.set(p[0],3.5,p[2]);lamps.setMatrixAt(i,dummy.matrix)});
-scene.add(poles,lamps);
-carModel=car.clone(true);carModel.scale.setScalar(1.3);carRoot.add(carModel);carRoot.position.set(0,0,5);
 document.querySelector('#loading').style.display='none';
-document.querySelector('#status').textContent='NEW DOWNTOWN MAP · READY';
-document.querySelector('#mission').textContent='NEW CITY · CENTRAL PARK DISTRICT';
-}catch(e){console.error(e);document.querySelector('#loading').textContent='City assets failed to load. Check internet and refresh.'}}
-// Load the user's uploaded apocalyptic city map as the main world.
-ground.visible=false;
-async function loadUserMap(){
- const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/japan_street.glb';
- try{
-  document.querySelector('#loading').textContent='Loading Japan street environment…';
-  const gltf=await new Promise((resolve,reject)=>loader.load(mapUrl,resolve,(event)=>{
-   if(event.lengthComputable){const percent=Math.round(event.loaded/event.total*100);document.querySelector('#loading').textContent='Downloading Japan Street… '+percent+'%'}
-   else{document.querySelector('#loading').textContent='Downloading Japan Street… '+(event.loaded/1048576).toFixed(1)+' MB'}
-  },reject));
-  document.querySelector('#loading').textContent='Preparing Japan Street 3D scene…';
-  const map=gltf.scene;
-  map.updateMatrixWorld(true);
-  const bounds=new THREE.Box3().setFromObject(map);
-  const size=bounds.getSize(new THREE.Vector3());
-  const center=bounds.getCenter(new THREE.Vector3());
-  const maxDimension=Math.max(size.x,size.y,size.z);
-  if(!Number.isFinite(maxDimension)||maxDimension<=0)throw new Error('The GLB has no visible 3D geometry.');
-  const scale=Math.min(1,120/maxDimension);
-  map.scale.setScalar(scale);
-  map.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);
-  map.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
-  scene.add(map);
-  window.cityBuildingPositions=[];
-  player.position.set(0,0,0);
-  document.querySelector('#loading').style.display='none';
-  document.querySelector('#status').textContent='JAPAN STREET · READY';
-  document.querySelector('#mission').textContent='JAPAN STREET · EXPLORATION';
-  document.querySelector('#hint').textContent='Joystick: explore your uploaded map · Drag: rotate camera';
-  document.querySelector('#credit').textContent='Map: Japan Street GLB';
- }catch(e){
-  console.error('Japan Street GLB map load failed:',e);
-  const reason=(e&&e.message)?e.message:String(e);
-  document.querySelector('#loading').style.display='block';
-  document.querySelector('#loading').textContent='MAP ERROR: '+reason;
-  document.querySelector('#status').textContent='MAP LOAD ERROR';
-  document.querySelector('#mission').textContent='JAPAN STREET · LOAD FAILED';
- }
-}
-loadUserMap();
+document.querySelector('#status').textContent='EMPTY WORLD · READY';
+document.querySelector('#mission').textContent='EMPTY WORLD · FREE ROAM';
+document.querySelector('#credit').textContent='No map assets loaded';
+
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
 function moveJoy(e){const r=j.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),m=35;if(l>m){dx=dx/l*m;dy=dy/l*m}joy.x=dx/m;joy.y=dy/m;stick.style.transform='translate('+dx+'px,'+dy+'px)'}
 j.addEventListener('pointerdown',e=>{j.setPointerCapture(e.pointerId);moveJoy(e)});j.addEventListener('pointermove',e=>{if(e.buttons)moveJoy(e)});function resetJoy(){joy={x:0,y:0};stick.style.transform='translate(0,0)'}j.addEventListener('pointerup',resetJoy);j.addEventListener('pointercancel',resetJoy);
 renderer.domElement.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY}});addEventListener('pointerup',()=>drag=null);addEventListener('pointermove',e=>{if(drag){heading-=(e.clientX-drag.x)*.006;drag={x:e.clientX,y:e.clientY}}});
-const buildingSpots=window.cityBuildingPositions||[[-14,-14],[14,-14],[-14,14],[14,14]];
-function nearestBuildingDistance(){let best=Infinity;for(const p of buildingSpots){const d=Math.hypot(player.position.x-p[0],player.position.z-p[1]);if(d<best)best=d}return best}
+const buildingSpots=[];
+function nearestBuildingDistance(){return Infinity}
 const interactButton=document.querySelector('#interact');
 interactButton.addEventListener('click',()=>{if(inside){inside=false;player.position.copy(returnPosition);interactButton.textContent='ENTER BUILDING';document.querySelector('#hint').textContent='Walk near any building, then tap ENTER BUILDING';return}const distance=nearestBuildingDistance();if(distance<8){returnPosition.copy(player.position);inside=true;player.position.set(42,0,2);interactButton.textContent='EXIT BUILDING';document.querySelector('#hint').textContent='Inside building · tap EXIT BUILDING to leave'}else{document.querySelector('#hint').textContent='Get closer to a building — walk towards the nearby houses or shops'}});
 document.querySelector('#resetView').onclick=()=>{heading=0;camDist=7.2};document.querySelector('#nextTask').onclick=()=>{mission=(mission+1)%tasks.length;document.querySelector('#mission').textContent='TASK 0'+(mission+1)+' · '+tasks[mission]};
