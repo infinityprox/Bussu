@@ -490,7 +490,8 @@ const pedestrianCanCross=(now%18000)>11000;
      tz=a.homeZ+off[1]+(Math.random()-.5)*2.2;
      if(job==='Student'){tx=schoolEntry.x;tz=schoolEntry.z;}
      if(job==='Shopkeeper'||job==='Cook'){const shop=extraBuildings.find(b=>b.kind==='shop'&&b!==extraBuildings[extraBuildings.length-1]);if(shop){tx=shop.entry.x;tz=shop.entry.z;}}
-     if(job==='Visitor'&&daylight>.45){tx=132;tz=(a.familyId%3-1)*9;}\n     if(job==='Resident'||job==='Cyclist'||job==='Artist'||job==='Musician'){const footpath=snapToSidewalk(tx,tz);tx=footpath.x;tz=footpath.z;}
+     if(job==='Visitor'&&daylight>.45){tx=132;tz=(a.familyId%3-1)*9;}
+     if(job==='Resident'||job==='Cyclist'||job==='Artist'||job==='Musician'){const footpath=snapToSidewalk(tx,tz);tx=footpath.x;tz=footpath.z;}
     }
     a.targetX=tx;a.targetZ=tz;a.routineTimer=12+Math.random()*13;a.pause=.3;
    }else{
