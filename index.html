@@ -167,7 +167,24 @@ const npcPlacements=[
  // Plaza and civic district
  [-27,0,-24],[-22,0,-27],[-16,0,-25],[22,0,-24],[27,0,-19],[25,0,24]
 ];
+function spawnFallbackNPCs(){
+ if(npcActors.length)return;
+ const skinTones=[0xd6a078,0x9b684b,0xe0b18a,0xb77c58],shirts=[0x2878b8,0xc45a45,0x4f936b,0xd3a83c,0x7356a8,0xe1e1e1];
+ npcPlacements.forEach((p,i)=>{
+  const person=new THREE.Group(),skin=new THREE.MeshStandardMaterial({color:skinTones[i%4]}),shirt=new THREE.MeshStandardMaterial({color:shirts[i%6]}),pants=new THREE.MeshStandardMaterial({color:i%2?0x303b50:0x454545});
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.25,.48,4,8),shirt);torso.position.y=1.02;person.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.17,12,10),skin);head.position.y=1.52;person.add(head);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(.175,12,8,0,Math.PI*2,0,Math.PI*.55),new THREE.MeshStandardMaterial({color:0x29201b}));hair.position.y=1.57;person.add(hair);
+  for(const side of [-1,1]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.38,3,6),skin);arm.position.set(side*.31,1.04,0);person.add(arm);const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.48,3,6),pants);leg.position.set(side*.12,.43,0);person.add(leg)}
+  person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
+  npcActors.push({mesh:person,x:p[0],z:p[2],baseY:0,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%18],job:npcJobs[i%9],phase:i*1.73,speed:.8+(i%5)*.15,roam:6,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:5,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6});
+ });
+ document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
+}
+const npcFallbackTimer=setTimeout(spawnFallbackNPCs,6500);
 cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
+ clearTimeout(npcFallbackTimer);
+ if(npcActors.length)return;
  const base=gltf.scene;
  base.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
  npcPlacements.forEach((p,i)=>{
@@ -209,7 +226,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
  document.querySelector('#status').textContent='CITY + BEACH · 36 ANIMATED NPCs';
  document.querySelector('#hint').textContent='Explore the city and meet the local people';
  document.querySelector('#credit').textContent='Voxel City + Beach + Stylized Trees and Rocks Kit · CC0 · 36 roaming NPCs';
-},undefined,error=>{console.error('NPC model failed to load:',error)});
+},undefined,error=>{console.error('NPC model failed to load:',error);spawnFallbackNPCs()});
 
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0,inVehicle=false,activeCar=null,dayClock=0,sprinting=false,jumpVelocity=0,jumpHeight=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
