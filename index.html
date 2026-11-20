@@ -55,9 +55,10 @@ setTimeout(()=>{
   const loading=document.querySelector('#loading');
   if(loading){loading.textContent='Map is taking longer than expected. You can still enter; the city may appear when loading finishes.';loading.style.display='none'}
  }
-},18000);
+},10000);
 cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
- const pack=gltf.scene;
+ cityLoadFinished=true;
+  const pack=gltf.scene;
  pack.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material.side=THREE.FrontSide}}});
  const bounds=new THREE.Box3().setFromObject(pack),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
  pack.position.x-=center.x;pack.position.z-=center.z;pack.position.y-=bounds.min.y;
@@ -112,9 +113,11 @@ cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  document.querySelector('#credit').textContent='Voxel City Districts · CC0 1.0 · 171 GLB models';
  document.querySelector('#hint').textContent='Joystick: walk · Drag: rotate camera · Explore the city';
 },undefined,error=>{
- console.error('City pack failed to load:',error);
+ cityLoadFinished=true;
+  console.error('City pack failed to load:',error);
  document.querySelector('#loading').textContent='Voxel City Districts failed to load. Check your connection and reload.';
- document.querySelector('#status').textContent='MAP LOAD ERROR';
+ document.querySelector('#loading').style.display='none';
+  document.querySelector('#status').textContent='MAP LOAD ERROR';
 });
 
 // Beach Surf and Paddle Kit — CC0 starter scene (52 GLB models).
