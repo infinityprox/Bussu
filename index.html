@@ -167,6 +167,7 @@ const speechTexture=new THREE.CanvasTexture(speechCanvas);
 const speechBubble=new THREE.Sprite(new THREE.SpriteMaterial({map:speechTexture,transparent:true,depthTest:false}));
 speechBubble.scale.set(3.1,.78,1);speechBubble.visible=false;scene.add(speechBubble);
 let activeGreeting=null;
+let interactedNPC=null,interactedUntil=0;
 const npcPlacements=[
  // Downtown sidewalks and shop fronts
  [-4,0,-5],[-2,0,-7],[2,0,-7],[4,0,-5],
@@ -208,6 +209,36 @@ function spawnFallbackNPCs(){
  document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
 }
 spawnFallbackNPCs();
+// Tap a pedestrian to start a short, job-aware conversation.
+const npcRaycaster=new THREE.Raycaster(),npcPointer=new THREE.Vector2();
+const npcDialogues={
+ Resident:['I love living in this neighbourhood.','The streets are lively today!','Have you explored the park?'],
+ Shopkeeper:['Welcome! We have fresh things in today.','The shopping street is just ahead.','Thanks for visiting our neighbourhood!'],
+ Student:['I am on my way to class.','Have you seen the library?','I am taking a short study break.'],
+ Cyclist:['The promenade is great for a ride.','Please watch out for cyclists!','I am exploring a new route today.'],
+ Visitor:['I am enjoying this city.','The beach is beautiful.','Could you recommend a place to visit?'],
+ Artist:['The city is full of inspiration.','I am looking for a nice place to sketch.','The colours here are wonderful.'],
+ Cook:['I have been busy in the kitchen.','The cafe smells amazing today!','I am taking a quick break.'],
+ Teacher:['Learning makes every day interesting.','School is busy this week.','Enjoy exploring the city!'],
+ Musician:['I am practising a new tune.','Music makes the streets feel alive.','Maybe I will play near the plaza.']
+};
+renderer.domElement.addEventListener('click',event=>{
+ const rect=renderer.domElement.getBoundingClientRect();
+ npcPointer.set((event.clientX-rect.left)/rect.width*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
+ npcRaycaster.setFromCamera(npcPointer,camera);
+ const hits=npcRaycaster.intersectObjects(npcRoot.children,true);
+ if(!hits.length)return;
+ let root=hits[0].object;
+ while(root&&root.parent!==npcRoot)root=root.parent;
+ const actor=npcActors.find(a=>a.mesh===root);
+ if(!actor||Math.hypot(actor.mesh.position.x-player.position.x,actor.mesh.position.z-player.position.z)>22)return;
+ interactedNPC=actor;interactedUntil=performance.now()+5200;
+ const lines=npcDialogues[actor.job]||npcDialogues.Resident;
+ actor.talkLine=actor.name+': '+lines[Math.floor(Math.random()*lines.length)];
+ actor.reactionType='👋';actor.reactionUntil=interactedUntil;
+ actor.targetX=actor.mesh.position.x;actor.targetZ=actor.mesh.position.z;actor.pause=5.2;
+ actor.mesh.rotation.y=Math.atan2(player.position.x-actor.mesh.position.x,player.position.z-actor.mesh.position.z);
+});
 // The visible built-in crowd is used directly so NPC visibility never depends on a remote character file.
 
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0,inVehicle=false,activeCar=null,dayClock=0,sprinting=false,jumpVelocity=0,jumpHeight=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
@@ -385,7 +416,10 @@ npcActors.forEach(a=>{
   a.mesh.scale.y=a.baseScale*(1+(a.walking?Math.abs(Math.sin(a.phase*2))*.018:reactionCheer?Math.abs(Math.sin(now*.009))*.025:0));
  }
 });
-if(closestNPC&&closestNPCDistance<3.1){
+if(interactedNPC&&now<interactedUntil){
+ paintSpeech(interactedNPC.talkLine);speechTexture.needsUpdate=true;speechBubble.visible=true;
+ speechBubble.position.set(interactedNPC.mesh.position.x,interactedNPC.mesh.position.y+2.5,interactedNPC.mesh.position.z);
+}else if(closestNPC&&closestNPCDistance<3.1){
  if(activeGreeting!==closestNPC){
   activeGreeting=closestNPC;
   paintSpeech(closestNPC.talkLine||closestNPC.name+': '+closestNPC.job);
