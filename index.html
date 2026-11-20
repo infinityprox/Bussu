@@ -175,14 +175,22 @@ function spawnFallbackNPCs(){
   const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.25,.48,4,8),shirt);torso.position.y=1.02;person.add(torso);
   const head=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),skin);head.position.y=1.52;person.add(head);
   const hair=new THREE.Mesh(new THREE.SphereGeometry(.175,16,10,0,Math.PI*2,0,Math.PI*.55),new THREE.MeshStandardMaterial({color:i%3?0x29201b:0x171717}));hair.position.y=1.57;person.add(hair);
+  const limbs={};
   for(const side of [-1,1]){
-   const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.38,4,8),skin);arm.position.set(side*.31,1.04,0);person.add(arm);
-   const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.48,4,8),pants);leg.position.set(side*.12,.43,0);person.add(leg);
-   const shoe=new THREE.Mesh(new THREE.BoxGeometry(.15,.09,.25),new THREE.MeshStandardMaterial({color:0x242424}));shoe.position.set(side*.12,.12,.045);person.add(shoe);
+   const armPivot=new THREE.Group();armPivot.position.set(side*.31,1.27,0);person.add(armPivot);
+   const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.38,4,8),skin);arm.position.y=-.22;armPivot.add(arm);
+   const legPivot=new THREE.Group();legPivot.position.set(side*.12,.66,0);person.add(legPivot);
+   const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.48,4,8),pants);leg.position.y=-.23;legPivot.add(leg);
+   const shoe=new THREE.Mesh(new THREE.BoxGeometry(.15,.09,.25),new THREE.MeshStandardMaterial({color:0x242424}));shoe.position.set(0,-.48,.045);legPivot.add(shoe);
+   if(side<0){limbs.armL=armPivot;limbs.legL=legPivot}else{limbs.armR=armPivot;limbs.legR=legPivot}
   }
+  const accessory=new THREE.Group();
+  if(i%4===0){const bag=new THREE.Mesh(new THREE.BoxGeometry(.34,.42,.16),new THREE.MeshStandardMaterial({color:0x343b48}));bag.position.set(0,1.02,-.28);accessory.add(bag);person.add(accessory)}
+  if(i%5===0){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.09,12),new THREE.MeshStandardMaterial({color:shirts[(i+2)%shirts.length]}));cap.position.y=1.72;person.add(cap)}
+  const phone=new THREE.Mesh(new THREE.BoxGeometry(.075,.13,.018),new THREE.MeshStandardMaterial({color:0x17212b,metalness:.35,roughness:.35}));phone.position.set(.36,1.02,.08);phone.visible=false;person.add(phone);
   person.scale.setScalar(1.45);person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
   person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
-  npcActors.push({mesh:person,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%18],job:npcJobs[i%9],phase:i*1.73,speed:.8+(i%5)*.15,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6});
+  npcActors.push({mesh:person,...limbs,phone,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%18],job:npcJobs[i%9],phase:i*1.73,speed:.8+(i%5)*.15,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9});
  });
  document.querySelector('#status').textContent='CITY + BEACH · 36 NPCs';
 }
@@ -325,6 +333,19 @@ npcActors.forEach(a=>{
  if(a.mixer)a.mixer.update(dt);
  // Procedural gait keeps every figure visibly moving even when its GLB has no rig or walk clip.
  const gait=a.walking?Math.sin(a.phase):0;
+ // Articulated fallback limbs: alternating stride, natural arm swing and small idle gestures.
+ if(a.armL&&a.armR&&a.legL&&a.legR){
+  a.legL.rotation.x=gait*.62;a.legR.rotation.x=-gait*.62;
+  a.armL.rotation.x=-gait*.48;a.armR.rotation.x=gait*.48;
+  const phoneTime=!a.walking&&a.idleMode==='phone'&&now>a.idleUntil;
+  if(!a.walking&&a.idleTimer<=0){a.idleMode=['phone','look','stretch','wave'][Math.floor(Math.random()*4)];a.idleTimer=5+Math.random()*9;if(a.idleMode==='phone')a.idleUntil=now+3500}
+  if(!a.walking&&a.idleMode==='stretch'){a.armL.rotation.z=-.8*Math.sin(now*.002);a.armR.rotation.z=.8*Math.sin(now*.002)}
+  if(!a.walking&&a.idleMode==='wave'){a.armR.rotation.z=-.9-Math.sin(now*.006)*.25}
+  if(!a.walking&&a.idleMode==='phone'){a.armR.rotation.x=-.8;a.armR.rotation.z=-.35;if(a.phone)a.phone.visible=true}else if(a.phone)a.phone.visible=false;
+  if(reacting&&a.reactionType==='👋')a.armR.rotation.z=-1.15-Math.sin(now*.012)*.3;
+  if(a.walking)a.idleMode='look';
+  a.idleTimer-=dt;
+ }
  // Small readable reactions: wave, laugh, cheer or pretend to take a photo.
  const reacting=now<a.reactionUntil;
  const reactionWave=reacting&&a.reactionType==='👋';
