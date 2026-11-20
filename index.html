@@ -63,6 +63,18 @@ carModel=car.clone(true);carModel.scale.setScalar(1.25);carRoot.add(carModel);ca
 document.querySelector('#loading').style.display='none';document.querySelector('#status').textContent='ON ROAD · CITY EXPLORER';
 }catch(e){console.error(e);document.querySelector('#loading').textContent='Could not load city models. Check internet and refresh.'}}
 buildCity();
+// Load the user's custom landmark model from the repository's assets folder.
+async function loadBolumLandmark(){
+ try{
+  const gltf=await loader.loadAsync('./assets/bolum6.glb');
+  const holder=new THREE.Group();holder.position.set(29,0,29);scene.add(holder);
+  const model=gltf.scene;model.scale.setScalar(.62);model.position.set(7.1,.3,3.3);
+  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material.side=THREE.FrontSide}}});
+  holder.add(model);
+  document.querySelector('#mission').textContent='CUSTOM LANDMARK · BOLUM 6';
+ }catch(e){console.warn('Custom landmark not installed yet. Add assets/bolum6.glb to the repository.',e)}
+}
+loadBolumLandmark();
 let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
 function moveJoy(e){const r=j.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),m=35;if(l>m){dx=dx/l*m;dy=dy/l*m}joy.x=dx/m;joy.y=dy/m;stick.style.transform='translate('+dx+'px,'+dy+'px)'}
