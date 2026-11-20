@@ -66,16 +66,16 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
  const trimMat=new THREE.MeshStandardMaterial({color:0xf1e6d2,roughness:.8});
  const shopSignMat=new THREE.MeshStandardMaterial({color:0x24566a,roughness:.7});
  const extraBuildings=[],shopDoors=[];
- function isSafeBuildingSite(x,z,w,d){
+ function isSafeBuildingSite(x,z,w,d,frontExtra=0){
   if(x< -100||x>100||z< -100||z>100)return false;
   const roadHalf=6.5,walkHalf=1.7,rx=Math.round(x/40)*40,rz=Math.round(z/40)*40;
-  if(Math.abs(x-rx)<w/2+roadHalf+1||Math.abs(z-rz)<d/2+roadHalf+1)return false;
-  for(let k=-2;k<=2;k++)for(const side of [-1,1]){const lane=k*40+side*9.2;if(Math.abs(x-lane)<w/2+walkHalf+.15||Math.abs(z-lane)<d/2+walkHalf+.15)return false}
+  if(Math.abs(x-rx)<w/2+roadHalf+1||Math.abs(z-rz)<d/2+frontExtra+roadHalf+1)return false;
+  for(let k=-2;k<=2;k++)for(const side of [-1,1]){const lane=k*40+side*9.2;if(Math.abs(x-lane)<w/2+walkHalf+.15||Math.abs(z-lane)<d/2+frontExtra+walkHalf+.15)return false}
   return !extraBuildings.some(b=>Math.abs(x-b.group.position.x)<w/2+b.halfW+2&&Math.abs(z-b.group.position.z)<d/2+b.halfD+2);
  }
  function addNeighbourBuilding(x,z,kind,index){
   const w=kind==='shop'?9:8.2,d=kind==='shop'?7:8.4,h=kind==='shop'?5.2:5.8;
-  if(!isSafeBuildingSite(x,z,w,d)){console.warn('Building skipped: road, sidewalk or overlap rule',x,z);return null}
+  if(!isSafeBuildingSite(x,z,w,d,kind==='house'?2.7:1.1)){console.warn('Building skipped: road, sidewalk or overlap rule',x,z);return null}
   const g=new THREE.Group();g.position.set(x,0,z);
   const wall=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),houseWallMats[index%houseWallMats.length]);wall.position.y=h/2;wall.castShadow=true;wall.receiveShadow=true;g.add(wall);
   const roof=new THREE.Mesh(new THREE.ConeGeometry(kind==='shop'?6.5:6.2,kind==='shop'?2.2:2.8,4),roofMats[index%roofMats.length]);roof.rotation.y=Math.PI/4;roof.position.y=h+(kind==='shop'?1:1.35);roof.castShadow=true;g.add(roof);
@@ -85,7 +85,7 @@ const cityRoot=new THREE.Group();scene.add(cityRoot);
    const sill=new THREE.Mesh(new THREE.BoxGeometry(1.55,.12,.2),trimMat);sill.position.set(wx,kind==='shop'?2.25:2.85,front-.04);g.add(sill);
   }
   const doorPivot=new THREE.Group();doorPivot.position.set(-.575,0,front-.07);const door=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.35,.16),doorMat);door.position.set(.575,1.17,0);doorPivot.add(door);g.add(doorPivot);if(kind==='shop')shopDoors.push({pivot:doorPivot,open:0});
-  if(kind==='house'){const balcony=new THREE.Group();const deck=new THREE.Mesh(new THREE.BoxGeometry(3.1,.16,1.05),trimMat);deck.position.set(0,3.15,front-.58);balcony.add(deck);for(const bx of [-1.45,0,1.45]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.07,.72,.07),doorMat);rail.position.set(bx,3.58,front-1.02);balcony.add(rail)}const topRail=new THREE.Mesh(new THREE.BoxGeometry(3,.08,.08),doorMat);topRail.position.set(0,3.94,front-1.02);balcony.add(topRail);g.add(balcony);const tank=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.9,12),new THREE.MeshStandardMaterial({color:0x647b86,metalness:.35,roughness:.55}));tank.position.set(w*.25,h+1.15,d*.12);g.add(tank);const garden=new THREE.Mesh(new THREE.BoxGeometry(w+2,.16,2.1),new THREE.MeshStandardMaterial({color:0x557b45,roughness:1}));garden.position.set(0,.08,front-2.5);g.add(garden);for(const gx of [-w*.36,-w*.12,w*.12,w*.36]){const bush=new THREE.Mesh(new THREE.SphereGeometry(.48,8,6),new THREE.MeshStandardMaterial({color:0x39734a}));bush.position.set(gx,.48,front-2.45);g.add(bush)}const fenceMat=new THREE.MeshStandardMaterial({color:0xe5dfce});for(const fx of [-w/2-.25,w/2+.25]){const fence=new THREE.Mesh(new THREE.BoxGeometry(.12,.85,2.5),fenceMat);fence.position.set(fx,.42,front-2.45);g.add(fence)}}
+  if(kind==='house'){const balcony=new THREE.Group();const deck=new THREE.Mesh(new THREE.BoxGeometry(3.1,.16,1.05),trimMat);deck.position.set(0,3.15,front-.58);balcony.add(deck);for(const bx of [-1.45,0,1.45]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.07,.72,.07),doorMat);rail.position.set(bx,3.58,front-1.02);balcony.add(rail)}const topRail=new THREE.Mesh(new THREE.BoxGeometry(3,.08,.08),doorMat);topRail.position.set(0,3.94,front-1.02);balcony.add(topRail);g.add(balcony);const tank=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.9,12),new THREE.MeshStandardMaterial({color:0x647b86,metalness:.35,roughness:.55}));tank.position.set(w*.25,h+1.15,d*.12);g.add(tank);const garden=new THREE.Mesh(new THREE.BoxGeometry(w+2,.16,2.1),new THREE.MeshStandardMaterial({color:0x557b45,roughness:1}));garden.position.set(0,.08,front-1.6);g.add(garden);for(const gx of [-w*.36,-w*.12,w*.12,w*.36]){const bush=new THREE.Mesh(new THREE.SphereGeometry(.48,8,6),new THREE.MeshStandardMaterial({color:0x39734a}));bush.position.set(gx,.48,front-1.6);g.add(bush)}const fenceMat=new THREE.MeshStandardMaterial({color:0xe5dfce});for(const fx of [-w/2-.25,w/2+.25]){const fence=new THREE.Mesh(new THREE.BoxGeometry(.12,.85,2.5),fenceMat);fence.position.set(fx,.42,front-1.6);g.add(fence)}}
   if(kind==='shop'){
    const awning=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.28,1.15),new THREE.MeshStandardMaterial({color:[0xc95c4b,0x3f8b85,0xd29b43,0x657bb2][index%4]}));awning.position.set(0,3.75,front-.48);g.add(awning);
    const sign=new THREE.Mesh(new THREE.BoxGeometry(4.2,.72,.18),shopSignMat);sign.position.set(0,4.55,front-.13);g.add(sign);
