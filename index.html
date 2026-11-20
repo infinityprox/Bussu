@@ -181,10 +181,10 @@ const npcPlacements=[
  // Plaza and civic district
  [-27,0,-24],[-22,0,-27],[-16,0,-25],[22,0,-24],[27,0,-19],[25,0,24]
 ];
+const cityBenches=[];
 function spawnFallbackNPCs(){
  if(npcActors.length)return;
  const skinTones=[0xd6a078,0x9b684b,0xe0b18a,0xb77c58],shirts=[0x2878b8,0xc45a45,0x4f936b,0xd3a83c,0x7356a8,0xe1e1e1];
- const cityBenches=[];
 const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),benchLegMat=new THREE.MeshStandardMaterial({color:0x303b46,roughness:.8});
 [[-10,0,25],[10,0,25],[-30,0,5],[30,0,20],[0,0,35]].forEach(([x,y,z])=>{
  const bench=new THREE.Group();bench.position.set(x,y,z);
