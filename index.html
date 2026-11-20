@@ -430,7 +430,7 @@ const pedestrianCanCross=(now%18000)>11000;
  a.socialCooldown=Math.max(0,(a.socialCooldown||0)-dt);
  a.greetCooldown=Math.max(0,(a.greetCooldown||0)-dt);
   a.photoCooldown=Math.max(0,(a.photoCooldown||0)-dt);
-  if(a.photoCooldown<=0&&!a.walking&&a.job==='Visitor'&&Math.random()<.012){a.reactionType='📸';a.reactionUntil=now+2300;a.photoCooldown=35+Math.random()*30;a.talkLine=a.name+': Taking a photo of this view!}
+  if(a.photoCooldown<=0&&!a.walking&&a.job==='Visitor'&&Math.random()<.012){a.reactionType='📸';a.reactionUntil=now+2300;a.photoCooldown=35+Math.random()*30;a.talkLine=a.name+': Taking a photo of this view!';}
  a.playerNearby=playerDistance<3.1;
  if(a.playerNearby&&a.greetCooldown<=0){
   a.greetCooldown=11+Math.random()*8;
