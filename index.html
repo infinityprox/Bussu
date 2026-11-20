@@ -184,7 +184,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
  const b=new THREE.Box3().setFromObject(coast),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());
  coast.position.x-=c.x;coast.position.z-=c.z;coast.position.y-=b.min.y;
  // Place the shoreline just beyond the east edge of the voxel city.
- coast.position.x+=(cityRoot.children.length?new THREE.Box3().setFromObject(cityRoot).max.x:75)+s.x*.5+12;
+ coast.position.x+=118+s.x*.5; // Keep the entire beach east of the city road grid (which ends at x=105).
  beachRoot.add(coast);
  document.querySelector('#mission').textContent='VOXEL CITY + BEACH DISTRICT · FREE ROAM';
  document.querySelector('#credit').textContent='Voxel City Districts + Beach Surf and Paddle Kit · CC0 1.0';
