@@ -446,7 +446,9 @@ const pedestrianCanCross=(now%18000)>11000;
   if(friend){
    const chats=['Did you visit the new cafe?','The beach looks great today!','Are you heading to the park?','The city is busy today!','See you around!'];
    const line=chats[Math.floor(Math.random()*chats.length)];
-   a.socialCooldown=8;friend.socialCooldown=8;\n   if(!a.partner&&!friend.partner&&a.job==='Resident'&&friend.job==='Resident'&&Math.random()<.12){a.partner=friend;friend.partner=a;a.relationship='Partner';friend.relationship='Partner';a.talkLine=a.name+' and '+friend.name+' are now partners!';friend.talkLine='I enjoy spending time with '+a.name+'.';}\n   if(a.partner===friend){a.dateUntil=now+6500;friend.dateUntil=now+6500;a.activity='date';friend.activity='date';a.targetX=friend.targetX=132;a.targetZ=friend.targetZ=6;}
+   a.socialCooldown=8;friend.socialCooldown=8;
+   if(!a.partner&&!friend.partner&&a.job==='Resident'&&friend.job==='Resident'&&Math.random()<.12){a.partner=friend;friend.partner=a;a.relationship='Partner';friend.relationship='Partner';a.talkLine=a.name+' and '+friend.name+' are now partners!';friend.talkLine='I enjoy spending time with '+a.name+'.';}
+   if(a.partner===friend){a.dateUntil=now+6500;friend.dateUntil=now+6500;a.activity='date';friend.activity='date';a.targetX=friend.targetX=132;a.targetZ=friend.targetZ=6;}
    a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
    friend.targetX=friend.mesh.position.x;friend.targetZ=friend.mesh.position.z;
    a.socialFriend=friend;friend.socialFriend=a;
