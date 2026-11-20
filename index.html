@@ -194,6 +194,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/36337/v1/model.glb',gltf=>{
    phase:i*1.73, speed:isChild?0.95:0.75+(i%5)*0.16,
    roam:5.5+(i%4)*1.2, targetX:p[0], targetZ:p[2],
    pause:Math.random()*2, baseRotation:npc.rotation.y,
+   routineTimer:3+Math.random()*12, homeX:p[0], homeZ:p[2],
    mixer, walkAction, walking:false, baseScale:targetHeight/rawHeight
   });
  });
@@ -282,12 +283,31 @@ npcActors.forEach(a=>{
  a.walking=dist>=0.45;
  if(!a.walking){
   if(a.pause<=0&&a.familyRole===0){
-   const ang=Math.random()*Math.PI*2,range=Math.random()*a.roam,tx=a.x+Math.cos(ang)*range,tz=a.z+Math.sin(ang)*range;
-   a.targetX=tx;a.targetZ=tz;a.pause=1.2;
+   // Residents follow a simple daily routine: work and leisure by day, then head home at night.
+   a.routineTimer-=dt;
+   if(a.routineTimer<=0){
+    const night=daylight<.28;
+    const job=a.job;
+    let tx=a.homeX,tz=a.homeZ;
+    if(!night){
+     const offsets={
+      Shopkeeper:[2.8,-1.5],Student:[-2.5,2.2],Artist:[1.5,3.2],
+      Cook:[-2.2,-1.8],Teacher:[2.2,1.8],Musician:[-1.4,2.8],
+      Cyclist:[3.5,1.2],Visitor:[-3.2,-1.2],Resident:[1.2,-2.8]
+     };
+     const off=offsets[job]||[0,0];
+     tx=a.homeX+off[0]+(Math.random()-.5)*2.2;
+     tz=a.homeZ+off[1]+(Math.random()-.5)*2.2;
+    }
+    a.targetX=tx;a.targetZ=tz;a.routineTimer=12+Math.random()*13;a.pause=.3;
+   }else{
+    const ang=Math.random()*Math.PI*2,range=Math.random()*a.roam,tx=a.x+Math.cos(ang)*range,tz=a.z+Math.sin(ang)*range;
+    a.targetX=tx;a.targetZ=tz;a.pause=1.2;
+   }
    for(const member of npcActors){
     if(member.familyId===a.familyId&&member!==a){
-     member.targetX=tx+(member.familyRole===2?.9:-.9);
-     member.targetZ=tz+(member.familyRole===2?.8:-.8);
+     member.targetX=a.targetX+(member.familyRole===2?.9:-.9);
+     member.targetZ=a.targetZ+(member.familyRole===2?.8:-.8);
      member.pause=0.25;
     }
    }
