@@ -200,6 +200,24 @@ cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
 },undefined,error=>{console.error('Beach kit failed to load:',error)});
 
 
+// Five additional connected 3D expansion districts.
+const expansionRoot=new THREE.Group();scene.add(expansionRoot);
+const expRoadMat=new THREE.MeshStandardMaterial({color:0x343a40,roughness:.96}),expWalkMat=new THREE.MeshStandardMaterial({color:0xaaa9a1,roughness:1}),expWindowMat=new THREE.MeshStandardMaterial({color:0x91cbdc,metalness:.12,roughness:.3});
+function expBuilding(root,x,z,w,h,d,color,roof){const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.88}));body.position.set(x,h/2,z);body.castShadow=true;body.receiveShadow=true;root.add(body);const top=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.5,d+.5),new THREE.MeshStandardMaterial({color:roof,roughness:.9}));top.position.set(x,h+.25,z);root.add(top);const win=new THREE.Mesh(new THREE.BoxGeometry(w*.5,h*.22,.08),expWindowMat);win.position.set(x,h*.62,z+d/2+.05);root.add(win)}
+function addExpansionDistrict(name,z,theme){const root=new THREE.Group();root.position.set(360,0,z);expansionRoot.add(root);const land=new THREE.Mesh(new THREE.PlaneGeometry(112,112),new THREE.MeshStandardMaterial({color:theme.ground,roughness:1}));land.rotation.x=-Math.PI/2;land.position.y=-.08;root.add(land);for(const p of [-30,0,30]){const road=new THREE.Mesh(new THREE.BoxGeometry(112,.14,9),expRoadMat);road.position.set(0,.02,p);root.add(road);for(const side of [-1,1]){const walk=new THREE.Mesh(new THREE.BoxGeometry(112,.18,3),expWalkMat);walk.position.set(0,.04,p+side*6.2);root.add(walk)}}for(const x of [-30,0,30]){const road=new THREE.Mesh(new THREE.BoxGeometry(9,.14,112),expRoadMat);road.position.set(x,.02,0);root.add(road)}
+if(theme.airport){const runway=new THREE.Mesh(new THREE.BoxGeometry(23,.12,104),expRoadMat);runway.position.set(42,.02,0);root.add(runway);for(let z0=-44;z0<=44;z0+=11){const mark=new THREE.Mesh(new THREE.BoxGeometry(1,.04,5),new THREE.MeshStandardMaterial({color:0xffffff}));mark.position.set(42,.11,z0);root.add(mark)}expBuilding(root,-40,0,28,10,24,0xc5cbd0,0x687782);expBuilding(root,-40,-31,18,6,13,0xb8c4c9,0x64717a);expBuilding(root,-40,31,18,6,13,0xb8c4c9,0x64717a)}
+else if(theme.port){const water=new THREE.Mesh(new THREE.BoxGeometry(28,.08,112),new THREE.MeshStandardMaterial({color:0x287c9c,metalness:.25,roughness:.3}));water.position.set(48,.01,0);root.add(water);for(let z0=-36;z0<=36;z0+=24){expBuilding(root,28,z0,12,7,15,0xc18a55,0x55473c);const crane=new THREE.Mesh(new THREE.BoxGeometry(1,15,1),new THREE.MeshStandardMaterial({color:0xe0a33a}));crane.position.set(17,7.5,z0);root.add(crane);const arm=new THREE.Mesh(new THREE.BoxGeometry(13,.7,.7),crane.material);arm.position.set(22,14,z0);root.add(arm)}}
+else{for(let i=0;i<18;i++){const x=((i%6)-2.5)*16,z=(Math.floor(i/6)-1)*27;expBuilding(root,x,z,8+(i%3)*2,5+(i%4)*2,8,theme.colors[i%theme.colors.length],theme.roof)}}
+for(let i=0;i<10;i++){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.2,.28,2.2,7),new THREE.MeshStandardMaterial({color:0x76543a}));trunk.position.set(-48+(i%5)*23,1.1,-45+Math.floor(i/5)*90);root.add(trunk);const crown=new THREE.Mesh(new THREE.SphereGeometry(1.6,8,7),new THREE.MeshStandardMaterial({color:0x547b4c}));crown.position.set(trunk.position.x,3,trunk.position.z);root.add(crown)}
+const sign=document.createElement('canvas');sign.width=512;sign.height=128;const c=sign.getContext('2d');c.fillStyle='#172d3b';c.fillRect(0,0,512,128);c.fillStyle='#fff';c.font='bold 48px sans-serif';c.textAlign='center';c.fillText(name.toUpperCase(),256,82);const board=new THREE.Mesh(new THREE.PlaneGeometry(18,4.5),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sign)}));board.position.set(0,9,-52);root.add(board);return root}
+addExpansionDistrict('Tokyo Downtown',-240,{ground:0x68755d,colors:[0xbac4c8,0x9cabb5,0xd0c5b4,0x777f91],roof:0x3c4a58});
+addExpansionDistrict('Japanese Village',-120,{ground:0x71865b,colors:[0xd8c49e,0xb9c8ba,0xc6b39b,0x9eaa91],roof:0x8b4e3c});
+addExpansionDistrict('Airport',0,{ground:0x77816e,airport:true});
+addExpansionDistrict('Industrial Port',120,{ground:0x6d7968,port:true});
+addExpansionDistrict('Beach Island',240,{ground:0xc7b98e,colors:[0xe1c59a,0xf0dfbf,0x9bc4c0,0xe3ad83],roof:0x9b624b});
+// Highway and pedestrian paths connect the original city edge to the new district spine.
+const expConnector=new THREE.Mesh(new THREE.BoxGeometry(260,.16,14),expRoadMat);expConnector.position.set(230,.025,0);expansionRoot.add(expConnector);for(const side of [-1,1]){const path=new THREE.Mesh(new THREE.BoxGeometry(260,.18,3.2),expWalkMat);path.position.set(230,.04,side*9.2);expansionRoot.add(path)}
+
 // Low Poly Character Figures — civilian NPC crowd (CC0 1.0).
 // The source meshes are unrigged, so each pedestrian strolls around a small patrol loop.
 const npcRoot=new THREE.Group();scene.add(npcRoot);
