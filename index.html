@@ -7,7 +7,7 @@
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
 </script>
 </head><body>
-<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">CITY KIT · EXPLORE THE DISTRICT</div><div id="status" class="glass">LOADING 3D CITY</div><div id="hint" class="glass">Joystick: drive · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">3D models: Low Poly City Kit · CC0 1.0</div><div id="loading" class="glass">Loading free 3D city assets…</div>
+<div id="world"></div><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">DOWNTOWN DISTRICT · DAYTIME</div><div id="status" class="glass">LOADING 3D CITY</div><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button></div><div id="credit">3D models: Low Poly City Kit · CC0 1.0</div><div id="loading" class="glass">Loading free 3D city assets…</div>
 <div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>A mobile 3D city built with free downloadable GLB game assets. This kit is stylized low-poly art and loads models online.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
 <script type="module">
 import * as THREE from 'three';
@@ -44,6 +44,21 @@ const buildings=[apt,tall,house,shop,restaurant];
 const spots=[[-13,-13],[-5,-13],[5,-13],[13,-13],[-13,-5],[-5,-5],[5,-5],[13,-5],[-13,5],[-5,5],[5,5],[13,5],[-13,13],[-5,13],[5,13],[13,13]];
 spots.forEach((p,i)=>addClone(buildings[i%buildings.length],p[0],p[1],1.15,(i%4)*Math.PI/2));
 for(let i=0;i<16;i++){const x=(i%4)*9-13.5,z=Math.floor(i/4)*9-13.5;addClone(tree,x,z,1,0)}
+// Street furniture: instanced lamps keep the mobile scene lightweight.
+const poleMat=new THREE.MeshStandardMaterial({color:0x34424a,metalness:.45,roughness:.55});
+const lampMat=new THREE.MeshStandardMaterial({color:0xffe8ad,emissive:0xffc45c,emissiveIntensity:1.1});
+const poleGeo=new THREE.CylinderGeometry(.055,.075,3.5,7),lampGeo=new THREE.SphereGeometry(.19,8,6);
+const lampPositions=[];
+for(let z=-16;z<=16;z+=8){lampPositions.push([-2.2,1.75,z],[2.2,1.75,z])}
+for(let x=-16;x<=16;x+=8){lampPositions.push([x,1.75,-2.2],[x,1.75,2.2])}
+const poles=new THREE.InstancedMesh(poleGeo,poleMat,lampPositions.length),lamps=new THREE.InstancedMesh(lampGeo,lampMat,lampPositions.length),dummy=new THREE.Object3D();
+lampPositions.forEach((p,i)=>{dummy.position.set(p[0],1.75,p[2]);dummy.updateMatrix();poles.setMatrixAt(i,dummy.matrix);dummy.position.set(p[0],3.52,p[2]);lamps.setMatrixAt(i,dummy.matrix)});
+scene.add(poles,lamps);
+const signalMat=new THREE.MeshStandardMaterial({color:0x25313a}),redMat=new THREE.MeshStandardMaterial({color:0xe34b42,emissive:0x8a1710,emissiveIntensity:.35}),greenMat=new THREE.MeshStandardMaterial({color:0x57d18b,emissive:0x155d34,emissiveIntensity:.3});
+for(const [sx,sz] of [[-8,-8],[8,-8],[-8,8],[8,8]]){const box=new THREE.Mesh(new THREE.BoxGeometry(.28,.8,.25),signalMat);box.position.set(sx+1.05,.95,sz+1.05);scene.add(box);const a=new THREE.Mesh(new THREE.SphereGeometry(.09,7,6),redMat);a.position.set(sx+1.05,1.18,sz+1.19);scene.add(a);const b=new THREE.Mesh(new THREE.SphereGeometry(.09,7,6),greenMat);b.position.set(sx+1.05,.87,sz+1.19);scene.add(b)}
+// Distant skyline makes the playable district feel part of a larger city.
+const skylineMats=[0x718796,0x8799a2,0x566d7d,0x9a9b91].map(color=>new THREE.MeshStandardMaterial({color,roughness:1}));
+for(let i=0;i<28;i++){const angle=i/28*Math.PI*2,radius=53+(i%3)*5,w=4+(i%3)*1.4,h=9+(i*7%19),d=4+(i%4);const tower=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),skylineMats[i%skylineMats.length]);tower.position.set(Math.cos(angle)*radius,h/2-0.05,Math.sin(angle)*radius);scene.add(tower);if(i%3===0){const crown=new THREE.Mesh(new THREE.BoxGeometry(w*.72,.45,d*.72),skylineMats[(i+1)%skylineMats.length]);crown.position.set(tower.position.x,h+.18,tower.position.z);scene.add(crown)}}
 carModel=car.clone(true);carModel.scale.setScalar(1.25);carRoot.add(carModel);carRoot.position.set(0,0,2);
 document.querySelector('#loading').style.display='none';document.querySelector('#status').textContent='ON ROAD · CITY EXPLORER';
 }catch(e){console.error(e);document.querySelector('#loading').textContent='Could not load city models. Check internet and refresh.'}}
