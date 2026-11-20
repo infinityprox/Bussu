@@ -30,8 +30,8 @@ scene.add(new THREE.HemisphereLight(0xd8efff,0x55634d,2.0));const sun=new THREE.
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(210,210),new THREE.MeshStandardMaterial({color:0x68735f,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;ground.receiveShadow=true;scene.add(ground);
 const roadMat=new THREE.MeshStandardMaterial({color:0x30363b,roughness:.94}),sidewalkMat=new THREE.MeshStandardMaterial({color:0x969a98,roughness:1}),lineMat=new THREE.MeshStandardMaterial({color:0xd9d3b7,roughness:.9}),curbMat=new THREE.MeshStandardMaterial({color:0xb7b8b1,roughness:1});
 function slab(w,h,d,mat,x,y,z,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.receiveShadow=true;parent.add(m);return m}
-for(let k=-2;k<=2;k++){const p=k*40;slab(13,.12,210,roadMat,p,.015,0);slab(210,.12,13,roadMat,0,.016,p);slab(4.2,.2,210,sidewalkMat,p-8.6,.08,0);slab(4.2,.2,210,sidewalkMat,p+8.6,.08,0);slab(210,.2,4.2,sidewalkMat,0,.08,p-8.6);slab(210,.2,4.2,sidewalkMat,0,.08,p+8.6);for(let n=-9;n<=9;n++){const q=n*10;slab(.16,.025,3.4,lineMat,p,.09,q);slab(3.4,.025,.16,lineMat,q,.09,p);if(n>-9){slab(.07,.012,3.9,curbMat,p-8.6,.19,q);slab(.07,.012,3.9,curbMat,p+8.6,.19,q);slab(3.9,.012,.07,curbMat,q,.19,p-8.6);slab(3.9,.012,.07,curbMat,q,.19,p+8.6)}}}
-for(let k=-2;k<=2;k++){const p=k*40;for(let n=-9;n<=9;n++){const q=n*10;if(n%2===0){slab(.16,.025,3.4,lineMat,p,.09,q);slab(3.4,.025,.16,lineMat,q,.09,p)}}}
+for(let k=-2;k<=2;k++){const p=k*40;slab(13,.12,210,roadMat,p,.015,0);slab(210,.12,13,roadMat,0,.016,p);slab(3.4,.2,210,sidewalkMat,p-9.2,.08,0);slab(3.4,.2,210,sidewalkMat,p+9.2,.08,0);slab(210,.2,3.4,sidewalkMat,0,.08,p-9.2);slab(210,.2,3.4,sidewalkMat,0,.08,p+9.2);for(let n=-9;n<=9;n++){const q=n*10;slab(.16,.025,3.4,lineMat,p,.09,q);slab(3.4,.025,.16,lineMat,q,.09,p);if(n>-9){slab(.07,.06,3.4,curbMat,p-7.05,.12,q);slab(.07,.06,3.4,curbMat,p+7.05,.12,q);slab(3.4,.06,.07,curbMat,q,.12,p-7.05);slab(3.4,.06,.07,curbMat,q,.12,p+7.05)}}}
+for(let gx=-2;gx<=2;gx++)for(let gz=-2;gz<=2;gz++){const px=gx*40,pz=gz*40;for(let n=-5;n<=5;n++){const off=n*1.05;slab(.58,.035,12.6,lineMat,px+off,.105,pz+9.2);slab(.58,.035,12.6,lineMat,px+off,.105,pz-9.2);slab(12.6,.035,.58,lineMat,px+9.2,.105,pz+off);slab(12.6,.035,.58,lineMat,px-9.2,.105,pz+off)}}
 
 const player=new THREE.Group();player.scale.setScalar(2.2);scene.add(player);player.position.set(0,0,0);
 function part(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
@@ -208,7 +208,8 @@ const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!
 const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya','Reyansh','Ira','Vivaan','Kiara','Arnav','Myra','Dhruv','Avni','Rudra','Siya','Neil','Anika','Yuvan','Rhea','Atharv','Tia','Krish','Navya'];
 const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician'];
 // Snap pedestrian spawn points to the nearest sidewalk strip along the street grid.
-function snapToSidewalk(x,z){let best={x,z,d:Infinity};for(let k=-2;k<=2;k++)for(const side of [-1,1]){const sx=k*40+side*8.6,sz=k*40+side*8.6,dx=Math.abs(x-sx),dz=Math.abs(z-sz);if(dx<best.d)best={x:sx,z,d:dx};if(dz<best.d)best={x,z:sz,d:dz}}return{x:best.x,z:best.z}}
+function snapToSidewalk(x,z){let best={x,z,d:Infinity};for(let k=-2;k<=2;k++)for(const side of [-1,1]){const sx=k*40+side*9.2,sz=k*40+side*9.2,dx=Math.abs(x-sx),dz=Math.abs(z-sz);if(dx<best.d)best={x:sx,z,d:dx};if(dz<best.d)best={x,z:sz,d:dz}}return{x:best.x,z:best.z}}
+ function constrainToSidewalk(x,z){if(Math.abs(x)>105||Math.abs(z)>105)return{x,z};const p=snapToSidewalk(x,z);return p;}
 const speechCanvas=document.createElement('canvas');speechCanvas.width=512;speechCanvas.height=128;
 const speechCtx=speechCanvas.getContext('2d');
 function paintSpeech(message){
@@ -542,7 +543,8 @@ const pedestrianCanCross=(now%18000)>11000;
   }else if(a.familyRole!==0&&a.pause<=0){a.pause=0.15}
  }else{
   const step=Math.min(dist,a.speed*dt);
-  const nextX=a.mesh.position.x+dx/dist*step,nextZ=a.mesh.position.z+dz/dist*step;
+  const rawX=a.mesh.position.x+dx/dist*step,rawZ=a.mesh.position.z+dz/dist*step;
+  const walkway=constrainToSidewalk(rawX,rawZ),nextX=walkway.x,nextZ=walkway.z;
   const blocked=extraBuildings.some(b=>Math.abs(nextX-b.group.position.x)<b.halfW&&Math.abs(nextZ-b.group.position.z)<b.halfD);
   if(blocked){
    a.targetX=a.mesh.position.x+(Math.random()<.5?-1:1)*(2.5+Math.random()*2);
