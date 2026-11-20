@@ -266,7 +266,6 @@ drawMinimap();
 dayClock=(dayClock+dt/210)%(Math.PI*2);const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);let closestNPC=null,closestNPCDistance=4.6;
 npcActors.forEach(a=>{
  const playerDistance=Math.hypot(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
- }
  // Pedestrians give moving vehicles extra room and briefly pause when one passes.
  const carNear=trafficCars.some(t=>Math.hypot(t.car.mesh.position.x-a.mesh.position.x,t.car.mesh.position.z-a.mesh.position.z)<2.8);
  if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
