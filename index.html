@@ -348,13 +348,14 @@ npcActors.forEach(a=>{
  const reactionPhoto=reacting&&a.reactionType==='📸';
  a.mesh.position.y=a.baseY+(a.walking?Math.abs(Math.sin(a.phase*2))*.07:Math.sin(now*.001+a.phase)*.012)+(reactionLaugh?Math.abs(Math.sin(now*.012))*.13:reactionCheer?Math.abs(Math.sin(now*.009))*.09:0);
  if(!a.walkAction){
-  a.mesh.rotation.x=a.walking?Math.sin(a.phase*2)*.045:(reactionPhoto?-.12:reactionLaugh?Math.sin(now*.012)*.08:0);
-  a.mesh.rotation.z=a.walking?gait*.055:(reactionWave?Math.sin(now*.014)*.09:reactionCheer?Math.sin(now*.01)*.07:Math.sin(now*.001+a.phase)*.008);
- }
- if(!a.walkAction){
-  a.mesh.rotation.x=a.walking?Math.sin(a.phase*2)*.045:0;
-  a.mesh.rotation.z=a.walking?gait*.055:Math.sin(now*.001+a.phase)*.008;
-  a.mesh.scale.y=a.baseScale*(1+(a.walking?Math.abs(Math.sin(a.phase*2))*.018:0));
+  // Job-specific idle motions make working NPCs feel distinct.
+  const workPhase=now*.0035+a.phase;
+  const working=!a.walking&&!reacting&&daylight>=.28;
+  const job=a.job;
+  const workLean=working?(job==='Cook'?.10*Math.sin(workPhase*2):job==='Artist'?.08:job==='Teacher'?.045*Math.sin(workPhase):job==='Musician'?.07*Math.sin(workPhase*1.4):job==='Student'?.06:job==='Shopkeeper'?.035*Math.sin(workPhase*1.8):0):0;
+  a.mesh.rotation.x=a.walking?Math.sin(a.phase*2)*.045:(reactionPhoto?-.12:reactionLaugh?Math.sin(now*.012)*.08:workLean);
+  a.mesh.rotation.z=a.walking?gait*.055:(reactionWave?Math.sin(now*.014)*.09:reactionCheer?Math.sin(now*.01)*.07:working&&job==='Musician'?Math.sin(workPhase)*.06:Math.sin(now*.001+a.phase)*.008);
+  a.mesh.scale.y=a.baseScale*(1+(a.walking?Math.abs(Math.sin(a.phase*2))*.018:reactionCheer?Math.abs(Math.sin(now*.009))*.025:0));
  }
 });
 if(closestNPC&&closestNPCDistance<3.1){
