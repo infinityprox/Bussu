@@ -115,7 +115,7 @@ const parkingRoot=new THREE.Group();scene.add(parkingRoot);const parkingPaint=ne
 for(const [px,pz] of [[96,-70],[96,-35],[96,0],[96,35],[96,70],[-96,-35],[-96,35]]){slab(13,.12,8,new THREE.MeshStandardMaterial({color:0x555b5e}),px,.035,pz,parkingRoot);for(let slot=0;slot<4;slot++)slab(.1,.025,7.1,parkingPaint,px-5+slot*3.3,.105,pz,parkingRoot)}
 const streetLights=[];const poleMat=new THREE.MeshStandardMaterial({color:0x303a43,metalness:.45,roughness:.55});
 for(let k=-2;k<=2;k++)for(let n=-2;n<=2;n++){if((k+n)%2!==0)continue;const x=k*40+((k%2)?10:-10),z=n*40+((n%2)?10:-10);const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,5.5,8),poleMat);pole.position.set(x,2.75,z);parkingRoot.add(pole);const arm=new THREE.Mesh(new THREE.BoxGeometry(1.15,.1,.12),poleMat);arm.position.set(x+.48,5.35,z);parkingRoot.add(arm);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshStandardMaterial({color:0xffe3a1,emissive:0xffc45b,emissiveIntensity:0}));bulb.position.set(x+.95,5.25,z);parkingRoot.add(bulb);const light=new THREE.PointLight(0xffd99a,0,12,2);light.position.set(x+.95,5.1,z);parkingRoot.add(light);streetLights.push({bulb,light})}
-const natureRoot=new THREE.Group();scene.add(natureRoot);
+const natureRoot=new THREE.Group();scene.add(natureRoot);let parkCenterX=0,parkCenterZ=0,parkSpots=[],parkBirds=[],fallingLeaves=[],busStops=[],beachWaves=[],gulls=[],beachCenterX=130,beachSpanX=40;
 const cityLoader=new (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader();
 // Never leave the loading overlay stuck forever on slow mobile connections.
 // This only dismisses the overlay; late asset responses can still populate the scene.
@@ -135,9 +135,9 @@ cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
  cityRoot.add(pack);
  // Local procedural park trees: no external tree model or CDN request.
  const cityBoundsForParks=new THREE.Box3().setFromObject(cityRoot);
- const cityMid=cityBoundsForParks.getCenter(new THREE.Vector3());
+ const cityMid=cityBoundsForParks.getCenter(new THREE.Vector3());parkCenterX=cityMid.x;parkCenterZ=cityMid.z;
  const parkX=Math.max(-88,cityBoundsForParks.min.x-13);
- const parkSpots=[[parkX,cityMid.z-25],[parkX,cityMid.z],[parkX,cityMid.z+25],[cityMid.x,Math.max(-88,cityBoundsForParks.min.z-13)]];
+ parkSpots=[[parkX,cityMid.z-25],[parkX,cityMid.z],[parkX,cityMid.z+25],[cityMid.x,Math.max(-88,cityBoundsForParks.min.z-13)]];
  const trunkMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:1});
  const leafMats=[0x477b49,0x568b50,0x3f7047].map(color=>new THREE.MeshStandardMaterial({color,roughness:1}));
  parkSpots.forEach((spot,i)=>{
@@ -163,12 +163,12 @@ cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
   for(let n=0;n<24;n++){const gx=px-7+Math.random()*14,gz=pz-9+Math.random()*18,tuft=new THREE.Mesh(new THREE.ConeGeometry(.12,.42,4),grassMat);tuft.position.set(gx,.2,gz);parkLifeRoot.add(tuft);if(n%3===0){const bloom=new THREE.Mesh(new THREE.SphereGeometry(.13,7,6),flowerMats[n%flowerMats.length]);bloom.position.set(gx,.42,gz);parkLifeRoot.add(bloom)}}
   const table=new THREE.Group(),top=new THREE.Mesh(new THREE.BoxGeometry(2.2,.14,1.15),woodMat);top.position.y=1;table.add(top);for(const tx of [-.8,.8]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,1,.12),woodMat);leg.position.set(tx,.5,0);table.add(leg)}table.position.set(px+4,0,pz+5);parkLifeRoot.add(table);
  }
- const parkBirds=[],birdMat=new THREE.MeshStandardMaterial({color:0x39434a});
- for(let i=0;i<7;i++){const bird=new THREE.Group();bird.add(new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),birdMat));for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.42,.045,.16),birdMat);wing.position.x=side*.22;bird.add(wing)}bird.position.set(cityMid.x+(Math.random()-.5)*70,8+Math.random()*5,cityMid.z+(Math.random()-.5)*70);natureRoot.add(bird);parkBirds.push({mesh:bird,phase:i*1.7,radius:10+Math.random()*14})}
- const fallingLeaves=[],leafMat=new THREE.MeshStandardMaterial({color:0xb77c42,side:THREE.DoubleSide});
+ const birdMat=new THREE.MeshStandardMaterial({color:0x39434a});
+ for(let i=0;i<7;i++){const bird=new THREE.Group();bird.add(new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),birdMat));for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.42,.045,.16),birdMat);wing.position.x=side*.22;bird.add(wing)}bird.position.set(parkCenterX+(Math.random()-.5)*70,8+Math.random()*5,parkCenterZ+(Math.random()-.5)*70);natureRoot.add(bird);parkBirds.push({mesh:bird,phase:i*1.7,radius:10+Math.random()*14})}
+ const leafMat=new THREE.MeshStandardMaterial({color:0xb77c42,side:THREE.DoubleSide});
  for(let i=0;i<28;i++){const leaf=new THREE.Mesh(new THREE.PlaneGeometry(.22,.12),leafMat);leaf.position.set(cityMid.x+(Math.random()-.5)*70,2+Math.random()*9,cityMid.z+(Math.random()-.5)*70);leaf.rotation.x=-Math.PI/2;leaf.userData={speed:.4+Math.random()*.65,phase:Math.random()*6};natureRoot.add(leaf);fallingLeaves.push(leaf)}
  // Bus shelters are placed on sidewalks, not on the road.
- const busStops=[];
+ busStops=[];
  for(const [bx,bz,rot] of [[-30.8,-72,0],[49.2,32,Math.PI/2],[9.2,72,0],[89.2,-32,Math.PI/2]]){
   const stop=new THREE.Group();stop.position.set(bx,0,bz);stop.rotation.y=rot;const metal=new THREE.MeshStandardMaterial({color:0x3d5663,metalness:.3}),glass=new THREE.MeshStandardMaterial({color:0x8cc9d8,transparent:true,opacity:.34});
   const roof=new THREE.Mesh(new THREE.BoxGeometry(4.5,.18,2.1),metal);roof.position.y=2.55;stop.add(roof);
@@ -217,7 +217,7 @@ cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
  // Place the shoreline just beyond the east edge of the voxel city.
  coast.position.x+=118+s.x*.5; // Keep the entire beach east of the city road grid (which ends at x=105).
  beachRoot.add(coast);
- const beachWaves=[],gulls=[],waveMat=new THREE.MeshStandardMaterial({color:0x8bd5df,transparent:true,opacity:.48,roughness:.28});
+ beachCenterX=coast.position.x;beachSpanX=s.x;const waveMat=new THREE.MeshStandardMaterial({color:0x8bd5df,transparent:true,opacity:.48,roughness:.28});
  for(let i=0;i<8;i++){const wave=new THREE.Mesh(new THREE.TorusGeometry(5+i*.8,.09,5,36),waveMat);wave.rotation.x=Math.PI/2;wave.position.set(coast.position.x+s.x*.24,.18+i*.012,(i-3.5)*7);beachRoot.add(wave);beachWaves.push(wave)}
  for(let i=0;i<5;i++){const gull=new THREE.Group(),white=new THREE.MeshStandardMaterial({color:0xf0eee7});gull.add(new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),white));for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.55,.045,.16),white);wing.position.x=side*.28;gull.add(wing)}gull.position.set(coast.position.x+s.x*.18,9+i*1.3,(i-2)*13);beachRoot.add(gull);gulls.push({mesh:gull,phase:i*1.4})}
  document.querySelector('#mission').textContent='VOXEL CITY + BEACH DISTRICT · FREE ROAM';
@@ -453,10 +453,10 @@ drawMinimap();
 dayClock=(dayClock+dt/210)%(Math.PI*2);
  const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);
  shopDoors.forEach(d=>{const target=daylight>.2?Math.PI/2:0;d.open+=(target-d.open)*Math.min(1,dt*2.2);d.pivot.rotation.y=-d.open});
- parkBirds.forEach(b=>{b.phase+=dt*.55;b.mesh.position.x=cityMid.x+Math.cos(b.phase)*b.radius;b.mesh.position.z=cityMid.z+Math.sin(b.phase)*b.radius;b.mesh.position.y=8+Math.sin(b.phase*2)*.65});
+ parkBirds.forEach(b=>{b.phase+=dt*.55;b.mesh.position.x=parkCenterX+Math.cos(b.phase)*b.radius;b.mesh.position.z=parkCenterZ+Math.sin(b.phase)*b.radius;b.mesh.position.y=8+Math.sin(b.phase*2)*.65});
  fallingLeaves.forEach(l=>{l.position.y-=l.userData.speed*dt;l.position.x+=Math.sin(now*.001+l.userData.phase)*dt*.55;l.rotation.z+=dt*.8;if(l.position.y<.15){l.position.y=5+Math.random()*7;l.position.x=cityMid.x+(Math.random()-.5)*70;l.position.z=cityMid.z+(Math.random()-.5)*70}});
  beachWaves.forEach((w,i)=>{w.scale.setScalar(.82+Math.sin(now*.001+i)*.12);w.position.z+=(Math.sin(now*.0007+i)-Math.sin((now-dt*1000)*.0007+i))*.55});
- gulls.forEach(g=>{g.phase+=dt*.22;g.mesh.position.x+=dt*1.1;g.mesh.position.z=Math.sin(g.phase)*18;if(g.mesh.position.x>coast.position.x+s.x*.55)g.mesh.position.x=coast.position.x-s.x*.25});
+ gulls.forEach(g=>{g.phase+=dt*.22;g.mesh.position.x+=dt*1.1;g.mesh.position.z=Math.sin(g.phase)*18;if(g.mesh.position.x>beachCenterX+beachSpanX*.55)g.mesh.position.x=beachCenterX-beachSpanX*.25});
  weatherClock+=dt;const nightFactor=1-daylight;streetLights.forEach(s=>{s.light.intensity=nightFactor>.55?1.45:0;s.bulb.material.emissiveIntensity=nightFactor>.55?1.8:0});extraBuildings.forEach(b=>{if(b.kind==='shop')b.isOpen=daylight>.18});
  if(weatherClock>75){weatherClock=0;rainActive=Math.random()<.28}
  if(!window.__cityRain){
