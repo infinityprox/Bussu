@@ -12,13 +12,14 @@
 <script type="module">
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {USDZLoader} from 'three/addons/loaders/USDZLoader.js';
 const ROOT='https://raw.githubusercontent.com/kayquer/kit-cidade-lowpoly/main/models/';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,75,190);
 const camera=new THREE.PerspectiveCamera(56,innerWidth/innerHeight,.1,320);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.querySelector('#world').appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xd8efff,0x55634d,2.0));const sun=new THREE.DirectionalLight(0xffe2bd,3.2);sun.position.set(-22,35,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-35;sun.shadow.camera.right=35;sun.shadow.camera.top=35;sun.shadow.camera.bottom=-35;scene.add(sun);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(78,78),new THREE.MeshStandardMaterial({color:0x668b5a,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
-const loader=new GLTFLoader(),cache={};async function asset(path){if(cache[path])return cache[path];const gltf=await loader.loadAsync(ROOT+path+'.glb');cache[path]=gltf.scene;gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return gltf.scene}
+const loader=new GLTFLoader(),usdzLoader=new USDZLoader(),cache={};async function asset(path){if(cache[path])return cache[path];const gltf=await loader.loadAsync(ROOT+path+'.glb');cache[path]=gltf.scene;gltf.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return gltf.scene}
 function addClone(model,x,z,scale=1,rot=0){const o=model.clone(true);o.position.set(x,0,z);o.scale.setScalar(scale);o.rotation.y=rot;scene.add(o);return o}
 const player=new THREE.Group();scene.add(player);player.position.set(0,0,0);
 function part(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
@@ -78,11 +79,10 @@ document.querySelector('#mission').textContent='NEW CITY · CENTRAL PARK DISTRIC
 // Load the user's uploaded apocalyptic city map as the main world.
 ground.visible=false;
 async function loadUserMap(){
- const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/apocalyptic_city.glb';
+ const mapUrl='https://raw.githubusercontent.com/infinityprox/Bussu/main/assets/Postwar_City_-_Exterior_Scene.usdz';
  try{
-  document.querySelector('#loading').textContent='Loading your apocalyptic city map…';
-  const gltf=await loader.loadAsync(mapUrl);
-  const map=gltf.scene;
+  document.querySelector('#loading').textContent='Loading your Postwar city map…';
+  const map=await usdzLoader.loadAsync(mapUrl);
   map.updateMatrixWorld(true);
   const bounds=new THREE.Box3().setFromObject(map);
   const size=bounds.getSize(new THREE.Vector3());
@@ -97,13 +97,13 @@ async function loadUserMap(){
   window.cityBuildingPositions=[];
   player.position.set(0,0,0);
   document.querySelector('#loading').style.display='none';
-  document.querySelector('#status').textContent='YOUR MAP · READY';
-  document.querySelector('#mission').textContent='APOCALYPTIC CITY · EXPLORATION';
+  document.querySelector('#status').textContent='POSTWAR CITY · READY';
+  document.querySelector('#mission').textContent='POSTWAR CITY · EXPLORATION';
   document.querySelector('#hint').textContent='Joystick: explore your uploaded map · Drag: rotate camera';
-  document.querySelector('#credit').textContent='Map: assets/apocalyptic_city.glb';
+  document.querySelector('#credit').textContent='Map: Postwar City USDZ';
  }catch(e){
   console.error('Your GLB map could not be loaded:',e);
-  document.querySelector('#loading').textContent='Map failed to load. Check that the GLB is public and try again.';
+  document.querySelector('#loading').textContent='USDZ map failed. This loader needs a USDA-based USDZ file; please try a GLB export if it does not load.';
   document.querySelector('#status').textContent='MAP LOAD ERROR';
  }
 }
