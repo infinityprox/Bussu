@@ -418,46 +418,44 @@ function appendNpcChat(role,message){
  npcChatLog.appendChild(line);
  npcChatLog.scrollTop=npcChatLog.scrollHeight;
 }
-function sendOfflineNpcMessage(actor,message){
+async function sendGeminiNpcMessage(actor,message){
  if(!actor||!message.trim())return;
- const q=message.toLowerCase();
- const job=actor.job||'Resident';
- const name=actor.name||'Friend';
- const goal=actor.activity||actor.goal||'walking around the city';
- const replies=[];
- if(/\\b(hello|hi|hey|vanakkam)\\b/.test(q))replies.push('Hello! Good to see you. How is your day going?','Vanakkam! Welcome to our neighbourhood.','Hi there! Nice to meet you.');
- if(/\\b(your name|who are you|what is your name)\\b/.test(q))replies.push('My name is '+name+'. I work as a '+job+'.');
- if(/\\b(how are you|how do you feel|are you okay)\\b/.test(q))replies.push('I feel '+(actor.mood||'quite good')+' today. Thanks for asking!','I am doing well. It is nice to have a friendly chat.');
- if(/\\b(job|work|occupation|working)\\b/.test(q))replies.push('I work as a '+job+'. It keeps me busy around the city.');
- if(/\\b(where|location|going|destination)\\b/.test(q))replies.push('I am '+goal+'. You can explore the nearby streets, shops and park too.');
- if(/\\b(beach|sea|ocean)\\b/.test(q))replies.push('The beach is a lovely place to visit. I enjoy the fresh sea breeze.');
- if(/\\b(park|garden|trees)\\b/.test(q))replies.push('The park is a peaceful place. It is a good spot to take a break.');
- if(/\\b(shop|store|food|buy|market)\\b/.test(q))replies.push('There are shops around the neighbourhood. Have a look along the shopping street.');
- if(/\\b(friend|friends|play|talk)\\b/.test(q))replies.push('I like meeting people in the city. We can become good friends!');
- if(/\\b(thank|thanks)\\b/.test(q))replies.push('You are welcome! Have a great day.');
- if(/\\b(bye|goodbye|see you)\\b/.test(q))replies.push('See you later! Take care while exploring.');
- if(/\\b(help|suggest|recommend)\\b/.test(q))replies.push('You could visit the park, explore the shops or take a walk towards the beach.');
- if(!replies.length){
-  const roleLines=npcDialogues[job]||npcDialogues.Resident;
-  const remembered=actor.memory&&actor.memory.length? ' I also remember our previous meeting.':'';
-  replies.push('That is interesting! '+(roleLines[Math.floor(Math.random()*roleLines.length)]||'I enjoy life in this city.')+remembered,
-   'I am a '+job+'. '+(actor.hobby?'In my free time, I enjoy '+actor.hobby+'.':'I enjoy exploring the neighbourhood.') ,
-   'I am '+goal+' right now. Tell me more!');
- }
- const reply=replies[Math.floor(Math.random()*replies.length)];
- actor.talkLine=name+': '+reply;
+ const requestId=++chatRequestId;
  actor.aiHistory=actor.aiHistory||[];
- actor.aiHistory.push({role:'user',text:message},{role:'npc',text:reply});
- if(actor.aiHistory.length>8)actor.aiHistory=actor.aiHistory.slice(-8);
+ const history=actor.aiHistory.slice(-6).map(item=>({
+  role:item.role==='model'?'model':'user',text:item.text
+ }));
+ actor.aiHistory.push({role:'user',text:message});
+ if(actor.aiHistory.length>8)actor.aiHistory.shift();
  appendNpcChat('user',message);
- appendNpcChat('npc',reply);
+ const loading=document.createElement('div');loading.textContent='Connecting to online NPC AI…';loading.style.opacity='.7';npcChatLog.appendChild(loading);
+ const button=document.getElementById('npcChatSend');button.disabled=true;
+ try{
+  const response=await fetch('/api/npc-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   npc:{name:actor.name,job:actor.job,hobby:actor.hobby,mood:actor.mood,goal:actor.activity||actor.goal,lifeGoal:actor.lifeGoal,friendship:actor.friendship},
+   message,history
+  })});
+  const data=await response.json().catch(()=>({}));
+  loading.remove();
+  if(requestId!==chatRequestId)return;
+  if(!response.ok||!data.reply)throw new Error(data.error||'Online NPC AI is unavailable.');
+  actor.aiHistory.push({role:'model',text:data.reply});
+  if(actor.aiHistory.length>8)actor.aiHistory=actor.aiHistory.slice(-8);
+  actor.talkLine=actor.name+': '+data.reply;
+  appendNpcChat('model',data.reply);
+ }catch(error){
+  loading.remove();
+  if(requestId===chatRequestId)appendNpcChat('model','Online reply failed: '+(error.message||'Check your internet connection and Gemini API setup.')+' I cannot reply offline.');
+ }finally{
+  button.disabled=false;
+ }
 }
 npcChatForm.addEventListener('submit',event=>{
  event.preventDefault();
  const message=npcChatInput.value.trim();
  if(!message||!chatNPC)return;
  npcChatInput.value='';
- sendOfflineNpcMessage(chatNPC,message);
+ sendGeminiNpcMessage(chatNPC,message);
 });
 document.getElementById('npcChatClose').addEventListener('click',()=>{
  npcChatPanel.style.display='none';chatNPC=null;chatRequestId++;
