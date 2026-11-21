@@ -668,7 +668,7 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
  a.greetCooldown=Math.max(0,(a.greetCooldown||0)-dt);
   a.photoCooldown=Math.max(0,(a.photoCooldown||0)-dt);
   if(a.photoCooldown<=0&&!a.walking&&a.job==='Visitor'&&Math.random()<.012){a.reactionType='📸';a.reactionUntil=now+2300;a.photoCooldown=35+Math.random()*30;a.talkLine=a.name+': Taking a photo of this view!';}
- a.playerNearby=playerDistance<3.1;npcBrainThink(a,now,npcActors.reduce((count,other)=>count+(other!==a&&Math.hypot(other.mesh.position.x-a.mesh.position.x,other.mesh.position.z-a.mesh.position.z)<5?1:0),0));
+ a.playerNearby=playerDistance<3.1;if(now>=(a.brainNextCheck||0)){const nearbyCount=npcActors.reduce((count,other)=>count+(other!==a&&Math.hypot(other.mesh.position.x-a.mesh.position.x,other.mesh.position.z-a.mesh.position.z)<5?1:0),0);npcBrainThink(a,now,nearbyCount);a.brainNextCheck=now+1200;}
  if(a.playerNearby&&a.greetCooldown<=0){
   a.greetCooldown=11+Math.random()*8;
   const greetings=[
