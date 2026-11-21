@@ -1,72 +1,81 @@
-// CityLife3D online NPC conversation endpoint (Vercel serverless).
-// Keep GEMINI_API_KEY in Vercel Environment Variables; never expose it in browser code.
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed' });
+// Online NPC chat using the current Gemini Interactions API.
+module.exports = async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Use POST." });
   }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return res.status(503).json({ error: 'Online NPC chat is not configured. Add GEMINI_API_KEY in Vercel Environment Variables and redeploy.' });
+    return res.status(503).json({ error: "GEMINI_API_KEY is missing in Vercel Environment Variables. Add it and redeploy." });
   }
-  const body = req.body || {};
-  const npc = body.npc || {};
-  const message = typeof body.message === 'string' ? body.message.trim().slice(0, 240) : '';
-  if (!message) return res.status(400).json({ error: 'A message is required.' });
 
-  const history = Array.isArray(body.history) ? body.history.slice(-8) : [];
-  const contents = [];
-  for (const item of history) {
-    if (!item || typeof item.text !== 'string') continue;
-    const role = item.role === 'model' ? 'model' : item.role === 'user' ? 'user' : null;
-    if (!role) continue;
-    contents.push({ role, parts: [{ text: item.text.slice(0, 500) }] });
-  }
-  contents.push({ role: 'user', parts: [{ text: message }] });
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const npc = body.npc && typeof body.npc === "object" ? body.npc : {};
+  const message = typeof body.message === "string" ? body.message.trim().slice(0, 240) : "";
+  if (!message) return res.status(400).json({ error: "Please enter a message." });
 
-  const safe = value => typeof value === 'string' ? value.slice(0, 120) : '';
-  const systemText = [
-    'You are a friendly fictional pedestrian in the mobile game CityLife3D.',
-    'Stay in character as this NPC. Reply naturally and briefly in 1 to 3 sentences.',
-    'Remember the conversation history provided. Use the NPC details to make replies personal.',
-    'Do not claim to perform actions in the real world. Keep content suitable for a general audience.',
-    'NPC details:',
-    'Name: ' + safe(npc.name),
-    'Job: ' + safe(npc.job),
-    'Hobby: ' + safe(npc.hobby),
-    'Mood: ' + safe(npc.mood),
-    'Current activity: ' + safe(npc.goal),
-    'Life goal: ' + safe(npc.lifeGoal),
-    'Friendship level: ' + String(Math.max(0, Math.min(100, Number(npc.friendship) || 0)))
-  ].join('\n');
+  const clean = value => typeof value === "string" ? value.replace(/[<>\u0000-\u001f]/g, " ").slice(0, 120) : "";
+  const history = Array.isArray(body.history) ? body.history.slice(-6) : [];
+  const transcript = history
+    .filter(item => item && typeof item.text === "string")
+    .map(item => (item.role === "model" ? "NPC" : "PLAYER") + ": " + item.text.slice(0, 400))
+    .join("\n");
 
+  const systemInstruction = [
+    "You are a friendly fictional pedestrian in the mobile game CityLife3D.",
+    "Stay in character as this NPC. Reply naturally in 1 to 3 short sentences.",
+    "Use the NPC profile and conversation history. Remember what the player said.",
+    "Keep all replies suitable for a general audience. Do not claim to do real-world actions.",
+    "NPC name: " + clean(npc.name),
+    "Job: " + clean(npc.job),
+    "Hobby: " + clean(npc.hobby),
+    "Mood: " + clean(npc.mood),
+    "Current activity: " + clean(npc.goal),
+    "Life goal: " + clean(npc.lifeGoal),
+    "Friendship level: " + String(Math.max(0, Math.min(100, Number(npc.friendship) || 0)))
+  ].join("\n");
+
+  const prompt = (transcript ? "Previous conversation:\n" + transcript + "\n\n" : "") + "PLAYER: " + message + "\nNPC:";
   try {
-    const upstream = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent', {
-      method: 'POST',
+    const upstream = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey
       },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemText }] },
-        contents,
-        generationConfig: { temperature: 0.85, maxOutputTokens: 180 }
+        model: "gemini-3.8-flash",
+        system_instruction: systemInstruction,
+        input: prompt,
+        store: false
       })
     });
+
     const data = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
-      const message = data && data.error && data.error.message ? data.error.message : 'Gemini request failed.';
-      return res.status(upstream.status >= 400 && upstream.status < 600 ? upstream.status : 502)
-        .json({ error: message.slice(0, 300) });
+      const providerMessage = data && data.error && data.error.message ? data.error.message : "Gemini request failed.";
+      console.error("Gemini NPC chat error:", upstream.status, providerMessage.slice(0, 500));
+      return res.status(502).json({ error: "Gemini API " + upstream.status + ": " + providerMessage.slice(0, 220) });
     }
-    const reply = (data.candidates || [])
-      .flatMap(candidate => candidate.content && candidate.content.parts ? candidate.content.parts : [])
-      .map(part => part.text || '')
-      .join('')
+
+    const reply = (data.steps || [])
+      .filter(step => step && step.type === "model_output" && Array.isArray(step.content))
+      .flatMap(step => step.content)
+      .filter(part => part && part.type === "text" && typeof part.text === "string")
+      .map(part => part.text)
+      .join("")
       .trim();
-    if (!reply) return res.status(502).json({ error: 'Gemini returned an empty reply. Please try again.' });
+
+    if (!reply) {
+      console.error("Gemini NPC chat returned no model_output text:", JSON.stringify(data).slice(0, 1200));
+      return res.status(502).json({ error: "Gemini returned no text. Please try again." });
+    }
     return res.status(200).json({ reply: reply.slice(0, 900) });
   } catch (error) {
-    return res.status(502).json({ error: 'Could not reach Gemini. Check the connection and try again.' });
+    console.error("Gemini NPC chat connection error:", error && error.message);
+    return res.status(502).json({ error: "Could not connect to Gemini. Check the Vercel deployment and internet connection." });
   }
-}
+};
