@@ -423,7 +423,7 @@ async function sendGeminiNpcMessage(actor,message){
  const requestId=++chatRequestId;
  actor.aiHistory=actor.aiHistory||[];
  const history=actor.aiHistory.slice(-6).map(item=>({
-  role:item.role==='model'?'model':'user',text:item.text
+  role:(item.role==='model'||item.role==='npc')?'model':'user',text:item.text
  }));
  actor.aiHistory.push({role:'user',text:message});
  if(actor.aiHistory.length>8)actor.aiHistory.shift();
