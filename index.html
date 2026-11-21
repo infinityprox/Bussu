@@ -308,6 +308,7 @@ const npcPlacementsRaw=[
  [14,0,-33],[4,0,-31],[-8,0,-34],[-17,0,32],[-32,0,18],[-35,0,-2]
 ].map(p=>{const q=snapToSidewalk(p[0],p[2]);return[q.x,0,q.z]});
 const npcPlacements=npcPlacementsRaw;
+ const npcWorldEvents=['Local street festival','Weekend market','Park music show','Community clean-up','Beach photography day'];let npcWorldEventClock=48,npcWorldEvent='Quiet day';const npcEventSpots=[[0,0],[30,30],[132,180],[-30,20]];
 const cityBenches=[];
 function spawnFallbackNPCs(){
  if(npcActors.length)return;
@@ -419,7 +420,7 @@ renderer.domElement.addEventListener('click',event=>{
   else if(!companionNPC){companionNPC=actor;actor.isCompanion=true;actor.talkLine=actor.name+': I will explore with you!'}
   else actor.talkLine=actor.name+': Nice to see you again! Friendship '+actor.friendship;
  const lines=npcDialogues[actor.job]||npcDialogues.Resident;
- actor.talkLine=actor.mood+' '+actor.name+' · Friendship '+actor.friendship+': '+lines[Math.floor(Math.random()*lines.length)];
+ actor.talkLine=actor.mood+' '+actor.name+' · Friendship '+actor.friendship+' · Trust '+(actor.trust||0)+' · Hobby '+(actor.hobby||'exploring')+': '+lines[Math.floor(Math.random()*lines.length)];
  actor.reactionType='👋';actor.reactionUntil=interactedUntil;
  actor.targetX=actor.mesh.position.x;actor.targetZ=actor.mesh.position.z;actor.pause=5.2;
  actor.mesh.rotation.y=Math.atan2(player.position.x-actor.mesh.position.x,player.position.z-actor.mesh.position.z);
@@ -516,7 +517,7 @@ npcActors.forEach(a=>{
   // Lightweight personal-life simulation: identity, needs, goals and location memory.
   a.energy=Math.max(0,Math.min(100,(a.energy??75)+(a.activity==='sitting'?dt*1.8:-dt*.035)));
   a.stress=Math.max(0,Math.min(100,(a.stress||0)+(rainActive?dt*.012:-dt*.02)));
-  a.goalClock=(a.goalClock??20)-dt;a.landmarkCooldown=Math.max(0,(a.landmarkCooldown||0)-dt);a.decisionClock=(a.decisionClock??30)-dt;a.lifeEvents=a.lifeEvents||[];a.wallet=Math.max(0,Math.min(9999,(a.wallet??100)+(a.job==='Shopkeeper'||a.job==='Cook'?dt*.018:a.job==='Delivery Worker'?dt*.014:dt*.004)));a.careerProgress=(a.careerProgress||0)+dt*(a.job==='Student'?.0015:.00035);if(a.careerProgress>=1){a.careerProgress=0;a.careerLevel=Math.min(5,(a.careerLevel||1)+1);a.lifeEvents.push('Reached career level '+a.careerLevel);if(a.lifeEvents.length>6)a.lifeEvents.shift();}
+  a.goalClock=(a.goalClock??20)-dt;a.landmarkCooldown=Math.max(0,(a.landmarkCooldown||0)-dt);a.decisionClock=(a.decisionClock??30)-dt;a.lifeEvents=a.lifeEvents||[];a.recognisedFriends=a.recognisedFriends||[];a.hobbyClock=(a.hobbyClock??18)-dt;a.eventInterest=a.eventInterest||Math.random();a.wallet=Math.max(0,Math.min(9999,(a.wallet??100)+(a.job==='Shopkeeper'||a.job==='Cook'?dt*.018:a.job==='Delivery Worker'?dt*.014:dt*.004)));a.careerProgress=(a.careerProgress||0)+dt*(a.job==='Student'?.0015:.00035);if(a.careerProgress>=1){a.careerProgress=0;a.careerLevel=Math.min(5,(a.careerLevel||1)+1);a.lifeEvents.push('Reached career level '+a.careerLevel);if(a.lifeEvents.length>6)a.lifeEvents.shift();}
   a.memory=a.memory||[];a.visitedDistricts=a.visitedDistricts||[];
   const district=a.mesh.position.x>105?(a.mesh.position.z<-135?'Tokyo Downtown':a.mesh.position.z<-45?'Japanese Village':a.mesh.position.z<45?'Airport':a.mesh.position.z<135?'Industrial Port':'Beach Island'):(Math.abs(a.mesh.position.x)<42&&Math.abs(a.mesh.position.z)<42?'Central City':a.mesh.position.z>45?'Park District':'Neighbourhood');
   if(!a.visitedDistricts.includes(district)){a.visitedDistricts.push(district);a.memory.push('Visited '+district);if(a.memory.length>8)a.memory.shift();if(a.visitedDistricts.length>1&&a.landmarkCooldown<=0){a.talkLine=a.name+': I have explored '+district+'!';a.reactionType='✨';a.reactionUntil=now+1800;a.landmarkCooldown=24}}
@@ -525,7 +526,7 @@ npcActors.forEach(a=>{
   if(cityDay!==a.birthdayDay)a.birthdayDone=false;
   if(a.goalClock<=0&&a.familyRole===0&&a!==companionNPC&&!rainActive&&a.pause<=0&&a.activity!=='sitting'){
    const favourite=a.favouriteSpot||'park';const favouriteShop=extraBuildings.find(b=>b.kind==='shop'&&b.isOpen);const favouritePark=parkSpots[Math.floor(Math.random()*Math.max(1,parkSpots.length))]||[30,30];const goals=[{name:'Visit the park',x:favouritePark[0],z:favouritePark[1]},{name:'Explore a new street',x:a.homeX+(Math.random()-.5)*34,z:a.homeZ+(Math.random()-.5)*34},{name:'Visit a shop',x:favouriteShop?.entry.x??a.homeX,z:favouriteShop?.entry.z??a.homeZ},{name:'Enjoy the beach',x:132,z:180+(Math.random()-.5)*24},{name:'Visit a favourite place',x:favourite==='shop'?(favouriteShop?.entry.x??a.homeX):favourite==='beach'?132:favouritePark[0],z:favourite==='shop'?(favouriteShop?.entry.z??a.homeZ):favourite==='beach'?180:favouritePark[1]},{name:'Go to school',x:schoolEntry.x,z:schoolEntry.z},{name:'Wait at a bus stop',x:busStops[0]?.x??a.homeX,z:(busStops[0]?.z??a.homeZ)+1.5}];
-   const goal=goals[Math.floor(Math.random()*goals.length)];a.goal=goal.name;a.targetX=goal.x;a.targetZ=goal.z;a.activity='personalGoal';a.goalClock=35+Math.random()*35;
+   if(a.eventInterest>.58){const eventSpot=npcEventSpots[Math.floor(Math.random()*npcEventSpots.length)];goals.push({name:'Attend '+npcWorldEvent,x:eventSpot[0],z:eventSpot[1]});}const goal=goals[Math.floor(Math.random()*goals.length)];a.goal=goal.name;a.targetX=goal.x;a.targetZ=goal.z;a.activity='personalGoal';a.goalClock=35+Math.random()*35;
   }
   if(a.energy<18&&a.activity!=='sitting'&&!a.benchTarget){const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];if(bench){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench';a.talkLine=a.name+': I need a short rest.'}}
 if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
@@ -595,7 +596,7 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
    if(a.partner===friend){a.dateUntil=now+6500;friend.dateUntil=now+6500;a.activity='date';friend.activity='date';a.targetX=friend.targetX=132;a.targetZ=friend.targetZ=6;}
    a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
    friend.targetX=friend.mesh.position.x;friend.targetZ=friend.mesh.position.z;
-   a.socialFriend=friend;friend.socialFriend=a;a.memory=a.memory||[];friend.memory=friend.memory||[];a.memory.push('Chatted with '+friend.name);friend.memory.push('Chatted with '+a.name);if(a.memory.length>10)a.memory.shift();if(friend.memory.length>10)friend.memory.shift();a.lifeEvents=a.lifeEvents||[];friend.lifeEvents=friend.lifeEvents||[];a.lifeEvents.push('Met '+friend.name);friend.lifeEvents.push('Met '+a.name);if(a.lifeEvents.length>6)a.lifeEvents.shift();if(friend.lifeEvents.length>6)friend.lifeEvents.shift();
+   a.socialFriend=friend;friend.socialFriend=a;a.recognisedFriends=a.recognisedFriends||[];friend.recognisedFriends=friend.recognisedFriends||[];if(!a.recognisedFriends.includes(friend.name))a.recognisedFriends.push(friend.name);if(!friend.recognisedFriends.includes(a.name))friend.recognisedFriends.push(a.name);a.memory=a.memory||[];friend.memory=friend.memory||[];a.memory.push('Chatted with '+friend.name);friend.memory.push('Chatted with '+a.name);if(a.memory.length>10)a.memory.shift();if(friend.memory.length>10)friend.memory.shift();a.lifeEvents=a.lifeEvents||[];friend.lifeEvents=friend.lifeEvents||[];a.lifeEvents.push('Met '+friend.name);friend.lifeEvents.push('Met '+a.name);if(a.lifeEvents.length>6)a.lifeEvents.shift();if(friend.lifeEvents.length>6)friend.lifeEvents.shift();
    a.talkLine=a.name+': '+line;friend.talkLine=friend.name+': '+['Absolutely!','Sounds good!','Maybe later!','Yes, let’s go!'][Math.floor(Math.random()*4)];
    a.mesh.rotation.y=Math.atan2(friend.mesh.position.x-a.mesh.position.x,friend.mesh.position.z-a.mesh.position.z);
    friend.mesh.rotation.y=Math.atan2(a.mesh.position.x-friend.mesh.position.x,a.mesh.position.z-friend.mesh.position.z);
@@ -648,6 +649,10 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
  if(a.activity==='toBusStop'&&dist<1.15){a.activity='waitingBus';a.pause=5+Math.random()*5;a.busWaitUntil=now+a.pause*1000;a.mesh.rotation.y=Math.PI}
  if(a.activity==='waitingBus'&&now>(a.busWaitUntil||0)){a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam}
  a.walking=dist>=0.45&&a.activity!=='sitting'&&a.pause<=0;
+  if(!a.walking&&a.hobbyClock<=0&&a.activity!=='sitting'&&a!==companionNPC){a.hobbyClock=18+Math.random()*28;a.hobbyAction=a.hobby;if(a.hobby==='photography'){a.reactionType='📸';a.reactionUntil=now+1800;}else if(a.hobby==='music'){a.reactionType='🎵';a.reactionUntil=now+1800;}else if(a.hobby==='sports'){a.reactionType='⚽';a.reactionUntil=now+1600;}else if(a.hobby==='gardening'){a.reactionType='🌱';a.reactionUntil=now+1600;}else if(a.hobby==='reading'){a.idleMode='phone';a.idleUntil=now+2200;}}
+  if(a.activity==='personalGoal'&&dist<1.1){a.pause=Math.max(a.pause,.8);a.energy=Math.min(100,a.energy+dt*.8);}
+  if(a.activity==='sheltering'&&rainActive)a.stress=Math.max(0,a.stress-dt*.08);
+  if(a.playerNearby&&a.recognisedPlayer)a.mood='😊';
  if(!a.walking){
   if(a.pause<=0&&a.familyRole===0){
    // Residents follow a simple daily routine: work and leisure by day, then head home at night.
@@ -743,7 +748,7 @@ if(interactedNPC&&now<interactedUntil){
 }else if(closestNPC&&closestNPCDistance<3.1){
  if(activeGreeting!==closestNPC){
   activeGreeting=closestNPC;
-  paintSpeech(closestNPC.talkLine||closestNPC.name+': '+closestNPC.job);
+  paintSpeech(closestNPC.talkLine||closestNPC.name+': '+closestNPC.job+' · Hobby: '+(closestNPC.hobby||'exploring')+' · '+(closestNPC.goal||'Enjoying the day'));
   speechTexture.needsUpdate=true;
  }
  speechBubble.visible=true;
