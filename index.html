@@ -513,7 +513,8 @@ if(familyGrowthClock>72&&familyGrowthCount<4){
  const eligible=npcActors.filter(a=>a.familyRole===0&&!a.isChild&&!a.hasWelcomedChild&&a.job==='Resident');
  if(eligible.length){const family=eligible[Math.floor(Math.random()*eligible.length)];family.hasWelcomedChild=true;addFamilyChild(family)}
 }
-npcActors.forEach(a=>{
+npcWorldEventClock-=dt;if(npcWorldEventClock<=0){npcWorldEvent=npcWorldEvents[Math.floor(Math.random()*npcWorldEvents.length)];npcWorldEventClock=100+Math.random()*100;}
+ npcActors.forEach(a=>{
   // Lightweight personal-life simulation: identity, needs, goals and location memory.
   a.energy=Math.max(0,Math.min(100,(a.energy??75)+(a.activity==='sitting'?dt*1.8:-dt*.035)));
   a.stress=Math.max(0,Math.min(100,(a.stress||0)+(rainActive?dt*.012:-dt*.02)));
