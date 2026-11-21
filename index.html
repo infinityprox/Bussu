@@ -2,6 +2,8 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#101a27"><title>CityLife3D — Free 3D City</title>
 <style>
 *{box-sizing:border-box}#brand,#mission,#minimap,#status,#hint,#credit{display:none!important}#familyPanel,#customPanel{display:none}#roomExit{display:none;position:absolute;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:10;min-width:150px;min-height:48px;background:linear-gradient(145deg,#c44b3d,#7d251f);font-size:13px;}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101a27;color:#fff;font-family:system-ui,sans-serif;touch-action:none}#world{position:absolute;inset:0}.glass{background:linear-gradient(145deg,#101a27e8,#172b3be0);border:1px solid #ffffff35;border-radius:14px;box-shadow:0 8px 24px #0006;backdrop-filter:blur(12px)}#brand{position:absolute;top:13px;left:13px;padding:9px 13px;font-weight:900;letter-spacing:.12em;font-size:13px;pointer-events:none}#brand span{color:#75dcff}#mission{position:absolute;top:13px;left:50%;transform:translateX(-50%);padding:9px 12px;max-width:52%;text-align:center;font-size:10px;pointer-events:none}#minimap{position:absolute;right:12px;top:12px;width:116px;height:116px;border:1px solid #ffffff66;border-radius:14px;background:#101a27d9;box-shadow:0 6px 18px #0007;z-index:2}#status{position:absolute;left:13px;top:58px;padding:7px 10px;font-size:10px;letter-spacing:.1em;pointer-events:none}#hint{position:absolute;bottom:calc(12px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);padding:9px 12px;font-size:10px;white-space:nowrap;pointer-events:none}#joystick{position:absolute;left:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:104px;height:104px;border-radius:50%;background:radial-gradient(circle,#ffffff18,#09131e99);border:1px solid #ffffff66;box-shadow:inset 0 0 25px #0007;pointer-events:auto}#stick{position:absolute;left:30px;top:30px;width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,#f5fbff,#8eafc2);box-shadow:0 4px 15px #0009;border:1px solid #fff}#actions{position:absolute;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;max-height:72vh;overflow-y:auto;pointer-events:auto;z-index:4;padding:3px}#actions button{min-height:42px;min-width:112px;font-size:10px;white-space:nowrap}button{touch-action:manipulation;pointer-events:auto;border:1px solid #ffffff55;border-radius:12px;background:linear-gradient(145deg,#24658a,#12334e);color:white;padding:10px 11px;font-weight:800;min-width:102px;box-shadow:0 6px 18px #0007;font-size:10px}button:active{filter:brightness(1.3);transform:scale(.97)}#start{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(120deg,#0b1724dc,#0b1724a6);backdrop-filter:blur(5px);z-index:5}#start .card{max-width:350px;margin:20px;padding:27px;border-radius:22px;background:linear-gradient(145deg,#1d3447,#111f2d);border:1px solid #ffffff35;text-align:center;box-shadow:0 25px 80px #0009}#start h1{font-size:31px;margin:0 0 8px}#start h1 span{color:#76ddff}#start p{color:#c4d5e1;font-size:13px;line-height:1.6}#start button{background:linear-gradient(145deg,#2699c8,#17618b);width:100%;margin-top:12px;padding:15px}@keyframes loadingFailsafe{0%,78%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden;pointer-events:none}}#loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:12px 18px;font-size:12px;z-index:3;animation:loadingFailsafe 10s forwards}#credit{position:absolute;bottom:4px;right:8px;font-size:9px;color:#fff;text-shadow:0 1px 4px #000;pointer-events:auto}@media(min-width:700px){#joystick{left:32px;bottom:28px;width:116px;height:116px}#stick{left:35px;top:35px}#actions{right:30px;bottom:28px;gap:8px}#actions button{padding:12px 13px}}
+
+#npcChat{display:none;position:absolute;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(92vw,380px);max-height:42vh;z-index:8;padding:12px;pointer-events:auto;touch-action:auto}#npcChatLog{max-height:19vh;overflow:auto;font-size:12px;line-height:1.45;white-space:pre-wrap;margin:8px 0;color:#e8f4fa}#npcChatForm{display:flex;gap:6px}#npcChatInput{flex:1;min-width:0;border:1px solid #ffffff55;border-radius:10px;background:#091522;color:#fff;padding:10px;font:inherit;font-size:13px;touch-action:auto}#npcChat button{min-width:72px;min-height:38px}#npcChatTitle{font-size:13px;font-weight:800}
 </style>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}
@@ -18,7 +20,7 @@ window.setTimeout(function(){
  }
 },8000);
 </script>
-<div id="familyPanel" class="glass" style="display:none;position:absolute;top:62px;left:50%;transform:translateX(-50%);width:min(92vw,340px);padding:14px;z-index:4;font-size:12px;line-height:1.5"><b>NPC FAMILY LIFE</b><p>12 family groups travel around the city. Adult NPCs guide each group while child NPCs follow nearby. Groups pause and choose new destinations together.</p><button id="closeFamily">CLOSE</button></div><div id="customPanel" class="glass" style="display:none;position:absolute;top:62px;left:50%;transform:translateX(-50%);width:min(92vw,340px);padding:14px;z-index:4;font-size:12px;line-height:1.5"><b>PLAYER STYLE</b><p>Outfit colour:</p><div style="display:flex;gap:7px;flex-wrap:wrap"><button data-shirt="#176b91">BLUE</button><button data-shirt="#b64c3c">RED</button><button data-shirt="#34734d">GREEN</button><button data-shirt="#d0a33c">GOLD</button><button data-shirt="#633f83">PURPLE</button></div><p>Trousers:</p><div style="display:flex;gap:7px;flex-wrap:wrap"><button data-pants="#26384c">NAVY</button><button data-pants="#343434">BLACK</button><button data-pants="#68734d">OLIVE</button></div><button id="closeCustom">CLOSE</button></div><div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore the city, coastal beach and meet local NPCs.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
+<div id="familyPanel" class="glass" style="display:none;position:absolute;top:62px;left:50%;transform:translateX(-50%);width:min(92vw,340px);padding:14px;z-index:4;font-size:12px;line-height:1.5"><b>NPC FAMILY LIFE</b><p>12 family groups travel around the city. Adult NPCs guide each group while child NPCs follow nearby. Groups pause and choose new destinations together.</p><button id="closeFamily">CLOSE</button></div><div id="customPanel" class="glass" style="display:none;position:absolute;top:62px;left:50%;transform:translateX(-50%);width:min(92vw,340px);padding:14px;z-index:4;font-size:12px;line-height:1.5"><b>PLAYER STYLE</b><p>Outfit colour:</p><div style="display:flex;gap:7px;flex-wrap:wrap"><button data-shirt="#176b91">BLUE</button><button data-shirt="#b64c3c">RED</button><button data-shirt="#34734d">GREEN</button><button data-shirt="#d0a33c">GOLD</button><button data-shirt="#633f83">PURPLE</button></div><p>Trousers:</p><div style="display:flex;gap:7px;flex-wrap:wrap"><button data-pants="#26384c">NAVY</button><button data-pants="#343434">BLACK</button><button data-pants="#68734d">OLIVE</button></div><button id="closeCustom">CLOSE</button></div><div id="npcChat" class="glass"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div id="npcChatTitle">NPC CHAT</div><button id="npcChatClose" type="button" style="min-width:54px">CLOSE</button></div><div id="npcChatLog" aria-live="polite">Tap a pedestrian to start a conversation.</div><form id="npcChatForm"><input id="npcChatInput" maxlength="240" autocomplete="off" placeholder="Talk to this NPC..." /><button id="npcChatSend" type="submit">SEND</button></form></div><div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore the city, coastal beach and meet local NPCs.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
 <script type="module">
 import * as THREE from 'three';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,180,620);
@@ -403,6 +405,60 @@ const npcDialogues={
  Cleaner:['I help keep the streets tidy.','A clean city is a happy city.','I am checking the park today.'],
  'Security Guard':['Everything is peaceful here.','I am keeping an eye on the public area.','Please enjoy your visit!']
 };
+const npcChatPanel=document.getElementById('npcChat');
+const npcChatTitle=document.getElementById('npcChatTitle');
+const npcChatLog=document.getElementById('npcChatLog');
+const npcChatForm=document.getElementById('npcChatForm');
+const npcChatInput=document.getElementById('npcChatInput');
+let chatNPC=null,chatRequestId=0;
+function appendNpcChat(role,message){
+ const line=document.createElement('div');
+ line.textContent=(role==='user'?'YOU: ':'NPC: ')+message;
+ line.style.margin='5px 0';
+ npcChatLog.appendChild(line);
+ npcChatLog.scrollTop=npcChatLog.scrollHeight;
+}
+async function sendGeminiNpcMessage(actor,message){
+ if(!actor||!message.trim())return;
+ const requestId=++chatRequestId;
+ actor.aiHistory=actor.aiHistory||[];
+ appendNpcChat('user',message);
+ const history=actor.aiHistory.slice(-6);
+ actor.aiHistory.push({role:'user',text:message});
+ if(actor.aiHistory.length>8)actor.aiHistory.shift();
+ const loading=document.createElement('div');loading.textContent='NPC is thinking…';loading.style.opacity='.7';npcChatLog.appendChild(loading);
+ const button=document.getElementById('npcChatSend');button.disabled=true;
+ try{
+  const response=await fetch('/api/npc-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   npc:{name:actor.name,job:actor.job,hobby:actor.hobby,mood:actor.mood,goal:actor.goal,lifeGoal:actor.lifeGoal,friendship:actor.friendship},
+   message,history
+  })});
+  const data=await response.json().catch(()=>({}));
+  loading.remove();
+  if(!response.ok||!data.reply)throw new Error(data.error||'Gemini is unavailable.');
+  actor.aiHistory.push({role:'model',text:data.reply});
+  if(actor.aiHistory.length>8)actor.aiHistory=actor.aiHistory.slice(-8);
+  actor.talkLine=actor.name+': '+data.reply;
+  appendNpcChat('model',data.reply);
+ }catch(error){
+  loading.remove();
+  const fallback=actor.talkLine||actor.name+': I am enjoying the city today!';
+  appendNpcChat('model',fallback.replace(actor.name+': ','')+' (offline reply)');
+ }finally{
+  button.disabled=false;
+  if(requestId===chatRequestId)npcChatInput.focus({preventScroll:true});
+ }
+}
+npcChatForm.addEventListener('submit',event=>{
+ event.preventDefault();
+ const message=npcChatInput.value.trim();
+ if(!message||!chatNPC)return;
+ npcChatInput.value='';
+ sendGeminiNpcMessage(chatNPC,message);
+});
+document.getElementById('npcChatClose').addEventListener('click',()=>{
+ npcChatPanel.style.display='none';chatNPC=null;chatRequestId++;
+});
 renderer.domElement.addEventListener('click',event=>{
  const rect=renderer.domElement.getBoundingClientRect();
  npcPointer.set((event.clientX-rect.left)/rect.width*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
@@ -421,6 +477,7 @@ renderer.domElement.addEventListener('click',event=>{
   else actor.talkLine=actor.name+': Nice to see you again! Friendship '+actor.friendship;
  const lines=npcDialogues[actor.job]||npcDialogues.Resident;
  actor.talkLine=actor.mood+' '+actor.name+' · Friendship '+actor.friendship+' · Trust '+(actor.trust||0)+' · Hobby '+(actor.hobby||'exploring')+': '+lines[Math.floor(Math.random()*lines.length)];
+ chatNPC=actor;actor.aiHistory=actor.aiHistory||[];npcChatTitle.textContent=actor.name+' · '+actor.job;npcChatLog.textContent='';npcChatPanel.style.display='block';npcChatInput.value='';sendGeminiNpcMessage(actor,'Hi! What are you up to today?');
  actor.reactionType='👋';actor.reactionUntil=interactedUntil;
  actor.targetX=actor.mesh.position.x;actor.targetZ=actor.mesh.position.z;actor.pause=5.2;
  actor.mesh.rotation.y=Math.atan2(player.position.x-actor.mesh.position.x,player.position.z-actor.mesh.position.z);
