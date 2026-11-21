@@ -414,7 +414,7 @@ renderer.domElement.addEventListener('click',event=>{
  const actor=npcActors.find(a=>a.mesh===root);
  if(!actor||Math.hypot(actor.mesh.position.x-player.position.x,actor.mesh.position.z-player.position.z)>22)return;
  interactedNPC=actor;interactedUntil=performance.now()+5200;
-  actor.friendship=(actor.friendship||0)+1;actor.trust=Math.min(100,(actor.trust||0)+4);actor.lastKnownPlayerVisit=performance.now();actor.memory=actor.memory||[];actor.memory.push('Met the player again');if(actor.memory.length>10)actor.memory.shift();actor.socialNeed=Math.max(0,(actor.socialNeed??55)-18);actor.stress=Math.max(0,(actor.stress||0)-5);actor.lifeEvents=actor.lifeEvents||[];actor.lifeEvents.push('Had a friendly conversation');if(actor.lifeEvents.length>6)actor.lifeEvents.shift();
+  actor.friendship=(actor.friendship||0)+1;actor.trust=Math.min(100,(actor.trust||0)+4);actor.lastKnownPlayerVisit=performance.now();actor.memory=actor.memory||[];actor.memory.push('Met the player again');actor.playerActionMemory=actor.playerActionMemory||[];actor.playerActionMemory.push({action:'friendly conversation',at:Date.now()});if(actor.playerActionMemory.length>8)actor.playerActionMemory.shift();actor.lifeGoal=actor.friendship>=5?'Become the player’s trusted city companion':actor.lifeGoal;actor.socialNeed=Math.max(0,(actor.socialNeed??55)-18);actor.stress=Math.max(0,(actor.stress||0)-5);actor.lifeEvents=actor.lifeEvents||[];actor.lifeEvents.push('Had a friendly conversation');if(actor.lifeEvents.length>6)actor.lifeEvents.shift();
   actor.mood=['😊','😎','🤔','🤩'][Math.min(3,Math.floor((actor.friendship||0)/3))];
   if(companionNPC===actor){companionNPC=null;actor.isCompanion=false;actor.talkLine=actor.name+': I will continue exploring. '}
   else if(!companionNPC){companionNPC=actor;actor.isCompanion=true;actor.talkLine=actor.name+': I will explore with you!'}
@@ -529,13 +529,13 @@ npcWorldEventClock-=dt;if(npcWorldEventClock<=0){npcWorldEvent=npcWorldEvents[Ma
   a.energy=Math.max(0,Math.min(100,(a.energy??75)+(a.activity==='sitting'?dt*1.8:-dt*.035)));
   a.stress=Math.max(0,Math.min(100,(a.stress||0)+(rainActive?dt*.012:-dt*.02)));
   a.goalClock=(a.goalClock??20)-dt;a.landmarkCooldown=Math.max(0,(a.landmarkCooldown||0)-dt);a.decisionClock=(a.decisionClock??30)-dt;a.lifeEvents=a.lifeEvents||[];a.recognisedFriends=a.recognisedFriends||[];a.hobbyClock=(a.hobbyClock??18)-dt;a.eventInterest=a.eventInterest||Math.random();a.wallet=Math.max(0,Math.min(9999,(a.wallet??100)+(a.job==='Shopkeeper'||a.job==='Cook'?dt*.018:a.job==='Delivery Worker'?dt*.014:dt*.004)));a.careerProgress=(a.careerProgress||0)+dt*(a.job==='Student'?.0015:.00035);if(a.careerProgress>=1){a.careerProgress=0;a.careerLevel=Math.min(5,(a.careerLevel||1)+1);a.lifeEvents.push('Reached career level '+a.careerLevel);if(a.lifeEvents.length>6)a.lifeEvents.shift();}
-  a.memory=a.memory||[];a.visitedDistricts=a.visitedDistricts||[];
+  a.memory=a.memory||[];a.visitedDistricts=a.visitedDistricts||[];a.habits=a.habits||{park:0,shop:0,beach:0,rest:0};a.playerActionMemory=a.playerActionMemory||[];a.lifeGoal=a.lifeGoal||['Become a trusted neighbour','Explore every district','Build a successful career','Make new friends','Discover favourite places'][Math.abs(a.familyId||0)%5];a.tomorrowPlan=a.tomorrowPlan||null;a.failedRoutes=a.failedRoutes||0;a.familiarPlaces=a.familiarPlaces||[];
   // Citizen needs and a lightweight local economy evolve during play.
   a.hunger=Math.min(100,(a.hunger??25)+dt*.055);
   a.hygiene=Math.max(0,(a.hygiene??82)-dt*.012);
   a.socialNeed=Math.min(100,(a.socialNeed??55)+dt*.018);
-  if(a.activity==='sitting'||a.activity==='buildingVisit'){a.stress=Math.max(0,a.stress-dt*.035);a.socialNeed=Math.max(0,a.socialNeed-dt*.025)}
-  if(a.activity==='eating'){a.hunger=Math.max(0,a.hunger-dt*.9);a.wallet=Math.max(0,a.wallet-dt*.015)}
+  if(a.activity==='sitting'||a.activity==='buildingVisit'){a.habits=a.habits||{park:0,shop:0,beach:0,rest:0};a.habits.rest=(a.habits.rest||0)+dt*.01;a.stress=Math.max(0,a.stress-dt*.035);a.socialNeed=Math.max(0,a.socialNeed-dt*.025)}
+  if(a.activity==='eating'){a.habits=a.habits||{park:0,shop:0,beach:0,rest:0};a.habits.shop=(a.habits.shop||0)+dt*.004;a.hunger=Math.max(0,a.hunger-dt*.9);a.wallet=Math.max(0,a.wallet-dt*.015)}
   if(a.activity==='working'){a.wallet=Math.min(9999,a.wallet+dt*.035);a.energy=Math.max(0,a.energy-dt*.012)}
   if(a.hunger>82&&a.activity!=='eating'&&a.activity!=='sitting'){a.goal='Find food';a.activity='seekingFood';a.pause=Math.max(a.pause,.1)}
   if(a.socialNeed>88&&a.activity!=='socialising'&&a.activity!=='sitting')a.goal='Meet a neighbour';
@@ -545,11 +545,14 @@ npcWorldEventClock-=dt;if(npcWorldEventClock<=0){npcWorldEvent=npcWorldEvents[Ma
   const district=a.mesh.position.x>105?(a.mesh.position.z<-135?'Tokyo Downtown':a.mesh.position.z<-45?'Japanese Village':a.mesh.position.z<45?'Airport':a.mesh.position.z<135?'Industrial Port':'Beach Island'):(Math.abs(a.mesh.position.x)<42&&Math.abs(a.mesh.position.z)<42?'Central City':a.mesh.position.z>45?'Park District':'Neighbourhood');
   if(!a.visitedDistricts.includes(district)){a.visitedDistricts.push(district);a.memory.push('Visited '+district);if(a.memory.length>8)a.memory.shift();if(a.visitedDistricts.length>1&&a.landmarkCooldown<=0){a.talkLine=a.name+': I have explored '+district+'!';a.reactionType='✨';a.reactionUntil=now+1800;a.landmarkCooldown=24}}
   const cityDay=Math.floor(dayClock/(Math.PI*2)*28);
+  // Recognise familiar districts and prepare a plan for the next in-game day.
+  if(!a.familiarPlaces.includes(district)){a.familiarPlaces.push(district);if(a.familiarPlaces.length>12)a.familiarPlaces.shift()}
+  if(a.plannedForDay!==cityDay){const habitKeys=Object.keys(a.habits);const favouriteHabit=habitKeys.sort((x,y)=>(a.habits[y]||0)-(a.habits[x]||0))[0]||'park';a.tomorrowPlan={day:cityDay+1,goal:a.lifeGoal,activity:favouriteHabit==='shop'?'Visit favourite shops':favouriteHabit==='beach'?'Take a beach walk':favouriteHabit==='rest'?'Rest at a familiar bench':'Visit a familiar park',district:a.visitedDistricts[a.visitedDistricts.length-1]||district};a.plannedForDay=cityDay;a.memory.push('Planned tomorrow: '+a.tomorrowPlan.activity);if(a.memory.length>10)a.memory.shift()}
   if(!a.birthdayDone&&cityDay===a.birthdayDay&&a.familyRole===0){a.birthdayDone=true;a.talkLine='🎂 '+a.name+' is celebrating a birthday!';a.reactionType='🎉';a.reactionUntil=now+3600}
   if(cityDay!==a.birthdayDay)a.birthdayDone=false;
   if(a.goalClock<=0&&a.familyRole===0&&a!==companionNPC&&!rainActive&&a.pause<=0&&a.activity!=='sitting'){
    const favourite=a.favouriteSpot||'park';const favouriteShop=extraBuildings.find(b=>b.kind==='shop'&&b.isOpen);const favouritePark=parkSpots[Math.floor(Math.random()*Math.max(1,parkSpots.length))]||[30,30];const goals=[{name:'Visit the park',x:favouritePark[0],z:favouritePark[1]},{name:'Explore a new street',x:a.homeX+(Math.random()-.5)*34,z:a.homeZ+(Math.random()-.5)*34},{name:'Visit a shop',x:favouriteShop?.entry.x??a.homeX,z:favouriteShop?.entry.z??a.homeZ},{name:'Enjoy the beach',x:132,z:180+(Math.random()-.5)*24},{name:'Visit a favourite place',x:favourite==='shop'?(favouriteShop?.entry.x??a.homeX):favourite==='beach'?132:favouritePark[0],z:favourite==='shop'?(favouriteShop?.entry.z??a.homeZ):favourite==='beach'?180:favouritePark[1]},{name:'Go to school',x:schoolEntry.x,z:schoolEntry.z},{name:'Wait at a bus stop',x:busStops[0]?.x??a.homeX,z:(busStops[0]?.z??a.homeZ)+1.5}];
-   if(a.eventInterest>.58){const eventSpot=npcEventSpots[Math.floor(Math.random()*npcEventSpots.length)];goals.push({name:'Attend '+npcWorldEvent,x:eventSpot[0],z:eventSpot[1]});}const goal=goals[Math.floor(Math.random()*goals.length)];a.goal=goal.name;a.targetX=goal.x;a.targetZ=goal.z;a.activity='personalGoal';a.goalClock=35+Math.random()*35;
+   if(a.eventInterest>.58){const eventSpot=npcEventSpots[Math.floor(Math.random()*npcEventSpots.length)];goals.push({name:'Attend '+npcWorldEvent,x:eventSpot[0],z:eventSpot[1]});}const habitKeys=Object.keys(a.habits||{});const preferred=habitKeys.sort((x,y)=>(a.habits[y]||0)-(a.habits[x]||0))[0];const goal=preferred&&Math.random()<.42?goals.find(g=>g.name.toLowerCase().includes(preferred==='park'?'park':preferred==='shop'?'shop':preferred==='beach'?'beach':'favourite'))||goals[Math.floor(Math.random()*goals.length)]:goals[Math.floor(Math.random()*goals.length)];a.goal=goal.name+' · '+a.lifeGoal;a.targetX=goal.x;a.targetZ=goal.z;if(a.targetX<=100&&a.targetX>=-100&&a.targetZ<=100&&a.targetZ>=-100){const safe=constrainToSidewalk(a.targetX,a.targetZ);a.targetX=safe.x;a.targetZ=safe.z;}a.activity='personalGoal';a.goalClock=35+Math.random()*35;
   }
   if(a.energy<18&&a.activity!=='sitting'&&!a.benchTarget){const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];if(bench){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench';a.talkLine=a.name+': I need a short rest.'}}
 if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
@@ -673,7 +676,7 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
  if(a.activity==='waitingBus'&&now>(a.busWaitUntil||0)){a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam}
  a.walking=dist>=0.45&&a.activity!=='sitting'&&a.pause<=0;
   if(!a.walking&&a.hobbyClock<=0&&a.activity!=='sitting'&&a!==companionNPC){a.hobbyClock=18+Math.random()*28;a.hobbyAction=a.hobby;if(a.hobby==='photography'){a.reactionType='📸';a.reactionUntil=now+1800;}else if(a.hobby==='music'){a.reactionType='🎵';a.reactionUntil=now+1800;}else if(a.hobby==='sports'){a.reactionType='⚽';a.reactionUntil=now+1600;}else if(a.hobby==='gardening'){a.reactionType='🌱';a.reactionUntil=now+1600;}else if(a.hobby==='reading'){a.idleMode='phone';a.idleUntil=now+2200;}}
-  if(a.activity==='personalGoal'&&dist<1.1){a.pause=Math.max(a.pause,.8);a.energy=Math.min(100,a.energy+dt*.8);}
+  if(a.activity==='personalGoal'&&dist<1.1){a.habits=a.habits||{park:0,shop:0,beach:0,rest:0};if(a.goal.toLowerCase().includes('park'))a.habits.park=(a.habits.park||0)+1;if(a.goal.toLowerCase().includes('beach'))a.habits.beach=(a.habits.beach||0)+1;if(a.goal.toLowerCase().includes('shop'))a.habits.shop=(a.habits.shop||0)+1;a.pause=Math.max(a.pause,.8);a.energy=Math.min(100,a.energy+dt*.8);}
   if(a.activity==='sheltering'&&rainActive)a.stress=Math.max(0,a.stress-dt*.08);
   if(a.playerNearby&&a.recognisedPlayer)a.mood='😊';
  if(!a.walking){
@@ -718,11 +721,11 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
   const nextX=rawX,nextZ=rawZ;
   const blocked=extraBuildings.some(b=>Math.abs(nextX-b.group.position.x)<b.halfW&&Math.abs(nextZ-b.group.position.z)<b.halfD);
   if(blocked){
-   a.targetX=a.mesh.position.x+(Math.random()<.5?-1:1)*(2.5+Math.random()*2);
-   a.targetZ=a.mesh.position.z+(Math.random()<.5?-1:1)*(2.5+Math.random()*2);
+   a.failedRoutes=(a.failedRoutes||0)+1;a.memory=a.memory||[];if(a.failedRoutes%3===1){a.memory.push('Changed route after an obstacle');if(a.memory.length>10)a.memory.shift()}
+   const detour=constrainToSidewalk(a.mesh.position.x+(Math.random()<.5?-1:1)*(3.5+Math.random()*3),a.mesh.position.z+(Math.random()<.5?-1:1)*(3.5+Math.random()*3));a.targetX=detour.x;a.targetZ=detour.z;
    a.pause=.12;
   }else{
-   a.mesh.position.x=nextX;a.mesh.position.z=nextZ;
+   a.mesh.position.x=nextX;a.mesh.position.z=nextZ;a.failedRoutes=Math.max(0,(a.failedRoutes||0)-.015);
    const visited=extraBuildings.find(b=>Math.hypot(a.mesh.position.x-b.entry.x,a.mesh.position.z-b.entry.z)<.95);if(visited&&!a.entryVisitUntil){a.entryVisitUntil=now+3200;a.targetX=visited.entry.x;a.targetZ=visited.entry.z;a.pause=3.2;a.activity=rainActive?'sheltering':'buildingVisit';a.isSheltered=rainActive}if(a.entryVisitUntil&&now>a.entryVisitUntil){a.entryVisitUntil=0;a.isSheltered=false;a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam}
    a.mesh.rotation.y=Math.atan2(dx,dz);
    a.phase+=dt*a.speed*7;
