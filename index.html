@@ -1,877 +1,242 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#101a27"><title>CityLife3D — Free 3D City</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Village Auto 3D – If GTA’s map were an Indian village</title>
 <style>
-*{box-sizing:border-box}#brand,#mission,#minimap,#status,#hint,#credit{display:none!important}#familyPanel,#customPanel{display:none}#roomExit{display:none;position:absolute;top:calc(14px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:10;min-width:150px;min-height:48px;background:linear-gradient(145deg,#c44b3d,#7d251f);font-size:13px;}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101a27;color:#fff;font-family:system-ui,sans-serif;touch-action:none}#world{position:absolute;inset:0}.glass{background:linear-gradient(145deg,#101a27e8,#172b3be0);border:1px solid #ffffff35;border-radius:14px;box-shadow:0 8px 24px #0006;backdrop-filter:blur(12px)}#brand{position:absolute;top:13px;left:13px;padding:9px 13px;font-weight:900;letter-spacing:.12em;font-size:13px;pointer-events:none}#brand span{color:#75dcff}#mission{position:absolute;top:13px;left:50%;transform:translateX(-50%);padding:9px 12px;max-width:52%;text-align:center;font-size:10px;pointer-events:none}#minimap{position:absolute;right:12px;top:12px;width:116px;height:116px;border:1px solid #ffffff66;border-radius:14px;background:#101a27d9;box-shadow:0 6px 18px #0007;z-index:2}#status{position:absolute;left:13px;top:58px;padding:7px 10px;font-size:10px;letter-spacing:.1em;pointer-events:none}#hint{position:absolute;bottom:calc(12px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);padding:9px 12px;font-size:10px;white-space:nowrap;pointer-events:none}#joystick{position:absolute;left:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:104px;height:104px;border-radius:50%;background:radial-gradient(circle,#ffffff18,#09131e99);border:1px solid #ffffff66;box-shadow:inset 0 0 25px #0007;pointer-events:auto}#stick{position:absolute;left:30px;top:30px;width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,#f5fbff,#8eafc2);box-shadow:0 4px 15px #0009;border:1px solid #fff}#actions{position:absolute;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;max-height:72vh;overflow-y:auto;pointer-events:auto;z-index:4;padding:3px}#actions button{min-height:42px;min-width:112px;font-size:10px;white-space:nowrap}button{touch-action:manipulation;pointer-events:auto;border:1px solid #ffffff55;border-radius:12px;background:linear-gradient(145deg,#24658a,#12334e);color:white;padding:10px 11px;font-weight:800;min-width:102px;box-shadow:0 6px 18px #0007;font-size:10px}button:active{filter:brightness(1.3);transform:scale(.97)}#start{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(120deg,#0b1724dc,#0b1724a6);backdrop-filter:blur(5px);z-index:5}#start .card{max-width:350px;margin:20px;padding:27px;border-radius:22px;background:linear-gradient(145deg,#1d3447,#111f2d);border:1px solid #ffffff35;text-align:center;box-shadow:0 25px 80px #0009}#start h1{font-size:31px;margin:0 0 8px}#start h1 span{color:#76ddff}#start p{color:#c4d5e1;font-size:13px;line-height:1.6}#start button{background:linear-gradient(145deg,#2699c8,#17618b);width:100%;margin-top:12px;padding:15px}@keyframes loadingFailsafe{0%,78%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden;pointer-events:none}}#loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:12px 18px;font-size:12px;z-index:3;animation:loadingFailsafe 10s forwards}#credit{position:absolute;bottom:4px;right:8px;font-size:9px;color:#fff;text-shadow:0 1px 4px #000;pointer-events:auto}@media(min-width:700px){#joystick{left:32px;bottom:28px;width:116px;height:116px}#stick{left:35px;top:35px}#actions{right:30px;bottom:28px;gap:8px}#actions button{padding:12px 13px}}
-
-#npcChat{display:none;position:absolute;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(92vw,380px);max-height:42vh;z-index:8;padding:12px;pointer-events:auto;touch-action:auto}#npcChatLog{max-height:19vh;overflow:auto;font-size:12px;line-height:1.45;white-space:pre-wrap;margin:8px 0;color:#e8f4fa}#npcChatForm{display:flex;gap:6px}#npcChatInput{flex:1;min-width:0;border:1px solid #ffffff55;border-radius:10px;background:#091522;color:#fff;padding:10px;font:inherit;font-size:13px;touch-action:auto}#npcChat button{min-width:72px;min-height:38px}#npcChatTitle{font-size:13px;font-weight:800}
+html,body{margin:0;height:100%;background:#10131a;overflow:hidden;touch-action:none;font-family:"Arial Black",Impact,sans-serif;user-select:none}
+canvas#gl{display:block;width:100%;height:100%}
+#money{position:fixed;top:18px;right:22px;font-size:34px;color:#7fe05a;-webkit-text-stroke:6px #0a2a0a;paint-order:stroke fill;letter-spacing:1px}
+#hud{position:fixed;left:16px;bottom:16px}
+#mm{display:block;width:150px;height:110px;border:2px solid #e8e8e8;border-radius:8px}
+.bar{height:8px;background:#1c2a22;margin-top:6px}.bar i{display:block;height:100%}
+#hp i{background:#5ec45e}#st i{background:#3a8fd8}
+#sub{position:fixed;left:0;right:0;bottom:22px;text-align:center;color:#fff;font-size:20px;text-shadow:0 0 4px #000,0 0 4px #000,0 2px 6px #000;padding:0 12px;pointer-events:none}
+#b{position:fixed;right:14px;bottom:70px;display:flex;gap:10px}
+#b button{width:66px;height:66px;border-radius:50%;border:2px solid #fff8;background:#0007;color:#fff;font-family:inherit;font-size:14px}
+#b button:active{background:#fff3}
+#over{position:fixed;inset:0;background:#000a;color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:Arial,sans-serif}
+#over h1{font-family:"Arial Black",Impact,sans-serif;color:#f2c200;font-size:40px;margin:0 0 8px}
 </style>
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}
-</script>
-</head><body>
-<div id="world"></div><button id="roomExit" type="button">EXIT ROOM</button><div id="brand" class="glass">CITYLIFE <span>3D</span></div><div id="mission" class="glass">CITY + BEACH + NPCs</div><div id="status" class="glass">EMPTY WORLD</div><canvas id="minimap" width="232" height="232"></canvas><div id="hint" class="glass">Joystick: walk · Drag: rotate camera</div><div id="joystick"><div id="stick"></div></div><div id="actions"><button id="interact">ENTER BUILDING</button><button id="vehicleBtn">ENTER VEHICLE</button><button id="customBtn">CUSTOMIZE</button><button id="sprintBtn">HOLD TO SPRINT</button><button id="jumpBtn">JUMP</button><button id="resetView">CINEMATIC VIEW</button><button id="nextTask">NEW TASK</button><button id="familyView">FAMILY NPCs</button></div><div id="credit">No map assets loaded</div><div id="loading" class="glass">Loading city and beach districts…</div>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="money">₹340</div>
+<div id="hud"><canvas id="mm" width="150" height="110"></canvas><div class="bar" id="hp"><i></i></div><div class="bar" id="st" style="height:5px"><i></i></div></div>
+<div id="sub"></div>
+<div id="b"><button id="rb">RUN</button><button id="ab">ACT</button></div>
+<div id="over"><h1>Rest a while.</h1><div id="fin"></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-/* Independent safety timer: works even if the Three.js module or CDN import fails. */
-window.setTimeout(function(){
- const panel=document.getElementById('loading');
- if(panel){
-  panel.textContent='Map download is delayed. You can enter the city; the map may appear when available.';
-  panel.style.display='none';
- }
-},8000);
+const $=id=>document.getElementById(id);
+const renderer=new THREE.WebGLRenderer({canvas:$('gl'),antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(62,1,.1,500);
+function rs(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=camera.aspect<1?75:62;camera.updateProjectionMatrix()}
+addEventListener('resize',rs);rs();
+
+let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const L=148;
+const Lam=c=>new THREE.MeshLambertMaterial({color:c}),Bas=c=>new THREE.MeshBasicMaterial({color:c});
+
+// sky, fog, light and sun
+const sc=document.createElement('canvas');sc.width=4;sc.height=256;
+{const x=sc.getContext('2d'),gr=x.createLinearGradient(0,0,0,256);
+ gr.addColorStop(0,'#8e9db2');gr.addColorStop(.55,'#d9d0d2');gr.addColorStop(1,'#f4c9a4');x.fillStyle=gr;x.fillRect(0,0,4,256)}
+scene.background=new THREE.CanvasTexture(sc);
+scene.fog=new THREE.Fog('#d9c9c4',40,330);
+scene.add(new THREE.HemisphereLight('#ffe0c0','#4a4a3a',.95));
+const sun=new THREE.DirectionalLight('#ffb27a',.7);sun.position.set(100,30,20);scene.add(sun);
+const sunBall=new THREE.Mesh(new THREE.SphereGeometry(6,16,12),new THREE.MeshBasicMaterial({color:'#fff4d6',fog:false}));
+sunBall.position.set(260,10,0);scene.add(sunBall);
+
+// ground, road and hills
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),Lam('#5b6b3a'));ground.rotation.x=-Math.PI/2;scene.add(ground);
+const walk=new THREE.Mesh(new THREE.PlaneGeometry(300,16),Lam('#8a7f6a'));walk.rotation.x=-Math.PI/2;walk.position.y=.02;scene.add(walk);
+const road=new THREE.Mesh(new THREE.PlaneGeometry(300,10),Lam('#4a4846'));road.rotation.x=-Math.PI/2;road.position.y=.04;scene.add(road);
+function inst(geo,mat,items){
+  const m=new THREE.InstancedMesh(geo,mat,items.length),d=new THREE.Object3D(),col=new THREE.Color();
+  items.forEach((it,i)=>{d.position.set(...it.p);d.rotation.set(...(it.r||[0,0,0]));d.scale.set(...(it.s||[1,1,1]));d.updateMatrix();
+    m.setMatrixAt(i,d.matrix);if(it.c)m.setColorAt(i,col.set(it.c))});
+  m.instanceMatrix.needsUpdate=true;if(items.length&&items[0].c)m.instanceColor.needsUpdate=true;scene.add(m);return m}
+const dashes=[];for(let x=-L;x<=L;x+=5)dashes.push({p:[x,.06,0]});
+inst(new THREE.BoxGeometry(2,.02,.15),Bas('#d8cf9a'),dashes);
+[[-215,30,-60],[-200,22,70],[215,28,-70],[230,36,40],[200,20,0],[0,26,-230],[60,30,230]].forEach(([x,h,z])=>{
+  const c=new THREE.Mesh(new THREE.ConeGeometry(70,h*2,7),Lam('#2f5a3a'));c.position.set(x,h*.7,z);scene.add(c)});
+
+// shops
+const wallCols=['#d9a441','#c9b458','#5d9c8f','#d98c5f','#e0d0a0','#a9c0a0'],names=['PROVISION','TAILOR','STUDIO','MEDICAL','CYCLE','SALON','HOTEL','STATIONERY','SWEETS','TEA','HARDWARE','FLOWERS'];
+const sig={};function signTex(t,col){const k=t+col;if(sig[k])return sig[k];
+  const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle=col;x.fillRect(0,0,256,64);
+  x.fillStyle='#fff';x.font='bold 32px Arial';x.textAlign='center';x.textBaseline='middle';x.fillText(t,128,34);return sig[k]=new THREE.CanvasTexture(c)}
+const walls=[],roofs=[],shutC=[],shutO=[],signGeo=new THREE.PlaneGeometry(4.4,.9),signCols=['#1d4f8c','#8c1d1d','#2a6b3a','#3a3a3a'];
+const CHAI={x:41,z:-8};
+for(const side of[-1,1])for(let i=0;i<33;i++){
+  const x=-L+i*9,chai=side===-1&&Math.abs(x-CHAI.x)<1;
+  walls.push({p:[x,2.1,side*12],c:chai?'#c9483a':wallCols[rnd()*6|0]});
+  roofs.push({p:[x,4.5,side*9.4],r:[-side*.22,0,0],c:chai?'#7d2a22':'#a8482b'});
+  (chai||i%3===1?shutO:shutC).push({p:[x,1.3,side*7.95],c:'#8a8a84'});
+  const s=new THREE.Mesh(signGeo,new THREE.MeshBasicMaterial({map:signTex(chai?'CHAI':names[(i+(side>0?5:0))%12],chai?'#7d2a22':signCols[i%4])}));
+  s.position.set(x,3.35,side*7.85);if(side>0)s.rotation.y=Math.PI;scene.add(s);
+}
+inst(new THREE.BoxGeometry(8.6,4.2,8),Lam(0xffffff),walls);
+inst(new THREE.BoxGeometry(9.6,.25,5.2),Lam(0xffffff),roofs);
+inst(new THREE.BoxGeometry(6,2.6,.2),Lam(0xffffff),shutC);
+inst(new THREE.BoxGeometry(6,2.6,.2),Bas('#ffd27a'),shutO);
+
+// palms
+const trunks=[],fronds=[];
+for(let n=0;n<55;n++){
+  const x=(rnd()*2-1)*L,z=(rnd()<.5?-1:1)*(14+rnd()*30),h=8+rnd()*3;
+  trunks.push({p:[x,h/2,z],s:[1,h,1],c:'#6b4a2a'});
+  for(let k=0;k<7;k++)fronds.push({p:[x,h,z],r:[0,k*.9+rnd(),-.35-rnd()*.3],c:'#2c6a34'});
+}
+inst(new THREE.CylinderGeometry(.18,.3,1,6),Lam(0xffffff),trunks);
+const fg=new THREE.BoxGeometry(3.6,.05,.5);fg.translate(1.8,0,0);inst(fg,Lam(0xffffff),fronds);
+
+// poles and wires
+const wp=[];
+for(let x=-144;x<=144;x+=16){
+  const p=new THREE.Mesh(new THREE.CylinderGeometry(.1,.13,9,6),Lam('#8a7a66'));p.position.set(x,4.5,-7.3);scene.add(p);
+  const b=new THREE.Mesh(new THREE.BoxGeometry(.1,.1,1.6),Lam('#5a4a3a'));b.position.set(x,8.6,-7.3);scene.add(b);
+  if(x<144)for(const o of[-.7,.7])wp.push(x,8.6,-7.3+o,x+16,8.6,-7.3+o);
+}
+{const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(wp,3));scene.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:'#222'})))}
+
+// characters
+function blob(r){const m=new THREE.Mesh(new THREE.CircleGeometry(r,14),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.3}));m.rotation.x=-Math.PI/2;m.position.y=.08;return m}
+function person(shirt,pants,patch){
+  const g=new THREE.Group(),skin='#c68a5e';
+  const limb=(x,y,w,h,c)=>{const p=new THREE.Group();p.position.set(x,y,0);const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),Lam(c));m.position.y=-h/2;p.add(m);g.add(p);return p};
+  const legL=limb(-.12,.9,.2,.9,pants),legR=limb(.12,.9,.2,.9,pants);
+  const t=new THREE.Mesh(new THREE.BoxGeometry(.5,.62,.28),Lam(shirt));t.position.y=1.21;g.add(t);
+  if(patch)for(const[x,y,z]of[[-.1,1.3,.142],[.1,1.1,.142],[.1,1.3,-.142],[-.1,1.1,-.142]]){const q=new THREE.Mesh(new THREE.BoxGeometry(.16,.16,.01),Lam(patch));q.position.set(x,y,z);g.add(q)}
+  const armL=limb(-.33,1.5,.13,.55,shirt),armR=limb(.33,1.5,.13,.55,shirt);
+  const h=new THREE.Mesh(new THREE.SphereGeometry(.16,12,10),Lam(skin));h.position.y=1.68;g.add(h);
+  const hr=new THREE.Mesh(new THREE.SphereGeometry(.17,12,10,0,Math.PI*2,0,Math.PI*.55),Lam('#1a1210'));hr.position.y=1.7;hr.rotation.x=-.25;g.add(hr);
+  g.add(blob(.5));g.userData={legL,legR,armL,armR};return g}
+const player=person('#d45a3a','#3d6aa5','#4a1410');scene.add(player);
+
+const boy=new THREE.Group(),bp=person('#7aa6d8','#222');bp.scale.setScalar(.95);bp.position.z=-.1;boy.add(bp);
+const wheels=[];for(const z of[-.55,.55]){const w=new THREE.Group(),t=new THREE.Mesh(new THREE.TorusGeometry(.35,.035,6,16),Lam('#111'));t.rotation.y=Math.PI/2;w.add(t);w.position.set(0,.35,z);boy.add(w);wheels.push(w)}
+{const f=new THREE.Mesh(new THREE.BoxGeometry(.05,.05,1.2),Lam('#222'));f.position.y=.55;boy.add(f);
+ const hb=new THREE.Mesh(new THREE.BoxGeometry(.5,.04,.04),Lam('#222'));hb.position.set(0,.95,.5);boy.add(hb);
+ const pa=new THREE.Mesh(new THREE.BoxGeometry(.4,.28,.36),Lam('#eee'));pa.position.set(0,.78,-.75);boy.add(pa)}
+bp.userData.armL.rotation.x=bp.userData.armR.rotation.x=-1.1;
+scene.add(boy);
+const arrow=new THREE.Mesh(new THREE.ConeGeometry(.35,.7,4),Bas('#ffd23c'));arrow.rotation.x=Math.PI;scene.add(arrow);
+
+const rickGeo={b:new THREE.BoxGeometry(1.3,.8,2.2),c:new THREE.BoxGeometry(1.3,.8,1.2),r:new THREE.BoxGeometry(1.4,.08,1.5),w:new THREE.CylinderGeometry(.3,.3,.15,10)};
+function rickshaw(){const g=new THREE.Group();
+  const b=new THREE.Mesh(rickGeo.b,Lam('#f2c200'));b.position.y=.7;g.add(b);
+  const c=new THREE.Mesh(rickGeo.c,Lam('#1c1c1c'));c.position.set(0,1.5,-.4);g.add(c);
+  const r=new THREE.Mesh(rickGeo.r,Lam('#f2c200'));r.position.set(0,1.95,-.35);g.add(r);
+  for(const[x,z]of[[0,1],[-.6,-.8],[.6,-.8]]){const w=new THREE.Mesh(rickGeo.w,Lam('#111'));w.rotation.z=Math.PI/2;w.position.set(x,.3,z);g.add(w)}
+  g.add(blob(1.3));return g}
+
+// chai marker and money notes
+const beam=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,14,12,1,true),new THREE.MeshBasicMaterial({color:'#ff6a5a',transparent:true,opacity:.28,side:THREE.DoubleSide}));
+beam.position.set(CHAI.x,7,CHAI.z+1.5);scene.add(beam);
+const noteGeo=new THREE.BoxGeometry(.5,.02,.26),noteCol={10:'#7fb37a',20:'#4a9aa8',50:'#c98a4a'};
+const notes=[];
+function spawnNote(){const v=[10,20,50][rnd()*3|0],m=new THREE.Mesh(noteGeo,Bas(noteCol[v]));m.position.set((rnd()*2-1)*(L-6),1,(rnd()*2-1)*6.8);m.userData.v=v;scene.add(m);notes.push(m)}
+
+// state
+let P,rick=[],bs,level,msg='',msgT=0,over=false,tm=0;
+for(let i=0;i<4;i++){const m=rickshaw();scene.add(m);rick.push({m,d:i%2?-1:1,x:-120+i*70,z:i%2?-2.3:2.3})}
+function reset(){
+  notes.forEach(n=>scene.remove(n));notes.length=0;for(let i=0;i<22;i++)spawnNote();
+  P={x:0,z:0,yaw:Math.PI/2,hp:100,st:100,money:340,hit:0,t:0,mv:0};
+  bs={x:50,d:1,sp:4.5};level=1;over=false;$('over').style.display='none';
+  say('W/S move · A/D turn · Shift run · E at the chai shop',6);
+}
+function say(t,s=3){msg=t;msgT=s}
+
+// input
+const keys={};let tv={on:false,x:0,y:0},ox=0,oy=0,runBtn=false;
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(k==='e')act();if(k==='r'&&over)reset()});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+const cvs=$('gl');
+cvs.addEventListener('pointerdown',e=>{if(over){reset();return}tv.on=true;ox=e.clientX;oy=e.clientY;tv.x=tv.y=0});
+cvs.addEventListener('pointermove',e=>{if(!tv.on)return;tv.x=Math.max(-1,Math.min(1,(e.clientX-ox)/50));tv.y=Math.max(-1,Math.min(1,(e.clientY-oy)/50))});
+['pointerup','pointercancel'].forEach(t=>cvs.addEventListener(t,()=>tv.on=false));
+const rb=$('rb');rb.addEventListener('pointerdown',()=>runBtn=true);['pointerup','pointerleave'].forEach(t=>rb.addEventListener(t,()=>runBtn=false));
+$('ab').addEventListener('pointerdown',act);
+function act(){
+  if(over)return;
+  if(Math.hypot(P.x-CHAI.x,P.z-CHAI.z)<6){
+    if(P.money>=20){P.money-=20;P.hp=Math.min(100,P.hp+35);say('Chai! +35 health')}else say('Chai costs ₹20');
+  }else say('Nothing here. The chai shop is the red one up the street.');
+}
+
+// update
+function update(dt){
+  tm+=dt;if(msgT>0)msgT-=dt;if(over)return;
+  let turn=(keys.a||keys.arrowleft?1:0)-(keys.d||keys.arrowright?1:0),fwd=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0);
+  if(tv.on){turn=-tv.x;fwd=-tv.y}
+  const run=(keys.shift||runBtn)&&P.st>0&&fwd>.1;
+  P.st=Math.max(0,Math.min(100,P.st+(run?-30:18)*dt));
+  P.yaw+=turn*2.2*dt;
+  const sp=fwd>0?(run?8.5:4.2):2.5;
+  P.x=Math.max(-L,Math.min(L,P.x+Math.sin(P.yaw)*fwd*sp*dt));
+  P.z=Math.max(-7.6,Math.min(7.6,P.z+Math.cos(P.yaw)*fwd*sp*dt));
+  P.mv=Math.abs(fwd)>.1?1:0;P.t+=dt*(run?12:8)*P.mv;
+  P.hit-=dt;
+  for(const r of rick){
+    r.x+=r.d*(8+level*.4)*dt;if(r.x>L+10)r.x=-L-10;if(r.x<-L-10)r.x=L+10;
+    if(P.hit<=0&&Math.abs(P.x-r.x)<1.9&&Math.abs(P.z-r.z)<1.4){
+      P.hp-=25;P.money=Math.max(0,P.money-30);P.hit=1;P.z=r.z>0?6.8:-6.8;say('Auto hit you! −25 health, −₹30');
+      if(P.hp<=0){over=true;$('fin').textContent='You finished with ₹'+P.money+'. Tap or press R to restart.';$('over').style.display='flex'}
+    }
+  }
+  bs.x+=bs.d*bs.sp*dt;if(bs.x>L-4){bs.x=L-4;bs.d=-1}if(bs.x<-L+4){bs.x=-L+4;bs.d=1}
+  if(Math.hypot(P.x-bs.x,P.z-5.6)<1.7){
+    P.money+=100;level++;bs.sp*=1.12;bs.x=Math.max(-L+4,Math.min(L-4,P.x+bs.d*60));
+    say('Mission passed! The paper boy tipped you ₹100');
+  }
+  for(let i=notes.length-1;i>=0;i--){const n=notes[i];
+    if(Math.hypot(P.x-n.position.x,P.z-n.position.z)<1.3){P.money+=n.userData.v;say('+₹'+n.userData.v,1.2);scene.remove(n);notes.splice(i,1);spawnNote()}
+    else{n.rotation.y+=dt*2;n.position.y=1+Math.sin(tm*3+i)*.12}}
+}
+function animate(){
+  const f=Math.sin(P.t)*.8*P.mv;
+  player.position.set(P.x,0,P.z);player.rotation.y=P.yaw;
+  const u=player.userData;u.legL.rotation.x=f;u.legR.rotation.x=-f;u.armL.rotation.x=-f;u.armR.rotation.x=f;
+  boy.position.set(bs.x,0,5.6);boy.rotation.y=bs.d>0?Math.PI/2:-Math.PI/2;
+  wheels.forEach(w=>w.rotation.x+=bs.d*bs.sp*.03);
+  const pu=bp.userData,pe=Math.sin(tm*bs.sp*1.5)*.6;pu.legL.rotation.x=pe;pu.legR.rotation.x=-pe;
+  arrow.position.set(bs.x,3.4+Math.sin(tm*4)*.25,5.6);arrow.rotation.y=tm*2;
+  for(const r of rick){r.m.position.set(r.x,0,r.z);r.m.rotation.y=r.d>0?Math.PI/2:-Math.PI/2}
+  const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);
+  const target=new THREE.Vector3(P.x-fx*6.2,3.2,P.z-fz*6.2);
+  camera.position.lerp(target,.12);
+  camera.lookAt(P.x+fx*9,1.5,P.z+fz*9);
+}
+
+// HUD
+const mc=$('mm').getContext('2d');
+function mini(){
+  const S=2.2,fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);
+  const T=(wx,wz)=>{const dx=wx-P.x,dz=wz-P.z;return[75+(-dx*fz+dz*fx)*S,55-(dx*fx+dz*fz)*S]};
+  mc.fillStyle='#26362c';mc.fillRect(0,0,150,110);
+  const quad=(z0,z1,c)=>{mc.fillStyle=c;mc.beginPath();[[-L,z0],[L,z0],[L,z1],[-L,z1]].forEach(([a,b],i)=>{const[p,q]=T(a,b);i?mc.lineTo(p,q):mc.moveTo(p,q)});mc.fill()};
+  quad(-16,-8,'#16201a');quad(8,16,'#16201a');quad(-8,8,'#8d8f90');quad(-5,5,'#b7babb');
+  const dot=(x,z,c,r)=>{const[p,q]=T(x,z);mc.fillStyle=c;mc.beginPath();mc.arc(p,q,r,0,7);mc.fill()};
+  dot(CHAI.x,CHAI.z,'#ff6a5a',4);dot(bs.x,5.6,'#ffd23c',4);rick.forEach(r=>dot(r.x,r.z,'#fff',2.5));
+  mc.fillStyle='#fff';mc.beginPath();mc.moveTo(75,47);mc.lineTo(80,61);mc.lineTo(70,61);mc.fill();
+}
+function hud(){
+  $('money').textContent='₹'+P.money;
+  $('hp').firstChild.style.width=P.hp+'%';$('st').firstChild.style.width=P.st+'%';
+  $('sub').textContent=msgT>0?msg:'Mission: catch the paper boy (level '+level+')';
+  mini();
+}
+
+let last=performance.now();
+function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);animate();hud();renderer.render(scene,camera);requestAnimationFrame(loop)}
+reset();camera.position.set(-6,3.2,0);requestAnimationFrame(loop);
 </script>
-<div id="familyPanel" class="glass" style="display:none;position:absolute;top:62px;left:50%;transform:translateX(-50%);width:min(92vw,340px);padding:14px;z-index:4;font-size:12px;line-height:1.5"><b>NPC FAMILY LIFE</b><p>12 family groups travel around the city. Adult NPCs guide each group while child NPCs follow nearby. Groups pause and choose new destinations together.</p><button id="closeFamily">CLOSE</button></div><div id="customPanel" class="glass" style="display:none;position:absolute;top:62px;left:50%;transform:translateX(-50%);width:min(92vw,340px);padding:14px;z-index:4;font-size:12px;line-height:1.5"><b>PLAYER STYLE</b><p>Outfit colour:</p><div style="display:flex;gap:7px;flex-wrap:wrap"><button data-shirt="#176b91">BLUE</button><button data-shirt="#b64c3c">RED</button><button data-shirt="#34734d">GREEN</button><button data-shirt="#d0a33c">GOLD</button><button data-shirt="#633f83">PURPLE</button></div><p>Trousers:</p><div style="display:flex;gap:7px;flex-wrap:wrap"><button data-pants="#26384c">NAVY</button><button data-pants="#343434">BLACK</button><button data-pants="#68734d">OLIVE</button></div><button id="closeCustom">CLOSE</button></div><div id="npcChat" class="glass"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div id="npcChatTitle">NPC CHAT</div><button id="npcChatClose" type="button" style="min-width:54px">CLOSE</button></div><div id="npcChatLog" aria-live="polite">Tap a pedestrian to start a conversation.</div><form id="npcChatForm"><input id="npcChatInput" maxlength="240" autocomplete="off" placeholder="Talk to this NPC..." /><button id="npcChatSend" type="submit">SEND</button></form></div><div id="start"><div class="card"><h1>CityLife<span>3D</span></h1><p>Explore the city, coastal beach and meet local NPCs.</p><button id="play" onclick="document.getElementById('start').remove()">ENTER THE CITY</button></div></div>
-<script type="module">
-import * as THREE from 'three';
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bbdce);scene.fog=new THREE.Fog(0x9bbdce,180,620);
-const camera=new THREE.PerspectiveCamera(56,innerWidth/innerHeight,.1,900);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.querySelector('#world').appendChild(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xd8efff,0x55634d,2.0));const sun=new THREE.DirectionalLight(0xffe2bd,3.2);sun.position.set(-22,35,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-35;sun.shadow.camera.right=35;sun.shadow.camera.top=35;sun.shadow.camera.bottom=-35;scene.add(sun);
-
-// Large urban terrain and a connected asphalt street grid
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(210,210),new THREE.MeshStandardMaterial({color:0x68735f,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;ground.receiveShadow=true;scene.add(ground);
-const roadMat=new THREE.MeshStandardMaterial({color:0x30363b,roughness:.94}),sidewalkMat=new THREE.MeshStandardMaterial({color:0x969a98,roughness:1}),lineMat=new THREE.MeshStandardMaterial({color:0xd9d3b7,roughness:.9}),curbMat=new THREE.MeshStandardMaterial({color:0xb7b8b1,roughness:1});
-function slab(w,h,d,mat,x,y,z,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.receiveShadow=true;parent.add(m);return m}
-for(let k=-2;k<=2;k++){const p=k*40;slab(13,.12,210,roadMat,p,.015,0);slab(210,.12,13,roadMat,0,.016,p);for(let n=-9;n<=9;n++){const q=n*10;slab(.16,.025,3.4,lineMat,p,.09,q);slab(3.4,.025,.16,lineMat,q,.09,p)}const segments=[[-100,-86.5],[-73.5,-46.5],[-33.5,-6.5],[6.5,33.5],[46.5,73.5],[86.5,100]];for(const [a,b] of segments){const mid=(a+b)/2,len=b-a;for(const side of [-1,1]){slab(3.4,.16,len,sidewalkMat,p+side*9.2,.02,mid);slab(len,.16,3.4,sidewalkMat,mid,.02,p+side*9.2);slab(.07,.08,len,curbMat,p+side*7.05,.14,mid);slab(len,.08,.07,curbMat,mid,.14,p+side*7.05)}}}
-for(let gx=-2;gx<=2;gx++)for(let gz=-2;gz<=2;gz++){const px=gx*40,pz=gz*40;for(let n=-3;n<=3;n++){const off=n*.88;slab(13,.035,.48,lineMat,px,.105,pz+9.2+off);slab(13,.035,.48,lineMat,px,.105,pz-9.2+off);slab(.48,.035,13,lineMat,px+9.2+off,.105,pz);slab(.48,.035,13,lineMat,px-9.2+off,.105,pz)}}
-
-const player=new THREE.Group();player.scale.setScalar(2.2);scene.add(player);player.position.set(0,0,0);
-function part(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
-const skin=new THREE.MeshStandardMaterial({color:0xc98e68}),shirt=new THREE.MeshStandardMaterial({color:0x176b91}),pants=new THREE.MeshStandardMaterial({color:0x26384c}),shoe=new THREE.MeshStandardMaterial({color:0x17202b});
-part(player,new THREE.CylinderGeometry(.25,.3,.72,10),shirt,0,1.05,0);part(player,new THREE.SphereGeometry(.22,12,10),skin,0,1.62,0);
-const armL=new THREE.Group(),armR=new THREE.Group(),legL=new THREE.Group(),legR=new THREE.Group();
-[[armL,-.31,1.32],[armR,.31,1.32],[legL,-.13,.72],[legR,.13,.72]].forEach(v=>{v[0].position.set(v[1],v[2],0);player.add(v[0])});
-part(armL,new THREE.CapsuleGeometry(.085,.42,4,8),shirt,0,-.25,0);part(armR,new THREE.CapsuleGeometry(.085,.42,4,8),shirt,0,-.25,0);
-part(legL,new THREE.CapsuleGeometry(.105,.43,4,8),pants,0,-.26,0);part(legR,new THREE.CapsuleGeometry(.105,.43,4,8),pants,0,-.26,0);
-part(legL,new THREE.BoxGeometry(.19,.1,.3),shoe,0,-.53,.07);part(legR,new THREE.BoxGeometry(.19,.1,.3),shoe,0,-.53,.07);
-let inside=false,returnPosition=new THREE.Vector3(),walkPhase=0,activeInterior=0;
-const interiorRooms=[];
-function buildInterior(index){const room=new THREE.Group();room.position.set(300+index*15,0,0);scene.add(room);const floor=new THREE.Mesh(new THREE.BoxGeometry(10,.25,10),new THREE.MeshStandardMaterial({color:[0x9a8064,0x777d83,0x9a8a6c,0x8a987e][index]}));floor.position.y=-.12;room.add(floor);const wallMat=new THREE.MeshStandardMaterial({color:0xe0d4bd});[[-5,0,.25,10],[5,0,.25,10],[0,-5,10,.25],[0,5,10,.25]].forEach(v=>{const w=new THREE.Mesh(new THREE.BoxGeometry(v[2],3,v[3]),wallMat);w.position.set(v[0],1.5,v[1]);room.add(w)});const counter=new THREE.Mesh(new THREE.BoxGeometry(3,.9,.8),new THREE.MeshStandardMaterial({color:[0x68442b,0x456477,0x76543b,0x536b49][index]}));counter.position.set(0,.45,-1.7);room.add(counter);const shelf=new THREE.Mesh(new THREE.BoxGeometry(.35,1.8,2.8),new THREE.MeshStandardMaterial({color:0x76543b}));shelf.position.set(-3,.9,1);room.add(shelf);interiorRooms.push(room)}
-for(let i=0;i<4;i++)buildInterior(i);
-// Voxel City Districts — CC0 starter scene with 171 GLB models
-const buildingSpots=[];
-const cityRoot=new THREE.Group();scene.add(cityRoot);
-
- // Extra neighbourhood: lightweight procedural houses and shopfronts.
- // Kept separate from downloaded GLB assets so the district still appears if a model fails.
- const extraDistrict=new THREE.Group();scene.add(extraDistrict);
- const houseWallMats=[0xd9b98f,0xc7d5d9,0xe0c6b1,0xc5c6a5,0xd8d0bd].map(color=>new THREE.MeshStandardMaterial({color,roughness:.9}));
- const roofMats=[0x914f3d,0x4d5966,0x7d5944,0x5c765b].map(color=>new THREE.MeshStandardMaterial({color,roughness:.95}));
- const windowMat=new THREE.MeshStandardMaterial({color:0x8fd0e4,roughness:.25,metalness:.12});
- const doorMat=new THREE.MeshStandardMaterial({color:0x60412f,roughness:.85});
- const trimMat=new THREE.MeshStandardMaterial({color:0xf1e6d2,roughness:.8});
- const shopSignMat=new THREE.MeshStandardMaterial({color:0x24566a,roughness:.7});
- const extraBuildings=[],shopDoors=[];
- function isSafeBuildingSite(x,z,w,d,frontExtra=0){
-  if(x< -100||x>100||z< -100||z>100)return false;
-  const roadHalf=6.5,walkHalf=1.7,rx=Math.round(x/40)*40,rz=Math.round(z/40)*40;
-  if(Math.abs(x-rx)<w/2+roadHalf+1||Math.abs(z-rz)<d/2+frontExtra+roadHalf+1)return false;
-  for(let k=-2;k<=2;k++)for(const side of [-1,1]){const lane=k*40+side*9.2;if(Math.abs(x-lane)<w/2+walkHalf+.15||Math.abs(z-lane)<d/2+frontExtra+walkHalf+.15)return false}
-  return !extraBuildings.some(b=>Math.abs(x-b.group.position.x)<w/2+b.halfW+2&&Math.abs(z-b.group.position.z)<d/2+b.halfD+2);
- }
- function addNeighbourBuilding(x,z,kind,index){
-  const w=kind==='shop'?9:8.2,d=kind==='shop'?7:8.4,h=kind==='shop'?5.2:5.8;
-  if(!isSafeBuildingSite(x,z,w,d,kind==='house'?2.7:1.1)){console.warn('Building skipped: road, sidewalk or overlap rule',x,z);return null}
-  const g=new THREE.Group();g.position.set(x,0,z);
-  const wall=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),houseWallMats[index%houseWallMats.length]);wall.position.y=h/2;wall.castShadow=true;wall.receiveShadow=true;g.add(wall);
-  const roof=new THREE.Mesh(new THREE.ConeGeometry(kind==='shop'?6.5:6.2,kind==='shop'?2.2:2.8,4),roofMats[index%roofMats.length]);roof.rotation.y=Math.PI/4;roof.position.y=h+(kind==='shop'?1:1.35);roof.castShadow=true;g.add(roof);
-  const front=-d/2-.045;
-  for(const wx of [-w*.27,w*.27]){
-   const win=new THREE.Mesh(new THREE.BoxGeometry(1.35,1.25,.12),windowMat);win.position.set(wx,kind==='shop'?2.9:3.5,front);g.add(win);
-   const sill=new THREE.Mesh(new THREE.BoxGeometry(1.55,.12,.2),trimMat);sill.position.set(wx,kind==='shop'?2.25:2.85,front-.04);g.add(sill);
-  }
-  const doorPivot=new THREE.Group();doorPivot.position.set(-.575,0,front-.07);const door=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.35,.16),doorMat);door.position.set(.575,1.17,0);doorPivot.add(door);g.add(doorPivot);if(kind==='shop')shopDoors.push({pivot:doorPivot,open:0});
-  if(kind==='house'){const balcony=new THREE.Group();const deck=new THREE.Mesh(new THREE.BoxGeometry(3.1,.16,1.05),trimMat);deck.position.set(0,3.15,front-.58);balcony.add(deck);for(const bx of [-1.45,0,1.45]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.07,.72,.07),doorMat);rail.position.set(bx,3.58,front-1.02);balcony.add(rail)}const topRail=new THREE.Mesh(new THREE.BoxGeometry(3,.08,.08),doorMat);topRail.position.set(0,3.94,front-1.02);balcony.add(topRail);g.add(balcony);const tank=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.9,12),new THREE.MeshStandardMaterial({color:0x647b86,metalness:.35,roughness:.55}));tank.position.set(w*.25,h+1.15,d*.12);g.add(tank);const garden=new THREE.Mesh(new THREE.BoxGeometry(w+2,.16,2.1),new THREE.MeshStandardMaterial({color:0x557b45,roughness:1}));garden.position.set(0,.08,front-1.6);g.add(garden);for(const gx of [-w*.36,-w*.12,w*.12,w*.36]){const bush=new THREE.Mesh(new THREE.SphereGeometry(.48,8,6),new THREE.MeshStandardMaterial({color:0x39734a}));bush.position.set(gx,.48,front-1.6);g.add(bush)}const fenceMat=new THREE.MeshStandardMaterial({color:0xe5dfce});for(const fx of [-w/2-.25,w/2+.25]){const fence=new THREE.Mesh(new THREE.BoxGeometry(.12,.85,2.5),fenceMat);fence.position.set(fx,.42,front-1.6);g.add(fence)}}
-  if(kind==='shop'){
-   const awning=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.28,1.15),new THREE.MeshStandardMaterial({color:[0xc95c4b,0x3f8b85,0xd29b43,0x657bb2][index%4]}));awning.position.set(0,3.75,front-.48);g.add(awning);
-   const sign=new THREE.Mesh(new THREE.BoxGeometry(4.2,.72,.18),shopSignMat);sign.position.set(0,4.55,front-.13);g.add(sign);
-   for(const lx of [-3.2,3.2]){const lantern=new THREE.Mesh(new THREE.CylinderGeometry(.22,.28,.62,8),new THREE.MeshStandardMaterial({color:0xd94f43,emissive:0x43110d,roughness:.65}));lantern.position.set(lx,3.25,front-.62);g.add(lantern);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,.08,8),doorMat);cap.position.set(lx,3.6,front-.62);g.add(cap)}
-   const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=96;const sc=signCanvas.getContext('2d');sc.fillStyle='#173e50';sc.fillRect(0,0,512,96);sc.fillStyle='#ffffff';sc.font='bold 48px sans-serif';sc.textAlign='center';sc.fillText(index===15||index===17?'SCHOOL':['MARKET','CAFE','BOOKS','BAKERY','GROCERY','FLOWERS'][index%6],256,65);
-   const signTex=new THREE.CanvasTexture(signCanvas);const label=new THREE.Mesh(new THREE.PlaneGeometry(4.05,.62),new THREE.MeshBasicMaterial({map:signTex,transparent:true}));label.position.set(0,4.55,front-.24);g.add(label);
-  }else{
-   const porch=new THREE.Mesh(new THREE.BoxGeometry(3.2,.18,1.6),trimMat);porch.position.set(0,.12,front-.7);g.add(porch);
-   const canopy=new THREE.Mesh(new THREE.BoxGeometry(2.1,.16,1.1),roofMats[(index+1)%roofMats.length]);canopy.position.set(0,2.7,front-.55);g.add(canopy);
-  }
-  g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
-  extraDistrict.add(g);
-  const entry={x,z:z-d/2-2.4,r:3.9,name:kind==='shop'?'SHOP':'HOUSE',group:g};
-  buildingSpots.push(entry);extraBuildings.push({group:g,kind,entry,halfW:w/2+.8,halfD:d/2+.8});
- }
- const neighbourhoodLayout=[
-  // Place every building well inside a city block, away from the main road strips.
-  [-58,-58,'house'],[-22,-58,'shop'],[22,-58,'house'],[58,-58,'shop'],
-  [-58,-22,'shop'],[-22,-22,'house'],[22,-22,'shop'],[58,-22,'house'],
-  [-58,22,'house'],[-22,22,'shop'],[22,22,'house'],[58,22,'shop'],
-  [-58,58,'shop'],[-22,58,'house'],[22,58,'shop'],[58,58,'shop']
- ];
- neighbourhoodLayout.forEach((p,i)=>addNeighbourBuilding(p[0],p[1],p[2],i));
-// A school gives student pedestrians a daily destination in the north-east block.
-const schoolEntry=extraBuildings[extraBuildings.length-1].entry;
-
-// Parking bays and streetlights.
-const parkingRoot=new THREE.Group();scene.add(parkingRoot);const parkingPaint=new THREE.MeshStandardMaterial({color:0xe8e3cf});
-for(const [px,pz] of [[96,-70],[96,-35],[96,0],[96,35],[96,70],[-96,-35],[-96,35]]){slab(13,.12,8,new THREE.MeshStandardMaterial({color:0x555b5e}),px,.035,pz,parkingRoot);for(let slot=0;slot<4;slot++)slab(.1,.025,7.1,parkingPaint,px-5+slot*3.3,.105,pz,parkingRoot)}
-const streetLights=[];const poleMat=new THREE.MeshStandardMaterial({color:0x303a43,metalness:.45,roughness:.55});
-for(let k=-2;k<=2;k++)for(let n=-2;n<=2;n++){if((k+n)%2!==0)continue;const x=k*40+((k%2)?10:-10),z=n*40+((n%2)?10:-10);const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,5.5,8),poleMat);pole.position.set(x,2.75,z);parkingRoot.add(pole);const arm=new THREE.Mesh(new THREE.BoxGeometry(1.15,.1,.12),poleMat);arm.position.set(x+.48,5.35,z);parkingRoot.add(arm);const bulb=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshStandardMaterial({color:0xffe3a1,emissive:0xffc45b,emissiveIntensity:0}));bulb.position.set(x+.95,5.25,z);parkingRoot.add(bulb);const light=new THREE.PointLight(0xffd99a,0,12,2);light.position.set(x+.95,5.1,z);parkingRoot.add(light);streetLights.push({bulb,light})}
-const natureRoot=new THREE.Group();scene.add(natureRoot);let parkCenterX=0,parkCenterZ=0,parkSpots=[],parkBirds=[],fallingLeaves=[],busStops=[],beachWaves=[],gulls=[],beachCenterX=130,beachSpanX=40;
-const cityLoader=new (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader();
-// Never leave the loading overlay stuck forever on slow mobile connections.
-// This only dismisses the overlay; late asset responses can still populate the scene.
-let cityLoadFinished=false;
-setTimeout(()=>{
- if(!cityLoadFinished){
-  const loading=document.querySelector('#loading');
-  if(loading){loading.textContent='Map is taking longer than expected. You can still enter; the city may appear when loading finishes.';loading.style.display='none'}
- }
-},10000);
-cityLoader.load('https://cdn.3dassets.dev/assets/24928/v1/model.glb',gltf=>{
- cityLoadFinished=true;
-  const pack=gltf.scene;
- pack.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;if(o.material){o.material.side=THREE.FrontSide}}});
- const bounds=new THREE.Box3().setFromObject(pack),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
- pack.position.x-=center.x;pack.position.z-=center.z;pack.position.y-=bounds.min.y;
- cityRoot.add(pack);
- // Local procedural park trees: no external tree model or CDN request.
- const cityBoundsForParks=new THREE.Box3().setFromObject(cityRoot);
- const cityMid=cityBoundsForParks.getCenter(new THREE.Vector3());parkCenterX=cityMid.x;parkCenterZ=cityMid.z;
- const parkX=Math.max(-88,cityBoundsForParks.min.x-13);
- parkSpots=[[parkX,cityMid.z-25],[parkX,cityMid.z],[parkX,cityMid.z+25],[cityMid.x,Math.max(-88,cityBoundsForParks.min.z-13)]];
- function isSafeTreeSite(x,z){
-  const clearAxis=v=>{const d=Math.abs(v-Math.round(v/40)*40);return d>=8.5&&Math.abs(d-9.2)>=2.7};
-  return clearAxis(x)&&clearAxis(z);
- }
- const trunkMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:1});
- const leafMats=[0x477b49,0x568b50,0x3f7047].map(color=>new THREE.MeshStandardMaterial({color,roughness:1}));
- parkSpots.forEach((spot,i)=>{
-  const park=new THREE.Group();
-  for(let n=0;n<5;n++){
-   const x=(n%3-1)*5+(Math.random()-.5)*1.8,z=(Math.floor(n/3)-.5)*7+(Math.random()-.5)*1.8,height=2.8+Math.random()*1.2;
-   const worldX=spot[0]+x,worldZ=spot[1]+z;if(!isSafeTreeSite(worldX,worldZ))continue;
-   const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.28,height,7),trunkMat);
-   trunk.position.set(x,height/2,z);trunk.castShadow=true;park.add(trunk);
-   const crown=new THREE.Mesh(new THREE.ConeGeometry(1.55+Math.random()*.35,3.1,7),leafMats[(n+i)%leafMats.length]);
-   crown.position.set(x,height+1.05,z);crown.castShadow=true;park.add(crown);
-  }
-  park.position.set(spot[0],0,spot[1]);natureRoot.add(park);
- });
- document.querySelector('#status').textContent='CITY + BEACH + 4 GREEN PARKS';
- document.querySelector('#hint').textContent='Explore downtown, the beach and the landscaped parks';
-
- // Park life: paths, flower beds, grass, picnic tables, birds and falling leaves.
- const parkLifeRoot=new THREE.Group();natureRoot.add(parkLifeRoot);
- const flowerMats=[0xf3c5d0,0xf4d66f,0xb9a8ed,0xffffff].map(color=>new THREE.MeshStandardMaterial({color,roughness:.8}));
- const grassMat=new THREE.MeshStandardMaterial({color:0x477b45,roughness:1}),woodMat=new THREE.MeshStandardMaterial({color:0x8b603d});
- for(const [px,pz] of parkSpots){
-  const path=new THREE.Mesh(new THREE.BoxGeometry(2.4,.035,19),new THREE.MeshStandardMaterial({color:0xc6b99a,roughness:1}));path.position.set(px+8,.025,pz);parkLifeRoot.add(path);
-  for(let n=0;n<24;n++){const gx=px-7+Math.random()*14,gz=pz-9+Math.random()*18,tuft=new THREE.Mesh(new THREE.ConeGeometry(.12,.42,4),grassMat);tuft.position.set(gx,.2,gz);parkLifeRoot.add(tuft);if(n%3===0){const bloom=new THREE.Mesh(new THREE.SphereGeometry(.13,7,6),flowerMats[n%flowerMats.length]);bloom.position.set(gx,.42,gz);parkLifeRoot.add(bloom)}}
-  const table=new THREE.Group(),top=new THREE.Mesh(new THREE.BoxGeometry(2.2,.14,1.15),woodMat);top.position.y=1;table.add(top);for(const tx of [-.8,.8]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,1,.12),woodMat);leg.position.set(tx,.5,0);table.add(leg)}table.position.set(px+4,0,pz+5);parkLifeRoot.add(table);
- }
- const birdMat=new THREE.MeshStandardMaterial({color:0x39434a});
- for(let i=0;i<7;i++){const bird=new THREE.Group();bird.add(new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),birdMat));for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.42,.045,.16),birdMat);wing.position.x=side*.22;bird.add(wing)}bird.position.set(parkCenterX+(Math.random()-.5)*70,8+Math.random()*5,parkCenterZ+(Math.random()-.5)*70);natureRoot.add(bird);parkBirds.push({mesh:bird,phase:i*1.7,radius:10+Math.random()*14})}
- const leafMat=new THREE.MeshStandardMaterial({color:0xb77c42,side:THREE.DoubleSide});
- for(let i=0;i<28;i++){const leaf=new THREE.Mesh(new THREE.PlaneGeometry(.22,.12),leafMat);leaf.position.set(cityMid.x+(Math.random()-.5)*70,2+Math.random()*9,cityMid.z+(Math.random()-.5)*70);leaf.rotation.x=-Math.PI/2;leaf.userData={speed:.4+Math.random()*.65,phase:Math.random()*6};natureRoot.add(leaf);fallingLeaves.push(leaf)}
- // Bus shelters are placed on sidewalks, not on the road.
- busStops=[];
- for(const [bx,bz,rot] of [[-30.8,-72,0],[49.2,32,Math.PI/2],[9.2,72,0],[89.2,-32,Math.PI/2]]){
-  const stop=new THREE.Group();stop.position.set(bx,0,bz);stop.rotation.y=rot;const metal=new THREE.MeshStandardMaterial({color:0x3d5663,metalness:.3}),glass=new THREE.MeshStandardMaterial({color:0x8cc9d8,transparent:true,opacity:.34});
-  const roof=new THREE.Mesh(new THREE.BoxGeometry(4.5,.18,2.1),metal);roof.position.y=2.55;stop.add(roof);
-  for(const sx of [-2,2]){const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.5,.12),metal);post.position.set(sx,1.25,-.8);stop.add(post)}
-  const panel=new THREE.Mesh(new THREE.BoxGeometry(4.1,1.75,.06),glass);panel.position.set(0,1.35,-.8);stop.add(panel);
-  const seat=new THREE.Mesh(new THREE.BoxGeometry(2.6,.14,.5),woodMat);seat.position.set(0,.8,.25);stop.add(seat);parkLifeRoot.add(stop);busStops.push({x:bx,z:bz,mesh:stop});
- }
- document.querySelector('#status').textContent='CITY + BEACH + PARKS + BUS STOPS';
-
- // Entry interaction points are distributed around the assembled city blocks.
- // Build entry points from the largest assembled district/building groups.
- pack.updateMatrixWorld(true);
- for(const node of pack.children){
-  const box=new THREE.Box3().setFromObject(node),dims=box.getSize(new THREE.Vector3());
-  if(dims.y>2.2 && dims.x>2.5 && dims.z>2.5 && dims.x<55 && dims.z<55){
-   const c=box.getCenter(new THREE.Vector3());
-   buildingSpots.push({x:c.x,z:box.max.z+2.2,r:3.8,name:'CITY BUILDING'});
-  }
- }
- if(!buildingSpots.length){
-  const spanX=Math.max(12,size.x),spanZ=Math.max(12,size.z);
-  buildingSpots.push({x:0,z:spanZ*.25,r:4,name:'CITY DISTRICT'});
- }
- scene.fog=new THREE.Fog(0x9bbdce,Math.max(90,Math.max(size.x,size.z)*.65),Math.max(620,Math.max(size.x,size.z)*2.2));
- document.querySelector('#loading').style.display='none';
- document.querySelector('#status').textContent='VOXEL CITY · READY';
- document.querySelector('#mission').textContent='VOXEL CITY DISTRICTS · FREE ROAM';
- document.querySelector('#credit').textContent='Voxel City Districts · CC0 1.0 · 171 GLB models';
- document.querySelector('#hint').textContent='Joystick: walk · Drag: rotate camera · Explore the city';
-},undefined,error=>{
- cityLoadFinished=true;
-  console.error('City pack failed to load:',error);
- document.querySelector('#loading').textContent='Voxel City Districts failed to load. Check your connection and reload.';
- document.querySelector('#loading').style.display='none';
-  document.querySelector('#status').textContent='MAP LOAD ERROR';
-});
-
-// Beach Surf and Paddle Kit — CC0 starter scene (52 GLB models).
-// Attached beside the voxel city as a dedicated coastal district.
-const beachRoot=new THREE.Group();scene.add(beachRoot);
-cityLoader.load('https://cdn.3dassets.dev/assets/39465/v1/model.glb',gltf=>{
- const coast=gltf.scene;
- coast.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
- const b=new THREE.Box3().setFromObject(coast),s=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3());
- coast.position.x-=c.x;coast.position.z-=c.z;coast.position.y-=b.min.y;
- // Place the shoreline just beyond the east edge of the voxel city.
- coast.position.x+=118+s.x*.5; // Keep the entire beach east of the city road grid (which ends at x=105).
- beachRoot.add(coast);
- beachCenterX=coast.position.x;beachSpanX=s.x;const waveMat=new THREE.MeshStandardMaterial({color:0x8bd5df,transparent:true,opacity:.48,roughness:.28});
- for(let i=0;i<8;i++){const wave=new THREE.Mesh(new THREE.TorusGeometry(5+i*.8,.09,5,36),waveMat);wave.rotation.x=Math.PI/2;wave.position.set(coast.position.x+s.x*.24,.18+i*.012,(i-3.5)*7);beachRoot.add(wave);beachWaves.push(wave)}
- for(let i=0;i<5;i++){const gull=new THREE.Group(),white=new THREE.MeshStandardMaterial({color:0xf0eee7});gull.add(new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),white));for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.BoxGeometry(.55,.045,.16),white);wing.position.x=side*.28;gull.add(wing)}gull.position.set(coast.position.x+s.x*.18,9+i*1.3,(i-2)*13);beachRoot.add(gull);gulls.push({mesh:gull,phase:i*1.4})}
- document.querySelector('#mission').textContent='VOXEL CITY + BEACH DISTRICT · FREE ROAM';
- document.querySelector('#credit').textContent='Voxel City Districts + Beach Surf and Paddle Kit · CC0 1.0';
- document.querySelector('#hint').textContent='Explore downtown, then head east to the beach';
-},undefined,error=>{console.error('Beach kit failed to load:',error)});
-
-
-// Five additional connected 3D expansion districts.
-const expansionRoot=new THREE.Group();scene.add(expansionRoot);
-const expRoadMat=new THREE.MeshStandardMaterial({color:0x343a40,roughness:.96}),expWalkMat=new THREE.MeshStandardMaterial({color:0xaaa9a1,roughness:1}),expWindowMat=new THREE.MeshStandardMaterial({color:0x91cbdc,metalness:.12,roughness:.3});
-function expBuilding(root,x,z,w,h,d,color,roof){const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.88}));body.position.set(x,h/2,z);body.castShadow=true;body.receiveShadow=true;root.add(body);const top=new THREE.Mesh(new THREE.BoxGeometry(w+.5,.5,d+.5),new THREE.MeshStandardMaterial({color:roof,roughness:.9}));top.position.set(x,h+.25,z);root.add(top);const win=new THREE.Mesh(new THREE.BoxGeometry(w*.5,h*.22,.08),expWindowMat);win.position.set(x,h*.62,z+d/2+.05);root.add(win)}
-function addExpansionDistrict(name,z,theme){const root=new THREE.Group();root.position.set(165,0,z);expansionRoot.add(root);const land=new THREE.Mesh(new THREE.PlaneGeometry(112,112),new THREE.MeshStandardMaterial({color:theme.ground,roughness:1}));land.rotation.x=-Math.PI/2;land.position.y=-.08;root.add(land);for(const p of [-30,0,30]){const road=new THREE.Mesh(new THREE.BoxGeometry(112,.14,9),expRoadMat);road.position.set(0,.02,p);root.add(road);for(const side of [-1,1]){const walk=new THREE.Mesh(new THREE.BoxGeometry(112,.18,3),expWalkMat);walk.position.set(0,.04,p+side*6.2);root.add(walk)}}for(const x of [-30,0,30]){const road=new THREE.Mesh(new THREE.BoxGeometry(9,.14,112),expRoadMat);road.position.set(x,.02,0);root.add(road)}
-if(theme.airport){const runway=new THREE.Mesh(new THREE.BoxGeometry(23,.12,104),expRoadMat);runway.position.set(42,.02,0);root.add(runway);for(let z0=-44;z0<=44;z0+=11){const mark=new THREE.Mesh(new THREE.BoxGeometry(1,.04,5),new THREE.MeshStandardMaterial({color:0xffffff}));mark.position.set(42,.11,z0);root.add(mark)}expBuilding(root,-40,0,28,10,24,0xc5cbd0,0x687782);expBuilding(root,-40,-31,18,6,13,0xb8c4c9,0x64717a);expBuilding(root,-40,31,18,6,13,0xb8c4c9,0x64717a)}
-else if(theme.port){const water=new THREE.Mesh(new THREE.BoxGeometry(28,.08,112),new THREE.MeshStandardMaterial({color:0x287c9c,metalness:.25,roughness:.3}));water.position.set(48,.01,0);root.add(water);for(let z0=-36;z0<=36;z0+=24){expBuilding(root,28,z0,12,7,15,0xc18a55,0x55473c);const crane=new THREE.Mesh(new THREE.BoxGeometry(1,15,1),new THREE.MeshStandardMaterial({color:0xe0a33a}));crane.position.set(17,7.5,z0);root.add(crane);const arm=new THREE.Mesh(new THREE.BoxGeometry(13,.7,.7),crane.material);arm.position.set(22,14,z0);root.add(arm)}}
-else{
- const lots=[[-45,-45],[45,-45],[-45,45],[45,45]];
- lots.forEach(([x,z],i)=>{
-  if(theme.apartments&&(i===0||i===3)){
-   const tower=new THREE.Group(),wall=new THREE.Mesh(new THREE.BoxGeometry(13,17,12),new THREE.MeshStandardMaterial({color:i===0?0xb8c3c8:0xd5c5ad,roughness:.9}));wall.position.y=8.5;tower.add(wall);
-   const roof=new THREE.Mesh(new THREE.BoxGeometry(13.6,.55,12.6),new THREE.MeshStandardMaterial({color:0x46545e}));roof.position.y=17.25;tower.add(roof);
-   for(let floor=0;floor<4;floor++)for(let col=0;col<3;col++){const win=new THREE.Mesh(new THREE.BoxGeometry(2.1,1.35,.08),expWindowMat);win.position.set(-4+col*4,2.5+floor*3.5,6.06);tower.add(win);const balcony=new THREE.Mesh(new THREE.BoxGeometry(2.5,.12,.9),new THREE.MeshStandardMaterial({color:0x64747a}));balcony.position.set(-4+col*4,1.75+floor*3.5,6.45);tower.add(balcony)}
-   tower.position.set(x,0,z);tower.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});root.add(tower);
-  }else{expBuilding(root,x,z,10,6+(i%2)*2,9,theme.colors[i%theme.colors.length],theme.roof)}
- });
-}
-// Marked pedestrian crossings at each expansion-district street intersection.
-const crossingMat=new THREE.MeshStandardMaterial({color:0xf1eee3,roughness:.9});
-for(const ix of [-30,0,30])for(const iz of [-30,0,30]){
- for(let stripe=0;stripe<5;stripe++){
-  const offset=(stripe-2)*1.25;
-  const acrossX=new THREE.Mesh(new THREE.BoxGeometry(.62,.045,8.4),crossingMat);acrossX.position.set(ix+offset,.13,iz);root.add(acrossX);
-  const acrossZ=new THREE.Mesh(new THREE.BoxGeometry(8.4,.045,.62),crossingMat);acrossZ.position.set(ix,.13,iz+offset);root.add(acrossZ);
- }
-}
-/* No roadside trees in expansion districts. */
-const sign=document.createElement('canvas');sign.width=512;sign.height=128;const c=sign.getContext('2d');c.fillStyle='#172d3b';c.fillRect(0,0,512,128);c.fillStyle='#fff';c.font='bold 48px sans-serif';c.textAlign='center';c.fillText(name.toUpperCase(),256,82);const board=new THREE.Mesh(new THREE.PlaneGeometry(18,4.5),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(sign)}));board.position.set(0,9,-52);root.add(board);return root}
-addExpansionDistrict('Tokyo Downtown',-180,{ground:0x68755d,colors:[0xbac4c8,0x9cabb5,0xd0c5b4,0x777f91],roof:0x3c4a58,apartments:true});
-addExpansionDistrict('Japanese Village',-90,{ground:0x71865b,colors:[0xd8c49e,0xb9c8ba,0xc6b39b,0x9eaa91],roof:0x8b4e3c});
-addExpansionDistrict('Airport',0,{ground:0x77816e,airport:true});
-addExpansionDistrict('Industrial Port',90,{ground:0x6d7968,port:true});
-addExpansionDistrict('Beach Island',180,{ground:0xc7b98e,colors:[0xe1c59a,0xf0dfbf,0x9bc4c0,0xe3ad83],roof:0x9b624b});
-// Highway and pedestrian paths connect the original city edge to the new district spine.
-const expConnector=new THREE.Mesh(new THREE.BoxGeometry(120,.16,14),expRoadMat);expConnector.position.set(135,.025,0);expansionRoot.add(expConnector);for(const side of [-1,1]){const path=new THREE.Mesh(new THREE.BoxGeometry(120,.18,3.2),expWalkMat);path.position.set(135,.04,side*9.2);expansionRoot.add(path)}const expSpine=new THREE.Mesh(new THREE.BoxGeometry(14,.16,450),expRoadMat);expSpine.position.set(165,.025,0);expansionRoot.add(expSpine);for(const side of [-1,1]){const path=new THREE.Mesh(new THREE.BoxGeometry(3.2,.18,450),expWalkMat);path.position.set(165+side*9.2,.04,0);expansionRoot.add(path)}
-
-// Low Poly Character Figures — civilian NPC crowd (CC0 1.0).
-// The source meshes are unrigged, so each pedestrian strolls around a small patrol loop.
-const npcRoot=new THREE.Group();scene.add(npcRoot);
-const npcActors=[];
-const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!','Have you visited the beach?','The park is lovely today.','Good to see you!'];
-const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya','Reyansh','Ira','Vivaan','Kiara','Arnav','Myra','Dhruv','Avni','Rudra','Siya','Neil','Anika','Yuvan','Rhea','Atharv','Tia','Krish','Navya','Vihaan','Saanvi','Ayaan','Ishita','Manav','Kavya','Parth','Zoya','Ritvik','Amaira','Shaurya','Anvi','Om','Ishani','Veer','Aarohi','Dhruvika','Nikhil','Tanvi','Rishi','Pihu','Samar','Aadhya','Yash','Lavanya','Neilam'];
-const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician','Delivery Worker','Cleaner','Security Guard'];
- const npcPersonalities=['Friendly','Curious','Quiet','Energetic','Helpful','Creative'];
- const npcGoals=['Visit the park','Explore a new street','Meet a friend','Visit a shop','Enjoy the beach','Go to work'];
-// Snap pedestrian spawn points to the nearest sidewalk strip along the street grid.
-function snapToSidewalk(x,z){let best={x,z,d:Infinity};for(let k=-2;k<=2;k++)for(const side of [-1,1]){const sx=k*40+side*9.2,sz=k*40+side*9.2,dx=Math.abs(x-sx),dz=Math.abs(z-sz);if(dx<best.d)best={x:sx,z,d:dx};if(dz<best.d)best={x,z:sz,d:dz}}return{x:best.x,z:best.z}}
- function constrainToSidewalk(x,z){if(x>105)return{x:132,z:Math.round(z/9.2)*9.2};const p=snapToSidewalk(THREE.MathUtils.clamp(x,-102,102),THREE.MathUtils.clamp(z,-102,102));return{x:THREE.MathUtils.clamp(p.x,-102,102),z:THREE.MathUtils.clamp(p.z,-102,102)}}
-const speechCanvas=document.createElement('canvas');speechCanvas.width=512;speechCanvas.height=128;
-const speechCtx=speechCanvas.getContext('2d');
-function paintSpeech(message){
- speechCtx.clearRect(0,0,512,128);
- speechCtx.fillStyle='rgba(9,25,39,.94)';speechCtx.beginPath();speechCtx.roundRect(8,8,496,104,24);speechCtx.fill();
- speechCtx.fillStyle='#8fe4ff';speechCtx.beginPath();speechCtx.moveTo(225,110);speechCtx.lineTo(256,127);speechCtx.lineTo(280,110);speechCtx.fill();
- speechCtx.fillStyle='#fff';speechCtx.font='bold 34px system-ui';speechCtx.textAlign='center';speechCtx.fillText(message,256,73,455);
-}
-paintSpeech('Hello there!');
-const speechTexture=new THREE.CanvasTexture(speechCanvas);
-const speechBubble=new THREE.Sprite(new THREE.SpriteMaterial({map:speechTexture,transparent:true,depthTest:false}));
-speechBubble.scale.set(3.1,.78,1);speechBubble.visible=false;scene.add(speechBubble);
-let activeGreeting=null;
-let interactedNPC=null,interactedUntil=0,companionNPC=null,weatherClock=0,rainActive=false;
-const npcPlacementsRaw=[
- // Downtown sidewalks and shop fronts
- [-4,0,-5],[-2,0,-7],[2,0,-7],[4,0,-5],
- [-5,0,1],[5,0,1],[-4,0,6],[4,0,6],
- [-15,0,20],[15,0,20],[-19,0,-18],[19,0,-18],
- // Extra pedestrians along the main streets and intersections
- [-18,0,-6],[-14,0,-8],[-6,0,-18],[2,0,-19],[12,0,-15],[18,0,-10],
- [-18,0,8],[-13,0,15],[-3,0,18],[5,0,19],[14,0,14],[19,0,7],
- // Beach promenade and coastal area
- [30,0,-12],[34,0,-6],[38,0,2],[42,0,8],[34,0,15],[46,0,-4],
- // Plaza and civic district
- [-27,0,-24],[-22,0,-27],[-16,0,-25],[22,0,-24],[27,0,-19],[25,0,24],
- // Additional residents and visitors distributed along clear sidewalk strips
- [-34,0,-31],[-29,0,-12],[-24,0,33],[-11,0,31],[-6,0,35],[7,0,32],
- [13,0,34],[24,0,31],[31,0,27],[35,0,13],[33,0,-28],[25,0,-35],
- [14,0,-33],[4,0,-31],[-8,0,-34],[-17,0,32],[-32,0,18],[-35,0,-2]
-].map(p=>{const q=snapToSidewalk(p[0],p[2]);return[q.x,0,q.z]});
-const npcPlacements=npcPlacementsRaw;
- const npcWorldEvents=['Local street festival','Weekend market','Park music show','Community clean-up','Beach photography day'];let npcWorldEventClock=48,npcWorldEvent='Quiet day';const npcEventSpots=[[0,0],[30,30],[132,180],[-30,20]];
-const cityBenches=[];
-function spawnFallbackNPCs(){
- if(npcActors.length)return;
- const skinTones=[0xd6a078,0x9b684b,0xe0b18a,0xb77c58],shirts=[0x2878b8,0xc45a45,0x4f936b,0xd3a83c,0x7356a8,0xe1e1e1];
-const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),benchLegMat=new THREE.MeshStandardMaterial({color:0x303b46,roughness:.8});
-[[9.2,0,25],[-9.2,0,-25],[-30,0,9.2],[30,0,-9.2],[9.2,0,35]].forEach(([x,y,z])=>{
- const bench=new THREE.Group();bench.position.set(x,y,z);
- const seat=new THREE.Mesh(new THREE.BoxGeometry(2.1,.13,.55),benchMat);seat.position.y=.72;bench.add(seat);
- const back=new THREE.Mesh(new THREE.BoxGeometry(2.1,.65,.12),benchMat);back.position.set(0,1.05,-.22);bench.add(back);
- for(const sx of [-.82,.82]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,.72,.42),benchLegMat);leg.position.set(sx,.36,0);bench.add(leg)}
- bench.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
- scene.add(bench);cityBenches.push({x,z,mesh:bench});
-});
- npcPlacements.forEach((p,i)=>{
-  const person=new THREE.Group(),skin=new THREE.MeshStandardMaterial({color:skinTones[i%4],roughness:.8}),shirt=new THREE.MeshStandardMaterial({color:shirts[i%6],roughness:.8}),pants=new THREE.MeshStandardMaterial({color:i%2?0x303b50:0x454545,roughness:.9});
-  const gender=i%2===0?'Male':'Female';
-  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(gender==='Female'?.22:.26,.48,4,8),shirt);torso.position.y=1.02;person.add(torso);
-  if(gender==='Female'){const skirt=new THREE.Mesh(new THREE.CylinderGeometry(.19,.29,.34,10),shirt);skirt.position.y=.78;person.add(skirt)}
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),skin);head.position.y=1.52;person.add(head);
-  const hairMat=new THREE.MeshStandardMaterial({color:i%3?0x29201b:0x171717});
-  const hair=new THREE.Mesh(new THREE.SphereGeometry(.175,16,10,0,Math.PI*2,0,Math.PI*.55),hairMat);hair.position.y=1.57;person.add(hair);
-  if(gender==='Female'){const backHair=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.36,4,8),hairMat);backHair.position.set(0,1.34,-.105);person.add(backHair);for(const side of [-1,1]){const lock=new THREE.Mesh(new THREE.CapsuleGeometry(.055,.25,4,7),hairMat);lock.position.set(side*.145,1.43,0);person.add(lock)}}
-  const limbs={};
-  for(const side of [-1,1]){
-   const armPivot=new THREE.Group();armPivot.position.set(side*.31,1.27,0);person.add(armPivot);
-   const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.38,4,8),skin);arm.position.y=-.22;armPivot.add(arm);
-   const legPivot=new THREE.Group();legPivot.position.set(side*.12,.66,0);person.add(legPivot);
-   const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.48,4,8),pants);leg.position.y=-.23;legPivot.add(leg);
-   const shoe=new THREE.Mesh(new THREE.BoxGeometry(.15,.09,.25),new THREE.MeshStandardMaterial({color:0x242424}));shoe.position.set(0,-.48,.045);legPivot.add(shoe);
-   if(side<0){limbs.armL=armPivot;limbs.legL=legPivot}else{limbs.armR=armPivot;limbs.legR=legPivot}
-  }
-  const accessory=new THREE.Group();
-  if(i%4===0){const bag=new THREE.Mesh(new THREE.BoxGeometry(.34,.42,.16),new THREE.MeshStandardMaterial({color:0x343b48}));bag.position.set(0,1.02,-.28);accessory.add(bag);person.add(accessory)}
-  if(i%5===0){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.09,12),new THREE.MeshStandardMaterial({color:shirts[(i+2)%shirts.length]}));cap.position.y=1.72;person.add(cap)}
-  const phone=new THREE.Mesh(new THREE.BoxGeometry(.075,.13,.018),new THREE.MeshStandardMaterial({color:0x17212b,metalness:.35,roughness:.35}));phone.position.set(.36,1.02,.08);phone.visible=false;person.add(phone);
-   const umbrella=new THREE.Group();const canopy=new THREE.Mesh(new THREE.ConeGeometry(.62,.22,12),new THREE.MeshStandardMaterial({color:[0x347ca5,0xc65a4a,0x4b8a68,0x7659a4][i%4],side:THREE.DoubleSide,roughness:.65}));canopy.rotation.x=Math.PI;canopy.position.y=2.05;umbrella.add(canopy);const handle=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.85,7),new THREE.MeshStandardMaterial({color:0x34383d}));handle.position.set(0,1.62,0);umbrella.add(handle);umbrella.visible=false;person.add(umbrella);
-  person.scale.setScalar(1.45);person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
-  person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
-  npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],gender,job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18,personality:npcPersonalities[i%npcPersonalities.length],goal:npcGoals[i%npcGoals.length],goalClock:18+Math.random()*24,memory:[],visitedDistricts:[],birthdayDay:(i*7)%28,birthdayDone:false,landmarkCooldown:0,stress:0,energy:70+Math.random()*30,recognisedFriends:[],hobby:['photography','gardening','music','sports','shopping','reading'][i%6],favouriteSpot:i%3===0?'park':i%3===1?'shop':'beach',wallet:80+(i%8)*15,careerLevel:1,careerProgress:0,trust:0,lifeEvents:['Moved into the neighbourhood'],decisionClock:22+Math.random()*25,lastKnownPlayerVisit:0});
- });
- document.querySelector('#status').textContent='CITY + BEACH · '+npcActors.length+' NPCs';
-}
-spawnFallbackNPCs();
-// Populate every expansion district with persistent pedestrian actors on its protected footpath.
-const expansionDistrictNPCs=[
- [-180,141.2,-208],[-180,158.8,-152],[-90,141.2,-118],[-90,158.8,-62],
- [0,141.2,-28],[0,158.8,28],[90,141.2,62],[90,158.8,118],
- [180,141.2,152],[180,158.8,208]
-];
-expansionDistrictNPCs.forEach(([districtZ,x,z],i)=>{
- const source=npcActors[i%npcActors.length],mesh=source.mesh.clone(true);
- mesh.position.set(x,0,z);mesh.rotation.y=source.mesh.rotation.y;npcRoot.add(mesh);
- npcActors.push({...source,mesh,armL:null,armR:null,legL:null,legR:null,phone:null,umbrella:null,
-  name:npcNames[(i+30)%npcNames.length],job:npcJobs[(i+2)%npcJobs.length],
-  familyId:100+i,familyRole:0,x,targetX:x,z,targetZ:z,homeX:x,homeZ:z,
-  pause:.2,routineTimer:8+i*1.3,roam:18,speed:.65+(i%4)*.1,
-  partner:null,socialFriend:null,benchTarget:null,isCompanion:false,isChild:false,
-  districtZ,activity:'walk',activityTimer:12,friendship:0,mood:'😊',memory:[],visitedDistricts:[],goalClock:16+i*2,landmarkCooldown:0,energy:75,stress:0,hobby:['photography','gardening','music','sports','shopping'][i%5],favouriteSpot:i%2?'park':'beach',wallet:100+i*10,careerLevel:1,careerProgress:0,trust:0,lifeEvents:['Exploring a new district'],decisionClock:25+i*2,lastKnownPlayerVisit:0});
-});
-// Non-sexual family growth: a household may welcome an adopted child NPC off-screen.
-let familyGrowthClock=0,familyGrowthCount=0;
-const childNames=['Aadi','Ishita','Vihaan','Anvi','Om','Sara'];
-const childSkin=[0xd6a078,0x9b684b,0xe0b18a,0xb77c58];
-function addFamilyChild(family){
- const child=new THREE.Group();
- const skin=new THREE.MeshStandardMaterial({color:childSkin[familyGrowthCount%childSkin.length],roughness:.9});
- const shirt=new THREE.MeshStandardMaterial({color:[0x58a6d8,0xe08a68,0x79b77b,0xb18bd1][familyGrowthCount%4],roughness:.85});
- const pants=new THREE.MeshStandardMaterial({color:0x394b68,roughness:.9});
- const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.22,.38,3,7),shirt);torso.position.y=.78;child.add(torso);
- const head=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),skin);head.position.y=1.23;child.add(head);
- const hair=new THREE.Mesh(new THREE.SphereGeometry(.225,10,7,0,Math.PI*2,0,Math.PI*.48),new THREE.MeshStandardMaterial({color:0x30251f}));hair.position.y=1.31;child.add(hair);
- const legL=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.28,2,6),pants),legR=legL.clone();legL.position.set(-.105,.32,0);legR.position.set(.105,.32,0);child.add(legL,legR);
- const armL=new THREE.Mesh(new THREE.CapsuleGeometry(.06,.28,2,6),shirt),armR=armL.clone();armL.position.set(-.27,.82,0);armR.position.set(.27,.82,0);child.add(armL,armR);
- child.scale.setScalar(.78);child.position.set(family.mesh.position.x+1,0,family.mesh.position.z+1);npcRoot.add(child);
- const name=childNames[familyGrowthCount%childNames.length];familyGrowthCount++;
- npcActors.push({mesh:child,armL,armR,legL,legR,phone:null,umbrella:null,x:child.position.x,z:child.position.z,baseY:0,baseScale:.78,familyId:family.familyId,familyRole:3,name,job:'Child',phase:Math.random()*6,speed:.62,roam:3,targetX:child.position.x,targetZ:child.position.z,pause:0,baseRotation:0,routineTimer:8,homeX:family.homeX,homeZ:family.homeZ,reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4,activity:'walk',activityTimer:10,benchTarget:null,friendship:0,mood:'😊',isSheltered:false,photoCooldown:30,isChild:true,ageStage:0,ageClock:0});
- family.reactionType='🎉';family.reactionUntil=performance.now()+3200;family.talkLine=family.name+' welcomes '+name+' to the family!';
-}
-// Tap a pedestrian to start a short, job-aware conversation.
-const npcRaycaster=new THREE.Raycaster(),npcPointer=new THREE.Vector2();
-const npcDialogues={
- Resident:['I love living in this neighbourhood.','The streets are lively today!','Have you explored the park?'],
- Shopkeeper:['Welcome! We have fresh things in today.','The shopping street is just ahead.','Thanks for visiting our neighbourhood!'],
- Student:['I am on my way to class.','Have you seen the library?','I am taking a short study break.'],
- Cyclist:['The promenade is great for a ride.','Please watch out for cyclists!','I am exploring a new route today.'],
- Visitor:['I am enjoying this city.','The beach is beautiful.','Could you recommend a place to visit?'],
- Artist:['The city is full of inspiration.','I am looking for a nice place to sketch.','The colours here are wonderful.'],
- Cook:['I have been busy in the kitchen.','The cafe smells amazing today!','I am taking a quick break.'],
- Teacher:['Learning makes every day interesting.','School is busy this week.','Enjoy exploring the city!'],
- Musician:['I am practising a new tune.','Music makes the streets feel alive.','Maybe I will play near the plaza.'],
- 'Delivery Worker':['I am delivering a package nearby.','This neighbourhood has many customers.','One more delivery and then a break!'],
- Cleaner:['I help keep the streets tidy.','A clean city is a happy city.','I am checking the park today.'],
- 'Security Guard':['Everything is peaceful here.','I am keeping an eye on the public area.','Please enjoy your visit!']
-};
-const npcChatPanel=document.getElementById('npcChat');
-const npcChatTitle=document.getElementById('npcChatTitle');
-const npcChatLog=document.getElementById('npcChatLog');
-const npcChatForm=document.getElementById('npcChatForm');
-const npcChatInput=document.getElementById('npcChatInput');
-let chatNPC=null,chatRequestId=0;
-function appendNpcChat(role,message){
- const line=document.createElement('div');
- line.textContent=(role==='user'?'YOU: ':'NPC: ')+message;
- line.style.margin='5px 0';
- npcChatLog.appendChild(line);
- npcChatLog.scrollTop=npcChatLog.scrollHeight;
-}
-function sendLocalNpcMessage(actor,message){
-  if(!actor||!message.trim())return;
-  actor.aiHistory=actor.aiHistory||[];
-  actor.aiHistory.push({role:'user',text:message});
-  if(actor.aiHistory.length>8)actor.aiHistory.shift();
-  appendNpcChat('user',message);
-  const lines=npcDialogues[actor.job]||npcDialogues.Resident;
-  const lower=message.toLowerCase();
-  let reply;
-  if(/hello|hi\b|hey/.test(lower))reply='Hello! Nice to see you around the city.';
-  else if(/name/.test(lower))reply='My name is '+actor.name+'. I work as a '+actor.job+'.';
-  else if(/job|work/.test(lower))reply='I am a '+actor.job+'. '+lines[1];
-  else if(/hobby|like|enjoy|favourite|favorite/.test(lower))reply='I enjoy '+(actor.hobby||'exploring the city')+'. '+lines[2];
-  else if(/where|place|go|going/.test(lower))reply='I am '+(actor.activity||'exploring')+' right now. '+lines[0];
-  else reply=lines[Math.floor(Math.random()*lines.length)];
-  actor.aiHistory.push({role:'model',text:reply});
-  if(actor.aiHistory.length>8)actor.aiHistory=actor.aiHistory.slice(-8);
-  actor.talkLine=actor.name+': '+reply;
-  appendNpcChat('model',reply);
-}
-npcChatForm.addEventListener('submit',event=>{
- event.preventDefault();
- const message=npcChatInput.value.trim();
- if(!message||!chatNPC)return;
- npcChatInput.value='';
- sendLocalNpcMessage(chatNPC,message);
-});
-document.getElementById('npcChatClose').addEventListener('click',()=>{
- npcChatPanel.style.display='none';chatNPC=null;chatRequestId++;
-});
-renderer.domElement.addEventListener('click',event=>{
- const rect=renderer.domElement.getBoundingClientRect();
- npcPointer.set((event.clientX-rect.left)/rect.width*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
- npcRaycaster.setFromCamera(npcPointer,camera);
- const hits=npcRaycaster.intersectObjects(npcRoot.children,true);
- if(!hits.length)return;
- let root=hits[0].object;
- while(root&&root.parent!==npcRoot)root=root.parent;
- const actor=npcActors.find(a=>a.mesh===root);
- if(!actor||Math.hypot(actor.mesh.position.x-player.position.x,actor.mesh.position.z-player.position.z)>22)return;
- interactedNPC=actor;interactedUntil=performance.now()+5200;
-  actor.friendship=(actor.friendship||0)+1;actor.trust=Math.min(100,(actor.trust||0)+4);actor.lastKnownPlayerVisit=performance.now();actor.memory=actor.memory||[];actor.memory.push('Met the player again');actor.playerActionMemory=actor.playerActionMemory||[];actor.playerActionMemory.push({action:'friendly conversation',at:Date.now()});if(actor.playerActionMemory.length>8)actor.playerActionMemory.shift();actor.lifeGoal=actor.friendship>=5?'Become the player’s trusted city companion':actor.lifeGoal;actor.socialNeed=Math.max(0,(actor.socialNeed??55)-18);actor.stress=Math.max(0,(actor.stress||0)-5);actor.lifeEvents=actor.lifeEvents||[];actor.lifeEvents.push('Had a friendly conversation');if(actor.lifeEvents.length>6)actor.lifeEvents.shift();
-  actor.mood=['😊','😎','🤔','🤩'][Math.min(3,Math.floor((actor.friendship||0)/3))];
-  if(companionNPC===actor){companionNPC=null;actor.isCompanion=false;actor.talkLine=actor.name+': I will continue exploring. '}
-  else if(!companionNPC){companionNPC=actor;actor.isCompanion=true;actor.talkLine=actor.name+': I will explore with you!'}
-  else actor.talkLine=actor.name+': Nice to see you again! Friendship '+actor.friendship;
- const lines=npcDialogues[actor.job]||npcDialogues.Resident;
- actor.talkLine=actor.mood+' '+actor.name+' · Friendship '+actor.friendship+' · Trust '+(actor.trust||0)+' · Hobby '+(actor.hobby||'exploring')+': '+lines[Math.floor(Math.random()*lines.length)];
- chatNPC=actor;actor.aiHistory=actor.aiHistory||[];npcChatTitle.textContent=actor.name+' · '+actor.job;npcChatLog.textContent='';npcChatPanel.style.display='block';npcChatInput.value='';appendNpcChat('model','Hello! Nice to see you around the city.');
- actor.reactionType='👋';actor.reactionUntil=interactedUntil;
- actor.targetX=actor.mesh.position.x;actor.targetZ=actor.mesh.position.z;actor.pause=5.2;
- actor.mesh.rotation.y=Math.atan2(player.position.x-actor.mesh.position.x,player.position.z-actor.mesh.position.z);
-});
-// The visible built-in crowd is used directly so NPC visibility never depends on a remote character file.
-
-let joy={x:0,y:0},heading=0,drag=null,camDist=8.2,mission=0,inVehicle=false,activeCar=null,dayClock=0,sprinting=false,jumpVelocity=0,jumpHeight=0;const tasks=['Explore the downtown blocks','Cruise past the apartments','Visit the shopping street','Explore the city park'];
-// Local checkpoint: restore the player's exploration progress on the next visit.
-const CITY_SAVE_KEY='citylife3d-save-v1';
-const NPC_ML_KEY='citylife3d-npc-ml-v1';
-const NPC_ML_LABELS=['park','shop','beach','rest'];
-let npcML={weights:Array.from({length:4},()=>Array(8).fill(0)),samples:0};
-try{const saved=JSON.parse(localStorage.getItem(NPC_ML_KEY)||'null');if(saved&&Array.isArray(saved.weights)&&saved.weights.length===4){npcML.weights=saved.weights;npcML.samples=Number(saved.samples)||0}}catch(e){console.warn('NPC learning model will start fresh',e)}
-function npcMLFeatures(a){const h=a.habits||{};return[(a.hunger??25)/100,(a.energy??70)/100,(a.stress||0)/100,(a.socialNeed??55)/100,Math.min(1,(h.park||0)/12),Math.min(1,(h.shop||0)/12),Math.min(1,(h.beach||0)/12),1]}
-function npcMLPredict(a){const x=npcMLFeatures(a),scores=npcML.weights.map(w=>w.reduce((s,v,i)=>s+v*x[i],0)),m=Math.max(...scores),ex=scores.map(v=>Math.exp(Math.max(-12,Math.min(12,v-m)))),sum=ex.reduce((s,v)=>s+v,0)||1;return ex.map(v=>v/sum)}
-function npcMLLearn(a,label){const y=NPC_ML_LABELS.indexOf(label);if(y<0)return;const x=npcMLFeatures(a),p=npcMLPredict(a),rate=.09;for(let k=0;k<4;k++)for(let i=0;i<x.length;i++)npcML.weights[k][i]-=rate*(p[k]-(k===y?1:0))*x[i];npcML.samples++;try{localStorage.setItem(NPC_ML_KEY,JSON.stringify(npcML))}catch(e){console.warn('NPC model save skipped',e)}}
-function chooseNpcGoal(a,goals){const labels=['park','shop','beach'];let chosen;if(npcML.samples<4||Math.random()<.28){chosen=goals[Math.floor(Math.random()*goals.length)]}else{const scores=npcMLPredict(a);const best=labels[scores.indexOf(Math.max(...scores.slice(0,3)))];chosen=goals.find(g=>g.name.toLowerCase().includes(best))||goals[Math.floor(Math.random()*goals.length)]}return chosen}
-function createNpcBrain(){return{emotion:'calm',thought:'Looking around',attention:'environment',confidence:.5,curiosity:.5,decisionCount:0,lastDecision:0,workingMemory:[],knownPeople:[],knownPlaces:[]}}
-function npcBrainThink(a,now,nearbyCount=0){
- const b=a.brain||(a.brain=createNpcBrain()),hunger=a.hunger??25,energy=a.energy??70,stress=a.stress||0,social=a.socialNeed??55;
- b.emotion=hunger>82?'hungry':energy<18?'tired':stress>65?'anxious':social>82?'lonely':a.playerNearby?'curious':'calm';
- b.attention=nearbyCount>4?'crowd':a.playerNearby?'player':a.activity==='working'?'work':'environment';
- b.thought=b.emotion==='hungry'?'I should find something to eat':b.emotion==='tired'?'I need to rest':b.emotion==='lonely'?'I would like to meet someone':b.emotion==='anxious'?'I should find a quieter place':b.attention==='player'?'I recognise someone nearby':'I am deciding what to do next';
- b.curiosity=Math.max(.1,Math.min(1,.35+(a.visitedDistricts||[]).length*.055+(a.hobby? .12:0)));
- b.confidence=Math.max(.15,Math.min(.95,.45+(a.habits?.park||0)*.012+(a.habits?.shop||0)*.012+(a.habits?.beach||0)*.012));
- if(now-(b.lastDecision||0)>9000){b.lastDecision=now;b.decisionCount++;b.workingMemory.push({thought:b.thought,emotion:b.emotion,at:Date.now()});if(b.workingMemory.length>6)b.workingMemory.shift()}
- if(a.playerNearby&&!b.knownPeople.includes('player')){b.knownPeople.push('player');if(b.knownPeople.length>8)b.knownPeople.shift()}
-}
-function chooseNpcBrainGoal(a,goals){
- const b=a.brain||(a.brain=createNpcBrain()),scores=npcMLPredict(a);
- const ranked=goals.map(g=>{const n=g.name.toLowerCase();let s=Math.random()*.16;
- if(n.includes('park'))s+=scores[0]*1.5+(a.stress||0)/180;
- if(n.includes('shop'))s+=scores[1]*1.5+(a.hunger||0)/220;
- if(n.includes('beach'))s+=scores[2]*1.5+b.curiosity*.18;
- if(n.includes('school')&&a.job==='Student')s+=.55;
- if(n.includes('bus')&&a.job==='Visitor')s+=.18;
- if(n.includes('street'))s+=b.curiosity*.22;
- if(n.includes('favourite'))s+=b.confidence*.16;
- if((a.visitedDistricts||[]).length<5&&n.includes('street'))s+=.12;
- if(b.emotion==='tired'&&n.includes('park'))s+=.08;
- return{g,s}}).sort((x,y)=>y.s-x.s);
- return ranked[0]?.g||goals[Math.floor(Math.random()*goals.length)];
-}
-
-let saveClock=0;
-function saveCityProgress(){
- try{
-  const npcState=npcActors.map(a=>({name:a.name,familyId:a.familyId,friendship:a.friendship||0,trust:a.trust||0,wallet:a.wallet||0,careerLevel:a.careerLevel||1,careerProgress:a.careerProgress||0,energy:a.energy??75,stress:a.stress||0,hunger:a.hunger??25,hygiene:a.hygiene??80,socialNeed:a.socialNeed??60,mood:a.mood||'😊',goal:a.goal||'',hobby:a.hobby||'',homeX:a.homeX,homeZ:a.homeZ,x:a.mesh.position.x,z:a.mesh.position.z,memory:(a.memory||[]).slice(-8),lifeEvents:(a.lifeEvents||[]).slice(-6),visitedDistricts:(a.visitedDistricts||[]).slice(-8),recognisedFriends:(a.recognisedFriends||[]).slice(-8),lastKnownPlayerVisit:a.lastKnownPlayerVisit||0,habits:a.habits||{},playerActionMemory:(a.playerActionMemory||[]).slice(-8),lifeGoal:a.lifeGoal||'',tomorrowPlan:a.tomorrowPlan||null,plannedForDay:a.plannedForDay,familiarPlaces:(a.familiarPlaces||[]).slice(-12),failedRoutes:a.failedRoutes||0,brain:a.brain||createNpcBrain()}));
-  const checkpoint={x:player.position.x,z:player.position.z,heading,camDist,mission,dayClock,npcState,worldEvent:npcWorldEvent,worldEventClock:npcWorldEventClock,version:2};
-  localStorage.setItem(CITY_SAVE_KEY,JSON.stringify(checkpoint));
- }catch(error){console.warn('City progress could not be saved:',error)}
-}
-try{
- const checkpoint=JSON.parse(localStorage.getItem(CITY_SAVE_KEY)||'null');
- if(checkpoint&&checkpoint.version===1&&Number.isFinite(checkpoint.x)&&Number.isFinite(checkpoint.z)){
-  player.position.set(THREE.MathUtils.clamp(checkpoint.x,-420,420),0,THREE.MathUtils.clamp(checkpoint.z,-260,260));
-  heading=Number.isFinite(checkpoint.heading)?checkpoint.heading:0;
-  camDist=THREE.MathUtils.clamp(Number(checkpoint.camDist)||8.2,5,18);
-  mission=Number.isInteger(checkpoint.mission)?Math.max(0,Math.min(tasks.length-1,checkpoint.mission)):0;
-  dayClock=Number.isFinite(checkpoint.dayClock)?checkpoint.dayClock:0;
-  document.querySelector('#mission').textContent='TASK 0'+(mission+1)+' · '+tasks[mission];
-  if(Array.isArray(checkpoint.npcState)){
-   checkpoint.npcState.forEach((saved,i)=>{const a=npcActors[i];if(!a||a.name!==saved.name)return;
-    ['friendship','trust','wallet','careerLevel','careerProgress','energy','stress','hunger','hygiene','socialNeed','mood','goal','hobby','homeX','homeZ','lastKnownPlayerVisit','lifeGoal','tomorrowPlan','plannedForDay','failedRoutes','brain'].forEach(k=>{if(saved[k]!==undefined)a[k]=saved[k]});
-    a.memory=Array.isArray(saved.memory)?saved.memory.slice(-8):[];a.habits=saved.habits&&typeof saved.habits==='object'?saved.habits:{};a.playerActionMemory=Array.isArray(saved.playerActionMemory)?saved.playerActionMemory.slice(-8):[];a.familiarPlaces=Array.isArray(saved.familiarPlaces)?saved.familiarPlaces.slice(-12):[];a.lifeEvents=Array.isArray(saved.lifeEvents)?saved.lifeEvents.slice(-6):[];a.visitedDistricts=Array.isArray(saved.visitedDistricts)?saved.visitedDistricts.slice(-8):[];a.recognisedFriends=Array.isArray(saved.recognisedFriends)?saved.recognisedFriends.slice(-8):[];
-    if(Number.isFinite(saved.x)&&Number.isFinite(saved.z)){a.mesh.position.x=saved.x;a.mesh.position.z=saved.z}
-   });
-   if(checkpoint.worldEvent)npcWorldEvent=checkpoint.worldEvent;
-   if(Number.isFinite(checkpoint.worldEventClock))npcWorldEventClock=checkpoint.worldEventClock;
-  }
- }
-}catch(error){console.warn('Saved city progress could not be restored:',error)}
-// Always begin on the main road, rather than restoring an indoor/invalid checkpoint.
-player.position.set(0,0,0);
-addEventListener('pagehide',saveCityProgress);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveCityProgress()});
-const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
-function moveJoy(e){const r=j.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),l=Math.hypot(dx,dy),m=35;if(l>m){dx=dx/l*m;dy=dy/l*m}joy.x=dx/m;joy.y=dy/m;stick.style.transform='translate('+dx+'px,'+dy+'px)'}
-j.addEventListener('pointerdown',e=>{j.setPointerCapture(e.pointerId);moveJoy(e)});j.addEventListener('pointermove',e=>{if(e.buttons)moveJoy(e)});function resetJoy(){joy={x:0,y:0};stick.style.transform='translate(0,0)'}j.addEventListener('pointerup',resetJoy);j.addEventListener('pointercancel',resetJoy);
-renderer.domElement.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY}});addEventListener('pointerup',()=>drag=null);addEventListener('pointermove',e=>{if(drag){heading-=(e.clientX-drag.x)*.006;drag={x:e.clientX,y:e.clientY}}});
-function nearestBuildingDistance(){let best=Infinity;for(const b of buildingSpots){const d=Math.hypot(player.position.x-b.x,player.position.z-b.z)-b.r;best=Math.min(best,d)}return best}
-const interactButton=document.querySelector('#interact');
-const roomExitButton=document.querySelector('#roomExit');
-function exitCurrentRoom(){if(!inside)return;inside=false;player.position.set(0,0,0);player.position.y=0;player.rotation.y=heading;roomExitButton.style.display='none';interactButton.textContent='ENTER BUILDING';document.querySelector('#hint').textContent='Walk near a building entrance, then tap ENTER BUILDING';}
-roomExitButton.addEventListener('click',exitCurrentRoom);
-addEventListener('keydown',e=>{if((e.key==='Escape'||e.key==='Backspace')&&inside)exitCurrentRoom();});
-
-document.querySelector('#familyView').addEventListener('click',()=>{document.querySelector('#familyPanel').style.display='block';document.querySelector('#hint').textContent='12 NPC family groups · adults and children roam together'});
-document.querySelector('#closeFamily').onclick=()=>document.querySelector('#familyPanel').style.display='none';
-document.querySelector('#customBtn').onclick=()=>{document.querySelector('#customPanel').style.display='block';document.querySelector('#familyPanel').style.display='none';};
-document.querySelector('#closeCustom').onclick=()=>document.querySelector('#customPanel').style.display='none';
-document.querySelectorAll('[data-shirt]').forEach(b=>b.addEventListener('click',()=>shirt.color.set(b.dataset.shirt)));
-document.querySelectorAll('[data-pants]').forEach(b=>b.addEventListener('click',()=>pants.color.set(b.dataset.pants)));
-interactButton.addEventListener('click',()=>{if(inside){exitCurrentRoom();return}const distance=nearestBuildingDistance();if(distance<8){let best=0,bestD=Infinity;buildingSpots.forEach((b,i)=>{const d=Math.hypot(player.position.x-b.x,player.position.z-b.z);if(d<bestD){bestD=d;best=i}});activeInterior=best%interiorRooms.length;returnPosition.copy(player.position);inside=true;player.position.set(300+activeInterior*15,0,2);roomExitButton.style.display='block';interactButton.textContent='EXIT BUILDING';document.querySelector('#hint').textContent='Inside '+['shop','cafe','home','studio'][activeInterior]+' · tap EXIT BUILDING to leave'}else{document.querySelector('#hint').textContent='Get closer to a building entrance'}});
-document.querySelector('#resetView').onclick=()=>{heading=0;camDist=7.2};document.querySelector('#nextTask').onclick=()=>{mission=(mission+1)%tasks.length;document.querySelector('#mission').textContent='TASK 0'+(mission+1)+' · '+tasks[mission]};
-document.querySelector('#play').onclick=()=>{document.querySelector('#start').remove()};
-const scoreEl=document.querySelector('#score');
-const sprintBtn=document.querySelector('#sprintBtn');
-sprintBtn.addEventListener('pointerdown',e=>{e.preventDefault();sprinting=true;sprintBtn.style.filter='brightness(1.5)'});
-['pointerup','pointercancel','pointerleave'].forEach(ev=>sprintBtn.addEventListener(ev,()=>{sprinting=false;sprintBtn.style.filter=''}));
-document.querySelector('#jumpBtn').addEventListener('click',()=>{if(!inVehicle&&jumpHeight<=.02)jumpVelocity=5.2});
-const minimap=document.querySelector('#minimap'),mapCtx=minimap.getContext('2d');
-function drawMinimap(){
- const ctx=mapCtx,w=minimap.width,h=minimap.height,scale=1.02;
- ctx.clearRect(0,0,w,h);ctx.fillStyle='#253a35';ctx.fillRect(0,0,w,h);
- ctx.save();ctx.translate(w/2-player.position.x*scale,h/2-player.position.z*scale);
- ctx.fillStyle='#535a60';
- for(let k=-2;k<=2;k++){const p=k*40;ctx.fillRect(p*scale-6, -110*scale,12*scale,220*scale);ctx.fillRect(-110*scale,p*scale-6,220*scale,12*scale)}
- ctx.fillStyle='#9bb7a1';ctx.fillRect(-105*scale,-105*scale,210*scale,210*scale);
- ctx.fillStyle='#535a60';for(let k=-2;k<=2;k++){const p=k*40;ctx.fillRect(p*scale-6,-110*scale,12*scale,220*scale);ctx.fillRect(-110*scale,p*scale-6,220*scale,12*scale)}
-  
- ctx.fillStyle='#f18b64';npcActors.forEach(a=>{ctx.fillRect(a.mesh.position.x*scale-2,a.mesh.position.z*scale-2,4,4)});
- ctx.fillStyle='#77dcff';trafficCars.forEach(t=>{ctx.fillRect(t.car.mesh.position.x*scale-3,t.car.mesh.position.z*scale-3,6,6)});
- ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(player.position.x*scale,player.position.z*scale,5,0,Math.PI*2);ctx.fill();
- ctx.restore();
-}
-// Simple player car and ambient road traffic.
-function makeCar(color,x,z){const car=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color,metalness:.2,roughness:.45}),glass=new THREE.MeshStandardMaterial({color:0x9bc4d4,roughness:.25}),rubber=new THREE.MeshStandardMaterial({color:0x17191d});const body=new THREE.Mesh(new THREE.BoxGeometry(1.8,.55,3.5),paint);body.position.y=.62;car.add(body);const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.42,.72,1.7),glass);cabin.position.set(0,1.18,-.15);car.add(cabin);const wheels=[];for(const sx of [-.94,.94])for(const sz of [-1.12,1.12]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.2,12),rubber);w.rotation.z=Math.PI/2;w.position.set(sx,.38,sz);car.add(w);wheels.push(w)}car.position.set(x,0,z);scene.add(car);return{mesh:car,wheels}}
-
- // Coordinated vehicle and pedestrian signals at every downtown junction.
- const pedestrianSignals=[],vehicleSignals=[];
- function lamp(color,emissive){return new THREE.Mesh(new THREE.SphereGeometry(.16,12,10),new THREE.MeshStandardMaterial({color,emissive,emissiveIntensity:1.4}))}
- function addTrafficSignal(x,z,rotation=0){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,1.1,8),new THREE.MeshStandardMaterial({color:0x414b54,metalness:.35,roughness:.6}));pole.position.set(x,5.55,z);scene.add(pole);const housing=new THREE.Mesh(new THREE.BoxGeometry(.72,1.75,.48),new THREE.MeshStandardMaterial({color:0x20262d}));housing.position.set(x,4.05,z);housing.rotation.y=rotation;scene.add(housing);const lamps=[lamp(0xff3028,0x9c1008),lamp(0xffc247,0x9a6500),lamp(0x35e875,0x0b8c35)];lamps.forEach((v,i)=>{v.position.set(x,4.62-i*.57,z+.27);scene.add(v)});vehicleSignals.push({lamps,x,z})}
- function addPedestrianSignal(x,z){const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,2.5,8),new THREE.MeshStandardMaterial({color:0x4c5660}));pole.position.set(x,1.25,z);scene.add(pole);const housing=new THREE.Mesh(new THREE.BoxGeometry(.55,.85,.35),new THREE.MeshStandardMaterial({color:0x202a32}));housing.position.set(x,2.7,z);scene.add(housing);const red=lamp(0xff3028,0x9c1008),green=lamp(0x35e875,0x0b8c35);red.position.set(x,2.9,z+.2);green.position.set(x,2.48,z+.2);scene.add(red,green);pedestrianSignals.push({red,green})}
- for(let gx=-2;gx<=2;gx++)for(let gz=-2;gz<=2;gz++){const x=gx*40,z=gz*40;addTrafficSignal(x,z);for(const sx of [-1,1])for(const sz of [-1,1])addPedestrianSignal(x+sx*10.8,z+sz*10.8)}
- const playerCar=makeCar(0x2879a5,0,5),trafficCars=[];
-for(let i=0;i<6;i++){const lane=i%2===0?-40:40,z=-85+i*27;trafficCars.push({car:makeCar([0xc74b3e,0xd5b45d,0x4c7c58,0x777f8c,0x704e88,0xe1e1e1][i],lane,z),lane,z,speed:5+(i%3)*1.4,dir:i%2===0?1:-1})}
-const vehicleButton=document.querySelector('#vehicleBtn');
-vehicleButton.addEventListener('click',()=>{if(inVehicle){inVehicle=false;player.visible=true;activeCar=null;player.position.x=playerCar.mesh.position.x+2.4;player.position.z=playerCar.mesh.position.z;vehicleButton.textContent='ENTER VEHICLE';document.querySelector('#hint').textContent='You left the car';return}if(Math.hypot(player.position.x-playerCar.mesh.position.x,player.position.z-playerCar.mesh.position.z)<7){inVehicle=true;activeCar=playerCar;player.visible=false;vehicleButton.textContent='EXIT VEHICLE';document.querySelector('#hint').textContent='Drive with joystick · drag to steer camera'}else document.querySelector('#hint').textContent='Walk close to the blue car to enter it'});
-let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;saveClock+=dt;if(saveClock>=4){saveClock=0;saveCityProgress()}
-// NPC relationships are represented through friendly dialogue, companionship and shared outings.
-familyGrowthClock+=dt;
-if(familyGrowthClock>72&&familyGrowthCount<4){
- familyGrowthClock=0;
- const eligible=npcActors.filter(a=>a.familyRole===0&&!a.isChild&&!a.hasWelcomedChild&&a.job==='Resident');
- if(eligible.length){const family=eligible[Math.floor(Math.random()*eligible.length)];family.hasWelcomedChild=true;addFamilyChild(family)}
-}
-npcWorldEventClock-=dt;if(npcWorldEventClock<=0){npcWorldEvent=npcWorldEvents[Math.floor(Math.random()*npcWorldEvents.length)];npcWorldEventClock=100+Math.random()*100;}
- npcActors.forEach(a=>{
-  // Lightweight personal-life simulation: identity, needs, goals and location memory.
-  a.energy=Math.max(0,Math.min(100,(a.energy??75)+(a.activity==='sitting'?dt*1.8:-dt*.035)));
-  a.stress=Math.max(0,Math.min(100,(a.stress||0)+(rainActive?dt*.012:-dt*.02)));
-  a.goalClock=(a.goalClock??20)-dt;a.landmarkCooldown=Math.max(0,(a.landmarkCooldown||0)-dt);a.decisionClock=(a.decisionClock??30)-dt;a.lifeEvents=a.lifeEvents||[];a.recognisedFriends=a.recognisedFriends||[];a.hobbyClock=(a.hobbyClock??18)-dt;a.eventInterest=a.eventInterest||Math.random();a.wallet=Math.max(0,Math.min(9999,(a.wallet??100)+(a.job==='Shopkeeper'||a.job==='Cook'?dt*.018:a.job==='Delivery Worker'?dt*.014:dt*.004)));a.careerProgress=(a.careerProgress||0)+dt*(a.job==='Student'?.0015:.00035);if(a.careerProgress>=1){a.careerProgress=0;a.careerLevel=Math.min(5,(a.careerLevel||1)+1);a.lifeEvents.push('Reached career level '+a.careerLevel);if(a.lifeEvents.length>6)a.lifeEvents.shift();}
-  a.memory=a.memory||[];a.visitedDistricts=a.visitedDistricts||[];a.brain=a.brain||createNpcBrain();a.habits=a.habits||{park:0,shop:0,beach:0,rest:0};a.playerActionMemory=a.playerActionMemory||[];a.lifeGoal=a.lifeGoal||['Become a trusted neighbour','Explore every district','Build a successful career','Make new friends','Discover favourite places'][Math.abs(a.familyId||0)%5];a.tomorrowPlan=a.tomorrowPlan||null;a.failedRoutes=a.failedRoutes||0;a.familiarPlaces=a.familiarPlaces||[];
-  // Citizen needs and a lightweight local economy evolve during play.
-  a.hunger=Math.min(100,(a.hunger??25)+dt*.055);
-  a.hygiene=Math.max(0,(a.hygiene??82)-dt*.012);
-  a.socialNeed=Math.min(100,(a.socialNeed??55)+dt*.018);
-  if(a.activity==='sitting'||a.activity==='buildingVisit'){a.habits=a.habits||{park:0,shop:0,beach:0,rest:0};a.habits.rest=(a.habits.rest||0)+dt*.01;a.stress=Math.max(0,a.stress-dt*.035);a.socialNeed=Math.max(0,a.socialNeed-dt*.025)}
-  if(a.activity==='eating'){a.habits=a.habits||{park:0,shop:0,beach:0,rest:0};a.habits.shop=(a.habits.shop||0)+dt*.004;a.hunger=Math.max(0,a.hunger-dt*.9);a.wallet=Math.max(0,a.wallet-dt*.015)}
-  if(a.activity==='working'){a.wallet=Math.min(9999,a.wallet+dt*.035);a.energy=Math.max(0,a.energy-dt*.012)}
-  if(a.hunger>82&&a.activity!=='eating'&&a.activity!=='sitting'){a.goal='Find food';a.activity='seekingFood';a.pause=Math.max(a.pause,.1)}
-  if(a.socialNeed>88&&a.activity!=='socialising'&&a.activity!=='sitting')a.goal='Meet a neighbour';
-  if(a.hygiene<12||a.energy<15)a.mood='😴';else if(a.hunger>90)a.mood='😟';
-  if(a.activity==='seekingFood'&&a.pause<=0){a.activity='eating';a.pause=2.5;a.hunger=Math.max(0,a.hunger-18);a.wallet=Math.max(0,a.wallet-2);a.memory.push('Stopped for a meal');if(a.memory.length>10)a.memory.shift()}
-  if(a.activity==='eating'&&a.pause<=0)a.activity='walk';
-  const district=a.mesh.position.x>105?(a.mesh.position.z<-135?'Tokyo Downtown':a.mesh.position.z<-45?'Japanese Village':a.mesh.position.z<45?'Airport':a.mesh.position.z<135?'Industrial Port':'Beach Island'):(Math.abs(a.mesh.position.x)<42&&Math.abs(a.mesh.position.z)<42?'Central City':a.mesh.position.z>45?'Park District':'Neighbourhood');
-  if(!a.visitedDistricts.includes(district)){a.visitedDistricts.push(district);a.memory.push('Visited '+district);if(a.memory.length>8)a.memory.shift();if(a.visitedDistricts.length>1&&a.landmarkCooldown<=0){a.talkLine=a.name+': I have explored '+district+'!';a.reactionType='✨';a.reactionUntil=now+1800;a.landmarkCooldown=24}}
-  const cityDay=Math.floor(dayClock/(Math.PI*2)*28);
-  // Recognise familiar districts and prepare a plan for the next in-game day.
-  if(!a.familiarPlaces.includes(district)){a.familiarPlaces.push(district);if(a.familiarPlaces.length>12)a.familiarPlaces.shift()}
-  if(a.plannedForDay!==cityDay){const habitKeys=Object.keys(a.habits);const favouriteHabit=habitKeys.sort((x,y)=>(a.habits[y]||0)-(a.habits[x]||0))[0]||'park';a.tomorrowPlan={day:cityDay+1,goal:a.lifeGoal,activity:favouriteHabit==='shop'?'Visit favourite shops':favouriteHabit==='beach'?'Take a beach walk':favouriteHabit==='rest'?'Rest at a familiar bench':'Visit a familiar park',district:a.visitedDistricts[a.visitedDistricts.length-1]||district};a.plannedForDay=cityDay;a.memory.push('Planned tomorrow: '+a.tomorrowPlan.activity);if(a.memory.length>10)a.memory.shift()}
-  if(!a.birthdayDone&&cityDay===a.birthdayDay&&a.familyRole===0){a.birthdayDone=true;a.talkLine='🎂 '+a.name+' is celebrating a birthday!';a.reactionType='🎉';a.reactionUntil=now+3600}
-  if(cityDay!==a.birthdayDay)a.birthdayDone=false;
-  if(a.goalClock<=0&&a.familyRole!==3&&a!==companionNPC&&!rainActive&&a.pause<=0&&a.activity!=='sitting'&&a.activity!=='restingAtGoal'){
-   const favourite=a.favouriteSpot||'park';const favouriteShop=extraBuildings.find(b=>b.kind==='shop'&&b.isOpen);const favouritePark=parkSpots[Math.floor(Math.random()*Math.max(1,parkSpots.length))]||[30,30];const goals=[{name:'Visit the park',x:favouritePark[0],z:favouritePark[1]},{name:'Explore a new street',x:a.homeX+(Math.random()-.5)*34,z:a.homeZ+(Math.random()-.5)*34},{name:'Visit a shop',x:favouriteShop?.entry.x??a.homeX,z:favouriteShop?.entry.z??a.homeZ},{name:'Enjoy the beach',x:132,z:180+(Math.random()-.5)*24},{name:'Visit a favourite place',x:favourite==='shop'?(favouriteShop?.entry.x??a.homeX):favourite==='beach'?132:favouritePark[0],z:favourite==='shop'?(favouriteShop?.entry.z??a.homeZ):favourite==='beach'?180:favouritePark[1]},{name:'Go to school',x:schoolEntry.x,z:schoolEntry.z},{name:'Wait at a bus stop',x:busStops[0]?.x??a.homeX,z:(busStops[0]?.z??a.homeZ)+1.5}];
-   if(a.eventInterest>.58){const eventSpot=npcEventSpots[Math.floor(Math.random()*npcEventSpots.length)];goals.push({name:'Attend '+npcWorldEvent,x:eventSpot[0],z:eventSpot[1]});}const habitKeys=Object.keys(a.habits||{});const preferred=habitKeys.sort((x,y)=>(a.habits[y]||0)-(a.habits[x]||0))[0];const goal=chooseNpcBrainGoal(a,goals);a.mlRecordedGoal=false;a.brain=a.brain||createNpcBrain();a.brain.thought='I decided to '+goal.name.toLowerCase();a.brain.lastDecision=performance.now();a.goal=goal.name+' · '+a.lifeGoal;a.targetX=goal.x;a.targetZ=goal.z;if(a.targetX<=100&&a.targetX>=-100&&a.targetZ<=100&&a.targetZ>=-100){const safe=constrainToSidewalk(a.targetX,a.targetZ);a.targetX=safe.x;a.targetZ=safe.z;}a.activity='personalGoal';a.goalCompleted=false;a.pause=0;a.goalClock=35+Math.random()*35;
-  }
-  if(a.energy<18&&a.activity!=='sitting'&&!a.benchTarget){const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];if(bench){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench';a.talkLine=a.name+': I need a short rest.'}}
-if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
-const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;
-if(inVehicle&&activeCar){heading-=joy.x*1.05*dt;const drive=-joy.y*10*dt;const nextX=activeCar.mesh.position.x+Math.sin(heading)*drive,nextZ=activeCar.mesh.position.z+Math.cos(heading)*drive;const blocked=extraBuildings.some(b=>Math.abs(nextX-b.group.position.x)<b.halfW+1&&Math.abs(nextZ-b.group.position.z)<b.halfD+1);if(!blocked&&nextX>=-105&&nextX<=215&&nextZ>=-230&&nextZ<=230){activeCar.mesh.position.x=nextX;activeCar.mesh.position.z=nextZ;activeCar.mesh.rotation.y=heading;activeCar.wheels.forEach(w=>w.rotation.x+=drive*2.5)}player.position.copy(activeCar.mesh.position)}
-else if(moving&&!inside){heading-=joy.x*1.8*dt;const speed=-joy.y*(sprinting?7.2:4.4)*dt;const px=player.position.x+Math.sin(heading)*speed,pz=player.position.z+Math.cos(heading)*speed;const playerBlocked=extraBuildings.some(b=>Math.abs(px-b.group.position.x)<b.halfW+.35&&Math.abs(pz-b.group.position.z)<b.halfD+.35);const inWorld=px>=-108&&px<=220&&pz>=-235&&pz<=235;if(!playerBlocked&&inWorld){player.position.x=px;player.position.z=pz;}player.rotation.y=heading;walkPhase+=dt*(sprinting?15:10);armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}
-else{armL.rotation.x*=.82;armR.rotation.x*=.82;legL.rotation.x*=.82;legR.rotation.x*=.82}
-const signalPhase=now%20000,vehicleGreen=signalPhase<8000,vehicleYellow=signalPhase>=8000&&signalPhase<10000,pedestrianCanCross=signalPhase>=11000&&signalPhase<19000;
-trafficCars.forEach(t=>{let next=t.z+t.speed*t.dir*dt;let stopped=false;for(let cross=-80;cross<=80;cross+=40){const stopLine=cross-t.dir*9;const before=(stopLine-t.z)*t.dir>=0,after=(stopLine-next)*t.dir<=0;if(before&&after&&!vehicleGreen){next=stopLine-t.dir*.15;stopped=true;break}}if(!stopped){t.z=next;if(t.z>110)t.z=-110;if(t.z< -110)t.z=110}else t.z=next;t.car.mesh.position.z=t.z;t.car.wheels.forEach(w=>{if(!stopped)w.rotation.x+=t.speed*dt*2})});
-if(!inVehicle){jumpVelocity-=14*dt;jumpHeight=Math.max(0,jumpHeight+jumpVelocity*dt);if(jumpHeight===0)jumpVelocity=0;player.position.y=jumpHeight*2.2}
- 
-drawMinimap();
-dayClock=(dayClock+dt/210)%(Math.PI*2);
- const daylight=Math.max(.12,(Math.sin(dayClock-Math.PI/2)+1)/2);
- shopDoors.forEach(d=>{const target=daylight>.2?Math.PI/2:0;d.open+=(target-d.open)*Math.min(1,dt*2.2);d.pivot.rotation.y=-d.open});
- parkBirds.forEach(b=>{b.phase+=dt*.55;b.mesh.position.x=parkCenterX+Math.cos(b.phase)*b.radius;b.mesh.position.z=parkCenterZ+Math.sin(b.phase)*b.radius;b.mesh.position.y=8+Math.sin(b.phase*2)*.65});
- fallingLeaves.forEach(l=>{l.position.y-=l.userData.speed*dt;l.position.x+=Math.sin(now*.001+l.userData.phase)*dt*.55;l.rotation.z+=dt*.8;if(l.position.y<.15){l.position.y=5+Math.random()*7;l.position.x=parkCenterX+(Math.random()-.5)*70;l.position.z=parkCenterZ+(Math.random()-.5)*70}});
- beachWaves.forEach((w,i)=>{w.scale.setScalar(.82+Math.sin(now*.001+i)*.12);w.position.z+=(Math.sin(now*.0007+i)-Math.sin((now-dt*1000)*.0007+i))*.55});
- gulls.forEach(g=>{g.phase+=dt*.22;g.mesh.position.x+=dt*1.1;g.mesh.position.z=Math.sin(g.phase)*18;if(g.mesh.position.x>beachCenterX+beachSpanX*.55)g.mesh.position.x=beachCenterX-beachSpanX*.25});
- weatherClock+=dt;const nightFactor=1-daylight;streetLights.forEach(s=>{s.light.intensity=nightFactor>.55?1.45:0;s.bulb.material.emissiveIntensity=nightFactor>.55?1.8:0});extraBuildings.forEach(b=>{if(b.kind==='shop')b.isOpen=daylight>.18});
- if(weatherClock>75){weatherClock=0;rainActive=Math.random()<.28}
- if(!window.__cityRain){
-  const rainGeo=new THREE.BufferGeometry(),rainCount=260,rainPositions=new Float32Array(rainCount*3);
-  for(let i=0;i<rainCount;i++){rainPositions[i*3]=(Math.random()-.5)*95;rainPositions[i*3+1]=Math.random()*22;rainPositions[i*3+2]=(Math.random()-.5)*95}
-  rainGeo.setAttribute('position',new THREE.BufferAttribute(rainPositions,3));
-  window.__cityRain=new THREE.Points(rainGeo,new THREE.PointsMaterial({color:0xb8d9ef,size:.075,transparent:true,opacity:.65}));
-  scene.add(window.__cityRain);
- }
- window.__cityRain.visible=rainActive;
- if(rainActive){
-  const rainPos=window.__cityRain.geometry.attributes.position;
-  for(let i=0;i<rainPos.count;i++){let y=rainPos.getY(i)-dt*17;if(y<0)y=20+Math.random()*3;rainPos.setY(i,y)}
-  rainPos.needsUpdate=true;
- }sun.intensity=.35+daylight*2.85;sun.position.set(Math.cos(dayClock)*35,8+daylight*35,Math.sin(dayClock)*25);const morningFog=daylight>.25&&daylight<.48;scene.fog.near=morningFog?24:48;scene.fog.far=morningFog?125:220;scene.background.setHSL(.56,.28,.12+daylight*.48);scene.fog.color.copy(scene.background);
- if(!window.__cityClouds){window.__cityClouds=new THREE.Group();const cloudMat=new THREE.MeshStandardMaterial({color:0xe8edf0,transparent:true,opacity:.72,roughness:1});for(let i=0;i<9;i++){const cloud=new THREE.Group();for(let j=0;j<4;j++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1.8+(j%2)*.55,8,7),cloudMat);puff.position.set((j-1.5)*1.5,Math.sin(j)*.25,0);cloud.add(puff)}cloud.position.set((i-4)*27,20+(i%3)*2,(i%3-1)*38);window.__cityClouds.add(cloud)}scene.add(window.__cityClouds)}
- window.__cityClouds.children.forEach(c=>{c.position.x+=dt*.65;if(c.position.x>115)c.position.x=-115});
- if(!window.__cityPuddles){window.__cityPuddles=[];const puddleMat=new THREE.MeshStandardMaterial({color:0x789eaa,transparent:true,opacity:.34,roughness:.16,metalness:.22});for(let i=0;i<18;i++){const p=new THREE.Mesh(new THREE.CircleGeometry(1+Math.random()*1.4,12),puddleMat);p.rotation.x=-Math.PI/2;p.position.set((Math.random()-.5)*175,.045,(Math.random()-.5)*175);p.scale.y=.55;scene.add(p);window.__cityPuddles.push(p)}}
- window.__cityPuddles.forEach(p=>p.visible=rainActive);
- let closestNPC=null,closestNPCDistance=4.6;
-vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.lamps[1].visible=vehicleYellow;s.lamps[2].visible=vehicleGreen});
-  pedestrianSignals.forEach(s=>{s.red.visible=!pedestrianCanCross;s.green.visible=pedestrianCanCross});
- npcActors.forEach(a=>{
- const playerDistance=Math.hypot(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
-  // A recruited companion follows at a comfortable distance.
-  if(a===companionNPC&&playerDistance>2.8){
-   const followAngle=Math.atan2(a.mesh.position.x-player.position.x,a.mesh.position.z-player.position.z);
-   a.targetX=player.position.x-Math.sin(followAngle)*2.1;
-   a.targetZ=player.position.z-Math.cos(followAngle)*2.1;
-   a.pause=0;
-  }
- // Rain routine: NPCs shelter at nearby building entrances without disappearing.
- if(rainActive&&a!==companionNPC&&!a.isSheltered&&a.activity!=='sheltering'){const shelter=extraBuildings.reduce((best,b)=>!best||Math.hypot(b.entry.x-a.mesh.position.x,b.entry.z-a.mesh.position.z)<Math.hypot(best.entry.x-a.mesh.position.x,best.entry.z-a.mesh.position.z)?b:best,null);if(shelter){a.targetX=shelter.entry.x;a.targetZ=shelter.entry.z;a.activity='sheltering';a.pause=0}}
- if(a.umbrella)a.umbrella.visible=rainActive&&a.activity!=='sitting';
- if(!rainActive&&a.isSheltered){a.isSheltered=false;a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam;a.pause=.2}
- if(!rainActive&&a.pause<=0&&Math.random()<.00010){const openBuildings=extraBuildings.filter(b=>b.kind!=='shop'||b.isOpen);const destination=openBuildings[Math.floor(Math.random()*openBuildings.length)];if(destination){a.targetX=destination.entry.x;a.targetZ=destination.entry.z;a.activity='buildingVisit'}}
- // Pedestrians give moving vehicles extra room and briefly pause when one passes.
- const carNear=trafficCars.some(t=>Math.hypot(t.car.mesh.position.x-a.mesh.position.x,t.car.mesh.position.z-a.mesh.position.z)<2.8);
- if(carNear){a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;a.pause=Math.max(a.pause,.6)}
- // Nearby non-family pedestrians occasionally stop and face one another for a short chat.
- if(!a.socialCooldown&&Math.random()<.0015){
-  const friend=npcActors.find(b=>b!==a&&!b.isChild&&!a.isChild&&b.familyId!==a.familyId&&Math.hypot(b.mesh.position.x-a.mesh.position.x,b.mesh.position.z-a.mesh.position.z)<2.2);
-  if(friend){
-   const chats=['Did you visit the new cafe?','The beach looks great today!','Are you heading to the park?','The city is busy today!','See you around!'];
-   const line=chats[Math.floor(Math.random()*chats.length)];
-   a.socialCooldown=8;friend.socialCooldown=8;
-   if(!a.partner&&!friend.partner&&a.job==='Resident'&&friend.job==='Resident'&&Math.random()<.12){a.partner=friend;friend.partner=a;a.relationship='Partner';friend.relationship='Partner';a.talkLine=a.name+' and '+friend.name+' are now partners!';friend.talkLine='I enjoy spending time with '+a.name+'.';}
-   if(a.partner===friend){a.dateUntil=now+6500;friend.dateUntil=now+6500;a.activity='date';friend.activity='date';a.targetX=friend.targetX=132;a.targetZ=friend.targetZ=6;}
-   a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
-   friend.targetX=friend.mesh.position.x;friend.targetZ=friend.mesh.position.z;
-   a.socialFriend=friend;friend.socialFriend=a;a.recognisedFriends=a.recognisedFriends||[];friend.recognisedFriends=friend.recognisedFriends||[];if(!a.recognisedFriends.includes(friend.name))a.recognisedFriends.push(friend.name);if(!friend.recognisedFriends.includes(a.name))friend.recognisedFriends.push(a.name);a.memory=a.memory||[];friend.memory=friend.memory||[];a.memory.push('Chatted with '+friend.name);friend.memory.push('Chatted with '+a.name);if(a.memory.length>10)a.memory.shift();if(friend.memory.length>10)friend.memory.shift();a.lifeEvents=a.lifeEvents||[];friend.lifeEvents=friend.lifeEvents||[];a.lifeEvents.push('Met '+friend.name);friend.lifeEvents.push('Met '+a.name);if(a.lifeEvents.length>6)a.lifeEvents.shift();if(friend.lifeEvents.length>6)friend.lifeEvents.shift();
-   a.talkLine=a.name+': '+line;friend.talkLine=friend.name+': '+['Absolutely!','Sounds good!','Maybe later!','Yes, let’s go!'][Math.floor(Math.random()*4)];
-   a.mesh.rotation.y=Math.atan2(friend.mesh.position.x-a.mesh.position.x,friend.mesh.position.z-a.mesh.position.z);
-   friend.mesh.rotation.y=Math.atan2(a.mesh.position.x-friend.mesh.position.x,a.mesh.position.z-friend.mesh.position.z);
-  }
- }
- a.socialCooldown=Math.max(0,(a.socialCooldown||0)-dt);
- a.greetCooldown=Math.max(0,(a.greetCooldown||0)-dt);
-  a.photoCooldown=Math.max(0,(a.photoCooldown||0)-dt);
-  if(a.photoCooldown<=0&&!a.walking&&a.job==='Visitor'&&Math.random()<.012){a.reactionType='📸';a.reactionUntil=now+2300;a.photoCooldown=35+Math.random()*30;a.talkLine=a.name+': Taking a photo of this view!';}
- a.playerNearby=playerDistance<3.1;if(now>=(a.brainNextCheck||0)){const nearbyCount=npcActors.reduce((count,other)=>count+(other!==a&&Math.hypot(other.mesh.position.x-a.mesh.position.x,other.mesh.position.z-a.mesh.position.z)<5?1:0),0);npcBrainThink(a,now,nearbyCount);a.brainNextCheck=now+1200;}
- if(a.playerNearby&&a.greetCooldown<=0){
-  a.greetCooldown=11+Math.random()*8;
-  const greetings=[
-   ['👋', 'Hi there!'],['😊','Welcome to our city!'],['🙌','Good to see you!'],
-   ['📸','This place is perfect for a photo!'],['😂','What a lovely day!']
-  ];
-  const greet=greetings[Math.floor(Math.random()*greetings.length)];
-  a.reactionType=greet[0];a.reactionUntil=now+2100;a.reactionPhase=0;
-  a.talkLine=greet[0]+' '+a.name+': '+greet[1];
- }
- if(playerDistance<closestNPCDistance){closestNPC=a;closestNPCDistance=playerDistance}
- if(a.playerNearby&&a.mesh.position.distanceTo(player.position)<3.1){
-  a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
-  a.mesh.rotation.y=Math.atan2(player.position.x-a.mesh.position.x,player.position.z-a.mesh.position.z);
- }
- // Pedestrian spacing: gently steer around nearby people instead of walking through them.
- let avoidX=0,avoidZ=0;
- for(const other of npcActors){
-  if(other===a)continue;
-  const ox=a.mesh.position.x-other.mesh.position.x,oz=a.mesh.position.z-other.mesh.position.z,od=Math.hypot(ox,oz);
-  if(od>0.001&&od<1.05){const force=(1.05-od)/1.05;avoidX+=(ox/od)*force;avoidZ+=(oz/od)*force}
- }
- if(Math.abs(avoidX)+Math.abs(avoidZ)>.08){a.targetX+=avoidX*.9;a.targetZ+=avoidZ*.9}
- if(a.mesh.position.x>105){a.targetX=THREE.MathUtils.clamp(a.targetX,134,196);a.targetX=a.mesh.position.x<150?141.2:158.8;a.targetZ=THREE.MathUtils.clamp(a.targetZ,-220,220)}else{let laneX=Infinity,laneZ=Infinity;for(let k=-2;k<=2;k++)for(const side of [-1,1]){laneX=Math.abs(a.mesh.position.x-(k*40+side*9.2))<Math.abs(a.mesh.position.x-laneX)?k*40+side*9.2:laneX;laneZ=Math.abs(a.mesh.position.z-(k*40+side*9.2))<Math.abs(a.mesh.position.z-laneZ)?k*40+side*9.2:laneZ}if(Math.abs(a.mesh.position.x-laneX)<=Math.abs(a.mesh.position.z-laneZ)){a.targetX=laneX;a.targetZ=THREE.MathUtils.clamp(a.targetZ,-100,100)}else{a.targetZ=laneZ;a.targetX=THREE.MathUtils.clamp(a.targetX,-100,100)}}
-  const dx=a.targetX-a.mesh.position.x,dz=a.targetZ-a.mesh.position.z,dist=Math.hypot(dx,dz);
- a.pause=Math.max(0,a.pause-dt);
- const crossingRed=[-40,40].some(lane=>Math.abs(a.mesh.position.x-lane)<2.2&&(a.targetX-lane)*(a.mesh.position.x-lane)<0&&Math.abs(a.targetX-lane)>2.2)||[-40,40].some(lane=>Math.abs(a.mesh.position.z-lane)<2.2&&(a.targetZ-lane)*(a.mesh.position.z-lane)<0&&Math.abs(a.targetZ-lane)>2.2);
- if(crossingRed&&!pedestrianCanCross)a.pause=Math.max(a.pause,.22);
- a.activityTimer-=dt;
- if(!a.benchTarget&&a.activityTimer<=0&&a.familyRole===0&&a!==companionNPC&&!rainActive){
-  const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];
-  if(Math.hypot(bench.x-a.mesh.position.x,bench.z-a.mesh.position.z)<24){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench'}
-  a.activityTimer=22+Math.random()*28;
- }
- if(a.benchTarget&&Math.hypot(a.mesh.position.x-a.benchTarget.x,a.mesh.position.z-a.benchTarget.z)<.85){
-  a.activity='sitting';a.pause=0;a.mesh.position.set(a.benchTarget.x,0,a.benchTarget.z);a.mesh.rotation.y=Math.PI;
-  if(!a.sitUntil)a.sitUntil=now+6500+Math.random()*6000;
- }
- if(a.activity==='sitting'&&now>a.sitUntil){a.activity='walk';a.benchTarget=null;a.sitUntil=0;a.targetX=a.x+(Math.random()-.5)*a.roam*2;a.targetZ=a.z+(Math.random()-.5)*a.roam*2;a.activityTimer=18}
- if(a.activity==='toBusStop'&&dist<1.15){a.activity='waitingBus';a.pause=5+Math.random()*5;a.busWaitUntil=now+a.pause*1000;a.mesh.rotation.y=Math.PI}
- if(a.activity==='waitingBus'&&now>(a.busWaitUntil||0)){a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam}
- a.walking=dist>=0.45&&a.activity!=='sitting'&&a.pause<=0;
-  if(!a.walking&&a.hobbyClock<=0&&a.activity!=='sitting'&&a!==companionNPC){a.hobbyClock=18+Math.random()*28;a.hobbyAction=a.hobby;if(a.hobby==='photography'){a.reactionType='📸';a.reactionUntil=now+1800;}else if(a.hobby==='music'){a.reactionType='🎵';a.reactionUntil=now+1800;}else if(a.hobby==='sports'){a.reactionType='⚽';a.reactionUntil=now+1600;}else if(a.hobby==='gardening'){a.reactionType='🌱';a.reactionUntil=now+1600;}else if(a.hobby==='reading'){a.idleMode='phone';a.idleUntil=now+2200;}}
-  if(a.activity==='personalGoal'&&dist<1.1&&!a.goalCompleted){a.goalCompleted=true;if(!a.mlRecordedGoal){const lowerGoal=(a.goal||'').toLowerCase();npcMLLearn(a,lowerGoal.includes('park')?'park':lowerGoal.includes('shop')?'shop':lowerGoal.includes('beach')?'beach':'rest');a.mlRecordedGoal=true;}a.habits=a.habits||{park:0,shop:0,beach:0,rest:0};if(a.goal.toLowerCase().includes('park'))a.habits.park=(a.habits.park||0)+1;if(a.goal.toLowerCase().includes('beach'))a.habits.beach=(a.habits.beach||0)+1;if(a.goal.toLowerCase().includes('shop'))a.habits.shop=(a.habits.shop||0)+1;a.pause=.8;a.energy=Math.min(100,a.energy+dt*.8);a.activity='restingAtGoal';a.goalClock=8+Math.random()*7;}if(a.activity==='restingAtGoal'&&a.pause<=0){a.activity='walk';a.goalCompleted=false;a.targetX=a.mesh.position.x+(Math.random()-.5)*a.roam*2;a.targetZ=a.mesh.position.z+(Math.random()-.5)*a.roam*2;a.goalClock=6;}
-  if(a.activity==='sheltering'&&rainActive)a.stress=Math.max(0,a.stress-dt*.08);
-  if(a.playerNearby&&a.recognisedPlayer)a.mood='😊';
- if(!a.walking){
-  if(a.pause<=0&&a.familyRole===0){
-   // Residents follow a simple daily routine: work and leisure by day, then head home at night.
-   a.routineTimer-=dt;
-   if(a.routineTimer<=0){
-    const night=daylight<.28;
-    const job=a.job;
-    let tx=a.homeX,tz=a.homeZ;
-    if(!night){
-     const offsets={
-      Shopkeeper:[2.8,-1.5],Student:[-2.5,2.2],Artist:[1.5,3.2],
-      Cook:[-2.2,-1.8],Teacher:[2.2,1.8],Musician:[-1.4,2.8],
-      Cyclist:[3.5,1.2],Visitor:[-3.2,-1.2],Resident:[1.2,-2.8],'Delivery Worker':[3.2,1.8],Cleaner:[-3.1,1.4],'Security Guard':[2.6,-2.1]
-     };
-     const off=offsets[job]||[0,0];
-     tx=a.homeX+off[0]+(Math.random()-.5)*2.2;
-     tz=a.homeZ+off[1]+(Math.random()-.5)*2.2;
-     if(job==='Student'){tx=schoolEntry.x;tz=schoolEntry.z;}
-     if(job==='Shopkeeper'||job==='Cook'){const shop=extraBuildings.find(b=>b.kind==='shop'&&b!==extraBuildings[extraBuildings.length-1]);if(shop){tx=shop.entry.x;tz=shop.entry.z;}}
-     if(job==='Visitor'&&daylight>.45){if(Math.random()<.55){tx=132;tz=(a.familyId%3-1)*9}else if(parkSpots.length){const park=parkSpots[Math.floor(Math.random()*parkSpots.length)];tx=park[0]+8;tz=park[1]}}
-     if(job==='Student'&&busStops.length&&Math.random()<.22){const stop=busStops[a.familyId%busStops.length];tx=stop.x;tz=stop.z+1.8;a.activity='toBusStop';}
-     if(job==='Resident'||job==='Cyclist'||job==='Artist'||job==='Musician'){const footpath=snapToSidewalk(tx,tz);tx=footpath.x;tz=footpath.z;}
-    }
-    a.targetX=tx;a.targetZ=tz;a.routineTimer=12+Math.random()*13;a.pause=.3;
-   }else{
-    const ang=Math.random()*Math.PI*2,range=Math.random()*a.roam,tx=a.x+Math.cos(ang)*range,tz=a.z+Math.sin(ang)*range;
-    a.targetX=tx;a.targetZ=tz;a.pause=1.2;
-   }
-   for(const member of npcActors){
-    if(member.familyId===a.familyId&&member!==a){
-     member.targetX=a.targetX+(member.familyRole===2?.9:-.9);
-     member.targetZ=a.targetZ+(member.familyRole===2?.8:-.8);
-     member.pause=0.25;
-    }
-   }
-  }else if(a.familyRole!==0&&a.pause<=0){a.pause=0.15}
- }else{
-  const step=Math.min(dist,a.speed*dt);
-  const rawX=a.mesh.position.x+dx/dist*step,rawZ=a.mesh.position.z+dz/dist*step;
-  const nextX=rawX,nextZ=rawZ;
-  const blocked=extraBuildings.some(b=>Math.abs(nextX-b.group.position.x)<b.halfW&&Math.abs(nextZ-b.group.position.z)<b.halfD);
-  if(blocked){
-   a.failedRoutes=(a.failedRoutes||0)+1;a.memory=a.memory||[];if(a.failedRoutes%3===1){a.memory.push('Changed route after an obstacle');if(a.memory.length>10)a.memory.shift()}
-   const detour=constrainToSidewalk(a.mesh.position.x+(Math.random()<.5?-1:1)*(3.5+Math.random()*3),a.mesh.position.z+(Math.random()<.5?-1:1)*(3.5+Math.random()*3));a.targetX=detour.x;a.targetZ=detour.z;
-   a.pause=.12;
-  }else{
-   a.mesh.position.x=nextX;a.mesh.position.z=nextZ;a.failedRoutes=Math.max(0,(a.failedRoutes||0)-.015);
-   const visited=extraBuildings.find(b=>Math.hypot(a.mesh.position.x-b.entry.x,a.mesh.position.z-b.entry.z)<.95);if(visited&&!a.entryVisitUntil){a.entryVisitUntil=now+3200;a.targetX=visited.entry.x;a.targetZ=visited.entry.z;a.pause=3.2;a.activity=rainActive?'sheltering':'buildingVisit';a.isSheltered=rainActive}if(a.entryVisitUntil&&now>a.entryVisitUntil){a.entryVisitUntil=0;a.isSheltered=false;a.activity='walk';a.targetX=a.homeX+(Math.random()-.5)*a.roam;a.targetZ=a.homeZ+(Math.random()-.5)*a.roam}
-   a.mesh.rotation.y=Math.atan2(dx,dz);
-   a.phase+=dt*a.speed*7;
-  }
- }
- if(a.walkAction)a.walkAction.paused=!a.walking;
- if(a.mixer)a.mixer.update(dt);
- // Procedural gait keeps every figure visibly moving even when its GLB has no rig or walk clip.
- const gait=a.walking?Math.sin(a.phase):0;
- if(a.activity==='sitting'&&a.legL&&a.legR){a.legL.rotation.x=-1.05;a.legR.rotation.x=-1.05;a.armL.rotation.x=.12;a.armR.rotation.x=.12;}
- if(a.activity!=='sitting'&&a.legL&&a.legR){a.legL.rotation.x=gait*.62;a.legR.rotation.x=-gait*.62;}
- const reacting=now<a.reactionUntil;
- // Articulated fallback limbs: alternating stride, natural arm swing and small idle gestures.
- if(a.armL&&a.armR&&a.legL&&a.legR){
-  a.legL.rotation.x=gait*.62;a.legR.rotation.x=-gait*.62;
-  a.armL.rotation.x=-gait*.48;a.armR.rotation.x=gait*.48;
-  const phoneTime=!a.walking&&a.idleMode==='phone'&&now<a.idleUntil;
-  if(!a.walking&&a.idleTimer<=0){a.idleMode=['phone','look','stretch','wave'][Math.floor(Math.random()*4)];a.idleTimer=5+Math.random()*9;if(a.idleMode==='phone')a.idleUntil=now+3500}
-  if(!a.walking&&a.idleMode==='stretch'){a.armL.rotation.z=-.8*Math.sin(now*.002);a.armR.rotation.z=.8*Math.sin(now*.002)}
-  if(!a.walking&&a.idleMode==='wave'){a.armR.rotation.z=-.9-Math.sin(now*.006)*.25}
-  if(!a.walking&&a.idleMode==='phone'){a.armR.rotation.x=-.8;a.armR.rotation.z=-.35;if(a.phone)a.phone.visible=true}else if(a.phone)a.phone.visible=false;
-  if(reacting&&a.reactionType==='👋')a.armR.rotation.z=-1.15-Math.sin(now*.012)*.3;
-  if(a.walking)a.idleMode='look';
-  a.idleTimer-=dt;
- }
- // Small readable reactions: wave, laugh, cheer or pretend to take a photo.
- const reactionWave=reacting&&a.reactionType==='👋';
- const reactionLaugh=reacting&&a.reactionType==='😂';
- const reactionCheer=reacting&&a.reactionType==='🙌';
- const reactionPhoto=reacting&&a.reactionType==='📸';
- a.mesh.position.y=a.baseY+(a.walking?Math.abs(Math.sin(a.phase*2))*.07:Math.sin(now*.001+a.phase)*.012)+(reactionLaugh?Math.abs(Math.sin(now*.012))*.13:reactionCheer?Math.abs(Math.sin(now*.009))*.09:0);
- if(!a.walkAction){
-  // Job-specific idle motions make working NPCs feel distinct.
-  const workPhase=now*.0035+a.phase;
-  const working=!a.walking&&!reacting&&daylight>=.28;
-  const job=a.job;
-  const workLean=working?(job==='Cook'?.10*Math.sin(workPhase*2):job==='Artist'?.08:job==='Teacher'?.045*Math.sin(workPhase):job==='Musician'?.07*Math.sin(workPhase*1.4):job==='Student'?.06:job==='Shopkeeper'?.035*Math.sin(workPhase*1.8):0):0;
-  a.mesh.rotation.x=a.walking?Math.sin(a.phase*2)*.045:(reactionPhoto?-.12:reactionLaugh?Math.sin(now*.012)*.08:workLean);
-  a.mesh.rotation.z=a.walking?gait*.055:(reactionWave?Math.sin(now*.014)*.09:reactionCheer?Math.sin(now*.01)*.07:working&&job==='Musician'?Math.sin(workPhase)*.06:Math.sin(now*.001+a.phase)*.008);
-  a.mesh.scale.y=a.baseScale*(1+(a.walking?Math.abs(Math.sin(a.phase*2))*.018:reactionCheer?Math.abs(Math.sin(now*.009))*.025:0));
- }
-});
-if(interactedNPC&&now<interactedUntil){
- paintSpeech(interactedNPC.talkLine);speechTexture.needsUpdate=true;speechBubble.visible=true;
- speechBubble.position.set(interactedNPC.mesh.position.x,interactedNPC.mesh.position.y+2.5,interactedNPC.mesh.position.z);
-}else if(closestNPC&&closestNPCDistance<3.1){
- if(activeGreeting!==closestNPC){
-  activeGreeting=closestNPC;
-  paintSpeech(closestNPC.talkLine||closestNPC.name+': '+closestNPC.job+' · Hobby: '+(closestNPC.hobby||'exploring')+' · '+(closestNPC.goal||'Enjoying the day'));
-  speechTexture.needsUpdate=true;
- }
- speechBubble.visible=true;
- speechBubble.position.set(closestNPC.mesh.position.x,closestNPC.mesh.position.y+2.5,closestNPC.mesh.position.z);
-}else{
- activeGreeting=null;
- const social=npcActors.find(a=>a.socialFriend&&a.socialCooldown>0&&a.socialFriend.socialCooldown>0&&Math.hypot(player.position.x-(a.mesh.position.x+a.socialFriend.mesh.position.x)/2,player.position.z-(a.mesh.position.z+a.socialFriend.mesh.position.z)/2)<12);
- if(social){
-  const friend=social.socialFriend;
-  const speaker=Math.floor(now/2200)%2===0?social:friend;
-  paintSpeech(speaker.talkLine||speaker.name+': chatting');
-  speechTexture.needsUpdate=true;
-  speechBubble.visible=true;
-  speechBubble.position.set((social.mesh.position.x+friend.mesh.position.x)/2,(social.mesh.position.y+friend.mesh.position.y)/2+2.5,(social.mesh.position.z+friend.mesh.position.z)/2);
- }else speechBubble.visible=false;
-}
-const target=new THREE.Vector3(player.position.x-Math.sin(heading)*camDist,inside?3.5:3.9,player.position.z-Math.cos(heading)*camDist);camera.position.lerp(target,.09);camera.lookAt(player.position.x,inside?1.2:1.1,player.position.z);if(!inside){const near=nearestBuildingDistance()<8;interactButton.textContent=near?'ENTER BUILDING':'BUILDING: WALK CLOSER';interactButton.style.opacity=near?'1':'.72'}document.querySelector('#status').textContent=inside?'INSIDE BUILDING':(inVehicle?'DRIVING · CITY TRAFFIC':(sprinting&&moving?'SPRINTING · CITY EXPLORER':(moving?'ON FOOT · WALKING':(daylight<.3?'NIGHT · CITY EXPLORER':'DAY · CITY EXPLORER'))));renderer.render(scene,camera)}requestAnimationFrame(animate);
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
-</script></body></html>
+</body>
+</html>
