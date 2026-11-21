@@ -433,7 +433,7 @@ const CITY_SAVE_KEY='citylife3d-save-v1';
 let saveClock=0;
 function saveCityProgress(){
  try{
-  const npcState=npcActors.map(a=>({name:a.name,familyId:a.familyId,friendship:a.friendship||0,trust:a.trust||0,wallet:a.wallet||0,careerLevel:a.careerLevel||1,careerProgress:a.careerProgress||0,energy:a.energy??75,stress:a.stress||0,hunger:a.hunger??25,hygiene:a.hygiene??80,socialNeed:a.socialNeed??60,mood:a.mood||'😊',goal:a.goal||'',hobby:a.hobby||'',homeX:a.homeX,homeZ:a.homeZ,x:a.mesh.position.x,z:a.mesh.position.z,memory:(a.memory||[]).slice(-8),lifeEvents:(a.lifeEvents||[]).slice(-6),visitedDistricts:(a.visitedDistricts||[]).slice(-8),recognisedFriends:(a.recognisedFriends||[]).slice(-8),lastKnownPlayerVisit:a.lastKnownPlayerVisit||0}));
+  const npcState=npcActors.map(a=>({name:a.name,familyId:a.familyId,friendship:a.friendship||0,trust:a.trust||0,wallet:a.wallet||0,careerLevel:a.careerLevel||1,careerProgress:a.careerProgress||0,energy:a.energy??75,stress:a.stress||0,hunger:a.hunger??25,hygiene:a.hygiene??80,socialNeed:a.socialNeed??60,mood:a.mood||'😊',goal:a.goal||'',hobby:a.hobby||'',homeX:a.homeX,homeZ:a.homeZ,x:a.mesh.position.x,z:a.mesh.position.z,memory:(a.memory||[]).slice(-8),lifeEvents:(a.lifeEvents||[]).slice(-6),visitedDistricts:(a.visitedDistricts||[]).slice(-8),recognisedFriends:(a.recognisedFriends||[]).slice(-8),lastKnownPlayerVisit:a.lastKnownPlayerVisit||0,habits:a.habits||{},playerActionMemory:(a.playerActionMemory||[]).slice(-8),lifeGoal:a.lifeGoal||'',tomorrowPlan:a.tomorrowPlan||null,plannedForDay:a.plannedForDay,familiarPlaces:(a.familiarPlaces||[]).slice(-12),failedRoutes:a.failedRoutes||0}));
   const checkpoint={x:player.position.x,z:player.position.z,heading,camDist,mission,dayClock,npcState,worldEvent:npcWorldEvent,worldEventClock:npcWorldEventClock,version:2};
   localStorage.setItem(CITY_SAVE_KEY,JSON.stringify(checkpoint));
  }catch(error){console.warn('City progress could not be saved:',error)}
@@ -449,8 +449,8 @@ try{
   document.querySelector('#mission').textContent='TASK 0'+(mission+1)+' · '+tasks[mission];
   if(Array.isArray(checkpoint.npcState)){
    checkpoint.npcState.forEach((saved,i)=>{const a=npcActors[i];if(!a||a.name!==saved.name)return;
-    ['friendship','trust','wallet','careerLevel','careerProgress','energy','stress','hunger','hygiene','socialNeed','mood','goal','hobby','homeX','homeZ','lastKnownPlayerVisit'].forEach(k=>{if(saved[k]!==undefined)a[k]=saved[k]});
-    a.memory=Array.isArray(saved.memory)?saved.memory.slice(-8):[];a.lifeEvents=Array.isArray(saved.lifeEvents)?saved.lifeEvents.slice(-6):[];a.visitedDistricts=Array.isArray(saved.visitedDistricts)?saved.visitedDistricts.slice(-8):[];a.recognisedFriends=Array.isArray(saved.recognisedFriends)?saved.recognisedFriends.slice(-8):[];
+    ['friendship','trust','wallet','careerLevel','careerProgress','energy','stress','hunger','hygiene','socialNeed','mood','goal','hobby','homeX','homeZ','lastKnownPlayerVisit','lifeGoal','tomorrowPlan','plannedForDay','failedRoutes'].forEach(k=>{if(saved[k]!==undefined)a[k]=saved[k]});
+    a.memory=Array.isArray(saved.memory)?saved.memory.slice(-8):[];a.habits=saved.habits&&typeof saved.habits==='object'?saved.habits:{};a.playerActionMemory=Array.isArray(saved.playerActionMemory)?saved.playerActionMemory.slice(-8):[];a.familiarPlaces=Array.isArray(saved.familiarPlaces)?saved.familiarPlaces.slice(-12):[];a.lifeEvents=Array.isArray(saved.lifeEvents)?saved.lifeEvents.slice(-6):[];a.visitedDistricts=Array.isArray(saved.visitedDistricts)?saved.visitedDistricts.slice(-8):[];a.recognisedFriends=Array.isArray(saved.recognisedFriends)?saved.recognisedFriends.slice(-8):[];
     if(Number.isFinite(saved.x)&&Number.isFinite(saved.z)){a.mesh.position.x=saved.x;a.mesh.position.z=saved.z}
    });
    if(checkpoint.worldEvent)npcWorldEvent=checkpoint.worldEvent;
