@@ -365,7 +365,7 @@ expansionDistrictNPCs.forEach(([districtZ,x,z],i)=>{
   familyId:100+i,familyRole:0,x,targetX:x,z,targetZ:z,homeX:x,homeZ:z,
   pause:.2,routineTimer:8+i*1.3,roam:18,speed:.65+(i%4)*.1,
   partner:null,socialFriend:null,benchTarget:null,isCompanion:false,isChild:false,
-  districtZ,activity:'walk',activityTimer:12,friendship:0,mood:'😊'});
+  districtZ,activity:'walk',activityTimer:12,friendship:0,mood:'😊',memory:[],visitedDistricts:[],goalClock:16+i*2,landmarkCooldown:0,energy:75,stress:0});
 });
 // Non-sexual family growth: a household may welcome an adopted child NPC off-screen.
 let familyGrowthClock=0,familyGrowthCount=0;
