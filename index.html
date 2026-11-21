@@ -33,7 +33,7 @@ function slab(w,h,d,mat,x,y,z,parent=scene){const m=new THREE.Mesh(new THREE.Box
 for(let k=-2;k<=2;k++){const p=k*40;slab(13,.12,210,roadMat,p,.015,0);slab(210,.12,13,roadMat,0,.016,p);for(let n=-9;n<=9;n++){const q=n*10;slab(.16,.025,3.4,lineMat,p,.09,q);slab(3.4,.025,.16,lineMat,q,.09,p)}const segments=[[-100,-86.5],[-73.5,-46.5],[-33.5,-6.5],[6.5,33.5],[46.5,73.5],[86.5,100]];for(const [a,b] of segments){const mid=(a+b)/2,len=b-a;for(const side of [-1,1]){slab(3.4,.16,len,sidewalkMat,p+side*9.2,.02,mid);slab(len,.16,3.4,sidewalkMat,mid,.02,p+side*9.2);slab(.07,.08,len,curbMat,p+side*7.05,.14,mid);slab(len,.08,.07,curbMat,mid,.14,p+side*7.05)}}}
 for(let gx=-2;gx<=2;gx++)for(let gz=-2;gz<=2;gz++){const px=gx*40,pz=gz*40;for(let n=-3;n<=3;n++){const off=n*.88;slab(13,.035,.48,lineMat,px,.105,pz+9.2+off);slab(13,.035,.48,lineMat,px,.105,pz-9.2+off);slab(.48,.035,13,lineMat,px+9.2+off,.105,pz);slab(.48,.035,13,lineMat,px-9.2+off,.105,pz)}}
 
-const player=new THREE.Group();player.scale.setScalar(2.2);scene.add(player);player.position.set(9.2,0,0);
+const player=new THREE.Group();player.scale.setScalar(2.2);scene.add(player);player.position.set(0,0,0);
 function part(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
 const skin=new THREE.MeshStandardMaterial({color:0xc98e68}),shirt=new THREE.MeshStandardMaterial({color:0x176b91}),pants=new THREE.MeshStandardMaterial({color:0x26384c}),shoe=new THREE.MeshStandardMaterial({color:0x17202b});
 part(player,new THREE.CylinderGeometry(.25,.3,.72,10),shirt,0,1.05,0);part(player,new THREE.SphereGeometry(.22,12,10),skin,0,1.62,0);
@@ -442,6 +442,8 @@ try{
   document.querySelector('#mission').textContent='TASK 0'+(mission+1)+' · '+tasks[mission];
  }
 }catch(error){console.warn('Saved city progress could not be restored:',error)}
+// Always begin on the main road, rather than restoring an indoor/invalid checkpoint.
+player.position.set(0,0,0);
 addEventListener('pagehide',saveCityProgress);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveCityProgress()});
 const j=document.querySelector('#joystick'),stick=document.querySelector('#stick');
@@ -451,7 +453,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.cli
 function nearestBuildingDistance(){let best=Infinity;for(const b of buildingSpots){const d=Math.hypot(player.position.x-b.x,player.position.z-b.z)-b.r;best=Math.min(best,d)}return best}
 const interactButton=document.querySelector('#interact');
 const roomExitButton=document.querySelector('#roomExit');
-function exitCurrentRoom(){if(!inside)return;inside=false;player.position.copy(returnPosition);player.position.y=0;player.rotation.y=heading;roomExitButton.style.display='none';interactButton.textContent='ENTER BUILDING';document.querySelector('#hint').textContent='Walk near a building entrance, then tap ENTER BUILDING';}
+function exitCurrentRoom(){if(!inside)return;inside=false;player.position.set(0,0,0);player.position.y=0;player.rotation.y=heading;roomExitButton.style.display='none';interactButton.textContent='ENTER BUILDING';document.querySelector('#hint').textContent='Walk near a building entrance, then tap ENTER BUILDING';}
 roomExitButton.addEventListener('click',exitCurrentRoom);
 addEventListener('keydown',e=>{if((e.key==='Escape'||e.key==='Backspace')&&inside)exitCurrentRoom();});
 
