@@ -418,44 +418,32 @@ function appendNpcChat(role,message){
  npcChatLog.appendChild(line);
  npcChatLog.scrollTop=npcChatLog.scrollHeight;
 }
-async function sendGeminiNpcMessage(actor,message){
- if(!actor||!message.trim())return;
- const requestId=++chatRequestId;
- actor.aiHistory=actor.aiHistory||[];
- const history=actor.aiHistory.slice(-6).map(item=>({
-  role:(item.role==='model'||item.role==='npc')?'model':'user',text:item.text
- }));
- actor.aiHistory.push({role:'user',text:message});
- if(actor.aiHistory.length>8)actor.aiHistory.shift();
- appendNpcChat('user',message);
- const loading=document.createElement('div');loading.textContent='Connecting to online NPC AI…';loading.style.opacity='.7';npcChatLog.appendChild(loading);
- const button=document.getElementById('npcChatSend');button.disabled=true;
- try{
-  const response=await fetch('/api/npc-ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-   npc:{name:actor.name,job:actor.job,hobby:actor.hobby,mood:actor.mood,goal:actor.activity||actor.goal,lifeGoal:actor.lifeGoal,friendship:actor.friendship},
-   message,history
-  })});
-  const data=await response.json().catch(()=>({}));
-  loading.remove();
-  if(requestId!==chatRequestId)return;
-  if(!response.ok||!data.reply)throw new Error(data.error||'Online NPC AI is unavailable.');
-  actor.aiHistory.push({role:'model',text:data.reply});
+function sendLocalNpcMessage(actor,message){
+  if(!actor||!message.trim())return;
+  actor.aiHistory=actor.aiHistory||[];
+  actor.aiHistory.push({role:'user',text:message});
+  if(actor.aiHistory.length>8)actor.aiHistory.shift();
+  appendNpcChat('user',message);
+  const lines=npcDialogues[actor.job]||npcDialogues.Resident;
+  const lower=message.toLowerCase();
+  let reply;
+  if(/hello|hi\b|hey/.test(lower))reply='Hello! Nice to see you around the city.';
+  else if(/name/.test(lower))reply='My name is '+actor.name+'. I work as a '+actor.job+'.';
+  else if(/job|work/.test(lower))reply='I am a '+actor.job+'. '+lines[1];
+  else if(/hobby|like|enjoy|favourite|favorite/.test(lower))reply='I enjoy '+(actor.hobby||'exploring the city')+'. '+lines[2];
+  else if(/where|place|go|going/.test(lower))reply='I am '+(actor.activity||'exploring')+' right now. '+lines[0];
+  else reply=lines[Math.floor(Math.random()*lines.length)];
+  actor.aiHistory.push({role:'model',text:reply});
   if(actor.aiHistory.length>8)actor.aiHistory=actor.aiHistory.slice(-8);
-  actor.talkLine=actor.name+': '+data.reply;
-  appendNpcChat('model',data.reply);
- }catch(error){
-  loading.remove();
-  if(requestId===chatRequestId)appendNpcChat('model','Online reply failed: '+(error.message||'Check your internet connection and Gemini API setup.')+' I cannot reply offline.');
- }finally{
-  button.disabled=false;
- }
+  actor.talkLine=actor.name+': '+reply;
+  appendNpcChat('model',reply);
 }
 npcChatForm.addEventListener('submit',event=>{
  event.preventDefault();
  const message=npcChatInput.value.trim();
  if(!message||!chatNPC)return;
  npcChatInput.value='';
- sendGeminiNpcMessage(chatNPC,message);
+ sendLocalNpcMessage(chatNPC,message);
 });
 document.getElementById('npcChatClose').addEventListener('click',()=>{
  npcChatPanel.style.display='none';chatNPC=null;chatRequestId++;
@@ -478,7 +466,7 @@ renderer.domElement.addEventListener('click',event=>{
   else actor.talkLine=actor.name+': Nice to see you again! Friendship '+actor.friendship;
  const lines=npcDialogues[actor.job]||npcDialogues.Resident;
  actor.talkLine=actor.mood+' '+actor.name+' · Friendship '+actor.friendship+' · Trust '+(actor.trust||0)+' · Hobby '+(actor.hobby||'exploring')+': '+lines[Math.floor(Math.random()*lines.length)];
- chatNPC=actor;actor.aiHistory=actor.aiHistory||[];npcChatTitle.textContent=actor.name+' · '+actor.job;npcChatLog.textContent='';npcChatPanel.style.display='block';npcChatInput.value='';sendGeminiNpcMessage(actor,'Hi! What are you up to today?');
+ chatNPC=actor;actor.aiHistory=actor.aiHistory||[];npcChatTitle.textContent=actor.name+' · '+actor.job;npcChatLog.textContent='';npcChatPanel.style.display='block';npcChatInput.value='';appendNpcChat('model','Hello! Nice to see you around the city.');
  actor.reactionType='👋';actor.reactionUntil=interactedUntil;
  actor.targetX=actor.mesh.position.x;actor.targetZ=actor.mesh.position.z;actor.pause=5.2;
  actor.mesh.rotation.y=Math.atan2(player.position.x-actor.mesh.position.x,player.position.z-actor.mesh.position.z);
@@ -522,43 +510,6 @@ function chooseNpcBrainGoal(a,goals){
  return{g,s}}).sort((x,y)=>y.s-x.s);
  return ranked[0]?.g||goals[Math.floor(Math.random()*goals.length)];
 }
-
-let lastGeminiDecisionAt=0;
-function requestGeminiNpcDecision(a,goals){
- const token=(a.geminiDecisionToken||0)+1;
- a.geminiDecisionToken=token;
- const now=Date.now();
- if(now-lastGeminiDecisionAt<8000||now-(a.lastGeminiDecisionAt||0)<90000)return;
- lastGeminiDecisionAt=now;
- a.lastGeminiDecisionAt=now;
- const npc={
-  name:a.name,job:a.job,personality:a.personality,mood:a.mood,
-  currentGoal:a.goal,lifeGoal:a.lifeGoal,hobby:a.hobby,
-  hunger:a.hunger,energy:a.energy,stress:a.stress,
-  socialNeed:a.socialNeed,friendship:a.friendship,
-  familiarPlaces:a.familiarPlaces,memory:a.memory
- };
- fetch('/api/npc-decision',{
-  method:'POST',headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({npc,goals:goals.map(g=>({name:g.name,x:g.x,z:g.z}))})
- }).then(response=>response.ok?response.json():null).then(data=>{
-  if(!data||!data.goal||a.geminiDecisionToken!==token||a.activity!=='personalGoal'||a.energy<18||a.hunger>82||rainActive)return;
-  const selected=goals.find(g=>g.name===data.goal);
-  if(!selected)return;
-  a.targetX=selected.x;a.targetZ=selected.z;
-  if(a.targetX<=100&&a.targetX>=-100&&a.targetZ<=100&&a.targetZ>=-100){
-   const safe=constrainToSidewalk(a.targetX,a.targetZ);a.targetX=safe.x;a.targetZ=safe.z;
-  }
-  a.goal=selected.name+' · '+a.lifeGoal;
-  a.brain=a.brain||createNpcBrain();
-  a.brain.thought='I chose to '+selected.name.toLowerCase();
-  a.brain.lastDecision=performance.now();
-  a.brain.decisionCount=(a.brain.decisionCount||0)+1;
-  a.geminiDecisionReason=String(data.reason||'').slice(0,90);
- }).catch(()=>{});
-}
-
-
 
 let saveClock=0;
 function saveCityProgress(){
@@ -682,7 +633,7 @@ npcWorldEventClock-=dt;if(npcWorldEventClock<=0){npcWorldEvent=npcWorldEvents[Ma
   if(cityDay!==a.birthdayDay)a.birthdayDone=false;
   if(a.goalClock<=0&&a.familyRole!==3&&a!==companionNPC&&!rainActive&&a.pause<=0&&a.activity!=='sitting'&&a.activity!=='restingAtGoal'){
    const favourite=a.favouriteSpot||'park';const favouriteShop=extraBuildings.find(b=>b.kind==='shop'&&b.isOpen);const favouritePark=parkSpots[Math.floor(Math.random()*Math.max(1,parkSpots.length))]||[30,30];const goals=[{name:'Visit the park',x:favouritePark[0],z:favouritePark[1]},{name:'Explore a new street',x:a.homeX+(Math.random()-.5)*34,z:a.homeZ+(Math.random()-.5)*34},{name:'Visit a shop',x:favouriteShop?.entry.x??a.homeX,z:favouriteShop?.entry.z??a.homeZ},{name:'Enjoy the beach',x:132,z:180+(Math.random()-.5)*24},{name:'Visit a favourite place',x:favourite==='shop'?(favouriteShop?.entry.x??a.homeX):favourite==='beach'?132:favouritePark[0],z:favourite==='shop'?(favouriteShop?.entry.z??a.homeZ):favourite==='beach'?180:favouritePark[1]},{name:'Go to school',x:schoolEntry.x,z:schoolEntry.z},{name:'Wait at a bus stop',x:busStops[0]?.x??a.homeX,z:(busStops[0]?.z??a.homeZ)+1.5}];
-   if(a.eventInterest>.58){const eventSpot=npcEventSpots[Math.floor(Math.random()*npcEventSpots.length)];goals.push({name:'Attend '+npcWorldEvent,x:eventSpot[0],z:eventSpot[1]});}const habitKeys=Object.keys(a.habits||{});const preferred=habitKeys.sort((x,y)=>(a.habits[y]||0)-(a.habits[x]||0))[0];const goal=chooseNpcBrainGoal(a,goals);a.mlRecordedGoal=false;a.brain=a.brain||createNpcBrain();a.brain.thought='I decided to '+goal.name.toLowerCase();a.brain.lastDecision=performance.now();a.goal=goal.name+' · '+a.lifeGoal;a.targetX=goal.x;a.targetZ=goal.z;if(a.targetX<=100&&a.targetX>=-100&&a.targetZ<=100&&a.targetZ>=-100){const safe=constrainToSidewalk(a.targetX,a.targetZ);a.targetX=safe.x;a.targetZ=safe.z;}a.activity='personalGoal';a.goalCompleted=false;a.pause=0;a.goalClock=35+Math.random()*35;requestGeminiNpcDecision(a,goals);
+   if(a.eventInterest>.58){const eventSpot=npcEventSpots[Math.floor(Math.random()*npcEventSpots.length)];goals.push({name:'Attend '+npcWorldEvent,x:eventSpot[0],z:eventSpot[1]});}const habitKeys=Object.keys(a.habits||{});const preferred=habitKeys.sort((x,y)=>(a.habits[y]||0)-(a.habits[x]||0))[0];const goal=chooseNpcBrainGoal(a,goals);a.mlRecordedGoal=false;a.brain=a.brain||createNpcBrain();a.brain.thought='I decided to '+goal.name.toLowerCase();a.brain.lastDecision=performance.now();a.goal=goal.name+' · '+a.lifeGoal;a.targetX=goal.x;a.targetZ=goal.z;if(a.targetX<=100&&a.targetX>=-100&&a.targetZ<=100&&a.targetZ>=-100){const safe=constrainToSidewalk(a.targetX,a.targetZ);a.targetX=safe.x;a.targetZ=safe.z;}a.activity='personalGoal';a.goalCompleted=false;a.pause=0;a.goalClock=35+Math.random()*35;
   }
   if(a.energy<18&&a.activity!=='sitting'&&!a.benchTarget){const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];if(bench){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench';a.talkLine=a.name+': I need a short rest.'}}
 if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
