@@ -346,7 +346,7 @@ const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),ben
    const umbrella=new THREE.Group();const canopy=new THREE.Mesh(new THREE.ConeGeometry(.62,.22,12),new THREE.MeshStandardMaterial({color:[0x347ca5,0xc65a4a,0x4b8a68,0x7659a4][i%4],side:THREE.DoubleSide,roughness:.65}));canopy.rotation.x=Math.PI;canopy.position.y=2.05;umbrella.add(canopy);const handle=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.85,7),new THREE.MeshStandardMaterial({color:0x34383d}));handle.position.set(0,1.62,0);umbrella.add(handle);umbrella.visible=false;person.add(umbrella);
   person.scale.setScalar(1.45);person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
   person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
-  npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],gender,job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18,personality:npcPersonalities[i%npcPersonalities.length],goal:npcGoals[i%npcGoals.length],goalClock:18+Math.random()*24,memory:[],visitedDistricts:[],birthdayDay:(i*7)%28,birthdayDone:false,landmarkCooldown:0,stress:0,energy:70+Math.random()*30,recognisedFriends:[]});
+  npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],gender,job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18,personality:npcPersonalities[i%npcPersonalities.length],goal:npcGoals[i%npcGoals.length],goalClock:18+Math.random()*24,memory:[],visitedDistricts:[],birthdayDay:(i*7)%28,birthdayDone:false,landmarkCooldown:0,stress:0,energy:70+Math.random()*30,recognisedFriends:[],hobby:['photography','gardening','music','sports','shopping','reading'][i%6],favouriteSpot:i%3===0?'park':i%3===1?'shop':'beach',wallet:80+(i%8)*15,careerLevel:1,careerProgress:0,trust:0,lifeEvents:['Moved into the neighbourhood'],decisionClock:22+Math.random()*25,lastKnownPlayerVisit:0});
  });
  document.querySelector('#status').textContent='CITY + BEACH · '+npcActors.length+' NPCs';
 }
@@ -365,7 +365,7 @@ expansionDistrictNPCs.forEach(([districtZ,x,z],i)=>{
   familyId:100+i,familyRole:0,x,targetX:x,z,targetZ:z,homeX:x,homeZ:z,
   pause:.2,routineTimer:8+i*1.3,roam:18,speed:.65+(i%4)*.1,
   partner:null,socialFriend:null,benchTarget:null,isCompanion:false,isChild:false,
-  districtZ,activity:'walk',activityTimer:12,friendship:0,mood:'😊',memory:[],visitedDistricts:[],goalClock:16+i*2,landmarkCooldown:0,energy:75,stress:0});
+  districtZ,activity:'walk',activityTimer:12,friendship:0,mood:'😊',memory:[],visitedDistricts:[],goalClock:16+i*2,landmarkCooldown:0,energy:75,stress:0,hobby:['photography','gardening','music','sports','shopping'][i%5],favouriteSpot:i%2?'park':'beach',wallet:100+i*10,careerLevel:1,careerProgress:0,trust:0,lifeEvents:['Exploring a new district'],decisionClock:25+i*2,lastKnownPlayerVisit:0});
 });
 // Non-sexual family growth: a household may welcome an adopted child NPC off-screen.
 let familyGrowthClock=0,familyGrowthCount=0;
@@ -413,7 +413,7 @@ renderer.domElement.addEventListener('click',event=>{
  const actor=npcActors.find(a=>a.mesh===root);
  if(!actor||Math.hypot(actor.mesh.position.x-player.position.x,actor.mesh.position.z-player.position.z)>22)return;
  interactedNPC=actor;interactedUntil=performance.now()+5200;
-  actor.friendship=(actor.friendship||0)+1;
+  actor.friendship=(actor.friendship||0)+1;actor.trust=Math.min(100,(actor.trust||0)+4);actor.lastKnownPlayerVisit=performance.now();actor.memory=actor.memory||[];actor.memory.push('Met the player again');if(actor.memory.length>10)actor.memory.shift();actor.lifeEvents=actor.lifeEvents||[];actor.lifeEvents.push('Had a friendly conversation');if(actor.lifeEvents.length>6)actor.lifeEvents.shift();
   actor.mood=['😊','😎','🤔','🤩'][Math.min(3,Math.floor((actor.friendship||0)/3))];
   if(companionNPC===actor){companionNPC=null;actor.isCompanion=false;actor.talkLine=actor.name+': I will continue exploring. '}
   else if(!companionNPC){companionNPC=actor;actor.isCompanion=true;actor.talkLine=actor.name+': I will explore with you!'}
@@ -516,7 +516,7 @@ npcActors.forEach(a=>{
   // Lightweight personal-life simulation: identity, needs, goals and location memory.
   a.energy=Math.max(0,Math.min(100,(a.energy??75)+(a.activity==='sitting'?dt*1.8:-dt*.035)));
   a.stress=Math.max(0,Math.min(100,(a.stress||0)+(rainActive?dt*.012:-dt*.02)));
-  a.goalClock=(a.goalClock??20)-dt;a.landmarkCooldown=Math.max(0,(a.landmarkCooldown||0)-dt);
+  a.goalClock=(a.goalClock??20)-dt;a.landmarkCooldown=Math.max(0,(a.landmarkCooldown||0)-dt);a.decisionClock=(a.decisionClock??30)-dt;a.lifeEvents=a.lifeEvents||[];a.wallet=Math.max(0,Math.min(9999,(a.wallet??100)+(a.job==='Shopkeeper'||a.job==='Cook'?dt*.018:a.job==='Delivery Worker'?dt*.014:dt*.004)));a.careerProgress=(a.careerProgress||0)+dt*(a.job==='Student'?.0015:.00035);if(a.careerProgress>=1){a.careerProgress=0;a.careerLevel=Math.min(5,(a.careerLevel||1)+1);a.lifeEvents.push('Reached career level '+a.careerLevel);if(a.lifeEvents.length>6)a.lifeEvents.shift();}
   a.memory=a.memory||[];a.visitedDistricts=a.visitedDistricts||[];
   const district=a.mesh.position.x>105?(a.mesh.position.z<-135?'Tokyo Downtown':a.mesh.position.z<-45?'Japanese Village':a.mesh.position.z<45?'Airport':a.mesh.position.z<135?'Industrial Port':'Beach Island'):(Math.abs(a.mesh.position.x)<42&&Math.abs(a.mesh.position.z)<42?'Central City':a.mesh.position.z>45?'Park District':'Neighbourhood');
   if(!a.visitedDistricts.includes(district)){a.visitedDistricts.push(district);a.memory.push('Visited '+district);if(a.memory.length>8)a.memory.shift();if(a.visitedDistricts.length>1&&a.landmarkCooldown<=0){a.talkLine=a.name+': I have explored '+district+'!';a.reactionType='✨';a.reactionUntil=now+1800;a.landmarkCooldown=24}}
@@ -524,7 +524,7 @@ npcActors.forEach(a=>{
   if(!a.birthdayDone&&cityDay===a.birthdayDay&&a.familyRole===0){a.birthdayDone=true;a.talkLine='🎂 '+a.name+' is celebrating a birthday!';a.reactionType='🎉';a.reactionUntil=now+3600}
   if(cityDay!==a.birthdayDay)a.birthdayDone=false;
   if(a.goalClock<=0&&a.familyRole===0&&a!==companionNPC&&!rainActive&&a.pause<=0&&a.activity!=='sitting'){
-   const goals=[{name:'Visit the park',x:parkSpots[0]?.[0]||30,z:parkSpots[0]?.[1]||30},{name:'Explore a new street',x:a.homeX+(Math.random()-.5)*34,z:a.homeZ+(Math.random()-.5)*34},{name:'Visit a shop',x:extraBuildings.find(b=>b.kind==='shop')?.entry.x??a.homeX,z:extraBuildings.find(b=>b.kind==='shop')?.entry.z??a.homeZ},{name:'Enjoy the beach',x:132,z:180+(Math.random()-.5)*24}];
+   const favourite=a.favouriteSpot||'park';const favouriteShop=extraBuildings.find(b=>b.kind==='shop'&&b.isOpen);const favouritePark=parkSpots[Math.floor(Math.random()*Math.max(1,parkSpots.length))]||[30,30];const goals=[{name:'Visit the park',x:favouritePark[0],z:favouritePark[1]},{name:'Explore a new street',x:a.homeX+(Math.random()-.5)*34,z:a.homeZ+(Math.random()-.5)*34},{name:'Visit a shop',x:favouriteShop?.entry.x??a.homeX,z:favouriteShop?.entry.z??a.homeZ},{name:'Enjoy the beach',x:132,z:180+(Math.random()-.5)*24},{name:'Visit a favourite place',x:favourite==='shop'?(favouriteShop?.entry.x??a.homeX):favourite==='beach'?132:favouritePark[0],z:favourite==='shop'?(favouriteShop?.entry.z??a.homeZ):favourite==='beach'?180:favouritePark[1]},{name:'Go to school',x:schoolEntry.x,z:schoolEntry.z},{name:'Wait at a bus stop',x:busStops[0]?.x??a.homeX,z:(busStops[0]?.z??a.homeZ)+1.5}];
    const goal=goals[Math.floor(Math.random()*goals.length)];a.goal=goal.name;a.targetX=goal.x;a.targetZ=goal.z;a.activity='personalGoal';a.goalClock=35+Math.random()*35;
   }
   if(a.energy<18&&a.activity!=='sitting'&&!a.benchTarget){const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];if(bench){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench';a.talkLine=a.name+': I need a short rest.'}}
@@ -595,7 +595,7 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
    if(a.partner===friend){a.dateUntil=now+6500;friend.dateUntil=now+6500;a.activity='date';friend.activity='date';a.targetX=friend.targetX=132;a.targetZ=friend.targetZ=6;}
    a.targetX=a.mesh.position.x;a.targetZ=a.mesh.position.z;
    friend.targetX=friend.mesh.position.x;friend.targetZ=friend.mesh.position.z;
-   a.socialFriend=friend;friend.socialFriend=a;
+   a.socialFriend=friend;friend.socialFriend=a;a.memory=a.memory||[];friend.memory=friend.memory||[];a.memory.push('Chatted with '+friend.name);friend.memory.push('Chatted with '+a.name);if(a.memory.length>10)a.memory.shift();if(friend.memory.length>10)friend.memory.shift();a.lifeEvents=a.lifeEvents||[];friend.lifeEvents=friend.lifeEvents||[];a.lifeEvents.push('Met '+friend.name);friend.lifeEvents.push('Met '+a.name);if(a.lifeEvents.length>6)a.lifeEvents.shift();if(friend.lifeEvents.length>6)friend.lifeEvents.shift();
    a.talkLine=a.name+': '+line;friend.talkLine=friend.name+': '+['Absolutely!','Sounds good!','Maybe later!','Yes, let’s go!'][Math.floor(Math.random()*4)];
    a.mesh.rotation.y=Math.atan2(friend.mesh.position.x-a.mesh.position.x,friend.mesh.position.z-a.mesh.position.z);
    friend.mesh.rotation.y=Math.atan2(a.mesh.position.x-friend.mesh.position.x,a.mesh.position.z-friend.mesh.position.z);
