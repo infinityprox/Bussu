@@ -270,7 +270,9 @@ const npcRoot=new THREE.Group();scene.add(npcRoot);
 const npcActors=[];
 const npcGreetings=['Hello there!','Nice day, isn’t it?','Welcome to our city!','Have you visited the beach?','The park is lovely today.','Good to see you!'];
 const npcNames=['Aarav','Maya','Kabir','Anaya','Ishaan','Diya','Arjun','Meera','Rohan','Tara','Dev','Aisha','Kiran','Nila','Vikram','Sana','Aditya','Priya','Reyansh','Ira','Vivaan','Kiara','Arnav','Myra','Dhruv','Avni','Rudra','Siya','Neil','Anika','Yuvan','Rhea','Atharv','Tia','Krish','Navya','Vihaan','Saanvi','Ayaan','Ishita','Manav','Kavya','Parth','Zoya','Ritvik','Amaira','Shaurya','Anvi','Om','Ishani','Veer','Aarohi','Dhruvika','Nikhil','Tanvi','Rishi','Pihu','Samar','Aadhya','Yash','Lavanya','Neilam'];
-const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician'];
+const npcJobs=['Resident','Shopkeeper','Student','Cyclist','Visitor','Artist','Cook','Teacher','Musician','Delivery Worker','Cleaner','Security Guard'];
+ const npcPersonalities=['Friendly','Curious','Quiet','Energetic','Helpful','Creative'];
+ const npcGoals=['Visit the park','Explore a new street','Meet a friend','Visit a shop','Enjoy the beach','Go to work'];
 // Snap pedestrian spawn points to the nearest sidewalk strip along the street grid.
 function snapToSidewalk(x,z){let best={x,z,d:Infinity};for(let k=-2;k<=2;k++)for(const side of [-1,1]){const sx=k*40+side*9.2,sz=k*40+side*9.2,dx=Math.abs(x-sx),dz=Math.abs(z-sz);if(dx<best.d)best={x:sx,z,d:dx};if(dz<best.d)best={x,z:sz,d:dz}}return{x:best.x,z:best.z}}
  function constrainToSidewalk(x,z){if(x>105)return{x:132,z:Math.round(z/9.2)*9.2};const p=snapToSidewalk(THREE.MathUtils.clamp(x,-102,102),THREE.MathUtils.clamp(z,-102,102));return{x:THREE.MathUtils.clamp(p.x,-102,102),z:THREE.MathUtils.clamp(p.z,-102,102)}}
@@ -344,7 +346,7 @@ const benchMat=new THREE.MeshStandardMaterial({color:0x765039,roughness:.9}),ben
    const umbrella=new THREE.Group();const canopy=new THREE.Mesh(new THREE.ConeGeometry(.62,.22,12),new THREE.MeshStandardMaterial({color:[0x347ca5,0xc65a4a,0x4b8a68,0x7659a4][i%4],side:THREE.DoubleSide,roughness:.65}));canopy.rotation.x=Math.PI;canopy.position.y=2.05;umbrella.add(canopy);const handle=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.85,7),new THREE.MeshStandardMaterial({color:0x34383d}));handle.position.set(0,1.62,0);umbrella.add(handle);umbrella.visible=false;person.add(umbrella);
   person.scale.setScalar(1.45);person.position.set(p[0],0,p[2]);person.rotation.y=[0,Math.PI/2,Math.PI,-Math.PI/2][i%4];
   person.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});npcRoot.add(person);
-  npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],gender,job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18});
+  npcActors.push({mesh:person,...limbs,phone,umbrella,x:p[0],z:p[2],baseY:0,baseScale:1.45,familyId:Math.floor(i/3),familyRole:i%3,name:npcNames[i%npcNames.length],gender,job:npcJobs[i%9],phase:i*1.73,speed:.72+(i%7)*.13,roam:5.5+(i%4)*1.2,targetX:p[0],targetZ:p[2],pause:Math.random()*2,baseRotation:person.rotation.y,routineTimer:3+Math.random()*12,homeX:p[0],homeZ:p[2],reactionCooldown:8,reactionUntil:0,reactionType:'',reactionPhase:Math.random()*6,idleMode:'look',idleTimer:4+Math.random()*9,activity:'walk',activityTimer:8+Math.random()*18,benchTarget:null,friendship:0,mood:['😊','😎','🤔'][i%3],isSheltered:false,photoCooldown:12+Math.random()*18,personality:npcPersonalities[i%npcPersonalities.length],goal:npcGoals[i%npcGoals.length],goalClock:18+Math.random()*24,memory:[],visitedDistricts:[],birthdayDay:(i*7)%28,birthdayDone:false,landmarkCooldown:0,stress:0,energy:70+Math.random()*30,recognisedFriends:[]});
  });
  document.querySelector('#status').textContent='CITY + BEACH · '+npcActors.length+' NPCs';
 }
@@ -395,7 +397,10 @@ const npcDialogues={
  Artist:['The city is full of inspiration.','I am looking for a nice place to sketch.','The colours here are wonderful.'],
  Cook:['I have been busy in the kitchen.','The cafe smells amazing today!','I am taking a quick break.'],
  Teacher:['Learning makes every day interesting.','School is busy this week.','Enjoy exploring the city!'],
- Musician:['I am practising a new tune.','Music makes the streets feel alive.','Maybe I will play near the plaza.']
+ Musician:['I am practising a new tune.','Music makes the streets feel alive.','Maybe I will play near the plaza.'],
+ 'Delivery Worker':['I am delivering a package nearby.','This neighbourhood has many customers.','One more delivery and then a break!'],
+ Cleaner:['I help keep the streets tidy.','A clean city is a happy city.','I am checking the park today.'],
+ 'Security Guard':['Everything is peaceful here.','I am keeping an eye on the public area.','Please enjoy your visit!']
 };
 renderer.domElement.addEventListener('click',event=>{
  const rect=renderer.domElement.getBoundingClientRect();
@@ -507,7 +512,23 @@ if(familyGrowthClock>72&&familyGrowthCount<4){
  const eligible=npcActors.filter(a=>a.familyRole===0&&!a.isChild&&!a.hasWelcomedChild&&a.job==='Resident');
  if(eligible.length){const family=eligible[Math.floor(Math.random()*eligible.length)];family.hasWelcomedChild=true;addFamilyChild(family)}
 }
-npcActors.forEach(a=>{if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
+npcActors.forEach(a=>{
+  // Lightweight personal-life simulation: identity, needs, goals and location memory.
+  a.energy=Math.max(0,Math.min(100,(a.energy??75)+(a.activity==='sitting'?dt*1.8:-dt*.035)));
+  a.stress=Math.max(0,Math.min(100,(a.stress||0)+(rainActive?dt*.012:-dt*.02)));
+  a.goalClock=(a.goalClock??20)-dt;a.landmarkCooldown=Math.max(0,(a.landmarkCooldown||0)-dt);
+  a.memory=a.memory||[];a.visitedDistricts=a.visitedDistricts||[];
+  const district=a.mesh.position.x>105?(a.mesh.position.z<-135?'Tokyo Downtown':a.mesh.position.z<-45?'Japanese Village':a.mesh.position.z<45?'Airport':a.mesh.position.z<135?'Industrial Port':'Beach Island'):(Math.abs(a.mesh.position.x)<42&&Math.abs(a.mesh.position.z)<42?'Central City':a.mesh.position.z>45?'Park District':'Neighbourhood');
+  if(!a.visitedDistricts.includes(district)){a.visitedDistricts.push(district);a.memory.push('Visited '+district);if(a.memory.length>8)a.memory.shift();if(a.visitedDistricts.length>1&&a.landmarkCooldown<=0){a.talkLine=a.name+': I have explored '+district+'!';a.reactionType='✨';a.reactionUntil=now+1800;a.landmarkCooldown=24}}
+  const cityDay=Math.floor(dayClock/(Math.PI*2)*28);
+  if(!a.birthdayDone&&cityDay===a.birthdayDay&&a.familyRole===0){a.birthdayDone=true;a.talkLine='🎂 '+a.name+' is celebrating a birthday!';a.reactionType='🎉';a.reactionUntil=now+3600}
+  if(cityDay!==a.birthdayDay)a.birthdayDone=false;
+  if(a.goalClock<=0&&a.familyRole===0&&a!==companionNPC&&!rainActive&&a.pause<=0&&a.activity!=='sitting'){
+   const goals=[{name:'Visit the park',x:parkSpots[0]?.[0]||30,z:parkSpots[0]?.[1]||30},{name:'Explore a new street',x:a.homeX+(Math.random()-.5)*34,z:a.homeZ+(Math.random()-.5)*34},{name:'Visit a shop',x:extraBuildings.find(b=>b.kind==='shop')?.entry.x??a.homeX,z:extraBuildings.find(b=>b.kind==='shop')?.entry.z??a.homeZ},{name:'Enjoy the beach',x:132,z:180+(Math.random()-.5)*24}];
+   const goal=goals[Math.floor(Math.random()*goals.length)];a.goal=goal.name;a.targetX=goal.x;a.targetZ=goal.z;a.activity='personalGoal';a.goalClock=35+Math.random()*35;
+  }
+  if(a.energy<18&&a.activity!=='sitting'&&!a.benchTarget){const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];if(bench){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench';a.talkLine=a.name+': I need a short rest.'}}
+if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
 const moving=Math.abs(joy.x)+Math.abs(joy.y)>.05;
 if(inVehicle&&activeCar){heading-=joy.x*1.05*dt;const drive=-joy.y*10*dt;const nextX=activeCar.mesh.position.x+Math.sin(heading)*drive,nextZ=activeCar.mesh.position.z+Math.cos(heading)*drive;const blocked=extraBuildings.some(b=>Math.abs(nextX-b.group.position.x)<b.halfW+1&&Math.abs(nextZ-b.group.position.z)<b.halfD+1);if(!blocked&&nextX>=-105&&nextX<=215&&nextZ>=-230&&nextZ<=230){activeCar.mesh.position.x=nextX;activeCar.mesh.position.z=nextZ;activeCar.mesh.rotation.y=heading;activeCar.wheels.forEach(w=>w.rotation.x+=drive*2.5)}player.position.copy(activeCar.mesh.position)}
 else if(moving&&!inside){heading-=joy.x*1.8*dt;const speed=-joy.y*(sprinting?7.2:4.4)*dt;const px=player.position.x+Math.sin(heading)*speed,pz=player.position.z+Math.cos(heading)*speed;const playerBlocked=extraBuildings.some(b=>Math.abs(px-b.group.position.x)<b.halfW+.35&&Math.abs(pz-b.group.position.z)<b.halfD+.35);const inWorld=px>=-108&&px<=220&&pz>=-235&&pz<=235;if(!playerBlocked&&inWorld){player.position.x=px;player.position.z=pz;}player.rotation.y=heading;walkPhase+=dt*(sprinting?15:10);armL.rotation.x=Math.sin(walkPhase)*.65;armR.rotation.x=-Math.sin(walkPhase)*.65;legL.rotation.x=-Math.sin(walkPhase)*.7;legR.rotation.x=Math.sin(walkPhase)*.7}
@@ -639,7 +660,7 @@ vehicleSignals.forEach(s=>{s.lamps[0].visible=!vehicleGreen&&!vehicleYellow;s.la
      const offsets={
       Shopkeeper:[2.8,-1.5],Student:[-2.5,2.2],Artist:[1.5,3.2],
       Cook:[-2.2,-1.8],Teacher:[2.2,1.8],Musician:[-1.4,2.8],
-      Cyclist:[3.5,1.2],Visitor:[-3.2,-1.2],Resident:[1.2,-2.8]
+      Cyclist:[3.5,1.2],Visitor:[-3.2,-1.2],Resident:[1.2,-2.8],'Delivery Worker':[3.2,1.8],Cleaner:[-3.1,1.4],'Security Guard':[2.6,-2.1]
      };
      const off=offsets[job]||[0,0];
      tx=a.homeX+off[0]+(Math.random()-.5)*2.2;
