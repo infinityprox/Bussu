@@ -453,7 +453,7 @@ const interactButton=document.querySelector('#interact');
 
 document.querySelector('#familyView').addEventListener('click',()=>{document.querySelector('#familyPanel').style.display='block';document.querySelector('#hint').textContent='12 NPC family groups · adults and children roam together'});
 document.querySelector('#closeFamily').onclick=()=>document.querySelector('#familyPanel').style.display='none';
-document.querySelector('#customBtn').onclick=()=>{document.querySelector('#customPanel').style.display='block';document.querySelector('#familyPanel').style.display='none';document.querySelector('#anatomyPanel').style.display='none'};
+document.querySelector('#customBtn').onclick=()=>{document.querySelector('#customPanel').style.display='block';document.querySelector('#familyPanel').style.display='none';};
 document.querySelector('#closeCustom').onclick=()=>document.querySelector('#customPanel').style.display='none';
 document.querySelectorAll('[data-shirt]').forEach(b=>b.addEventListener('click',()=>shirt.color.set(b.dataset.shirt)));
 document.querySelectorAll('[data-pants]').forEach(b=>b.addEventListener('click',()=>pants.color.set(b.dataset.pants)));
