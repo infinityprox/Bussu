@@ -446,7 +446,6 @@ async function sendGeminiNpcMessage(actor,message){
   appendNpcChat('model',fallback.replace(actor.name+': ','')+' (offline reply)');
  }finally{
   button.disabled=false;
-  if(requestId===chatRequestId)npcChatInput.focus({preventScroll:true});
  }
 }
 npcChatForm.addEventListener('submit',event=>{
