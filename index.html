@@ -521,6 +521,42 @@ function chooseNpcBrainGoal(a,goals){
  return ranked[0]?.g||goals[Math.floor(Math.random()*goals.length)];
 }
 
+let lastGeminiDecisionAt=0;
+function requestGeminiNpcDecision(a,goals){
+ const token=(a.geminiDecisionToken||0)+1;
+ a.geminiDecisionToken=token;
+ const now=Date.now();
+ if(now-lastGeminiDecisionAt<8000||now-(a.lastGeminiDecisionAt||0)<90000)return;
+ lastGeminiDecisionAt=now;
+ a.lastGeminiDecisionAt=now;
+ const npc={
+  name:a.name,job:a.job,personality:a.personality,mood:a.mood,
+  currentGoal:a.goal,lifeGoal:a.lifeGoal,hobby:a.hobby,
+  hunger:a.hunger,energy:a.energy,stress:a.stress,
+  socialNeed:a.socialNeed,friendship:a.friendship,
+  familiarPlaces:a.familiarPlaces,memory:a.memory
+ };
+ fetch('/api/npc-decision',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({npc,goals:goals.map(g=>({name:g.name,x:g.x,z:g.z}))})
+ }).then(response=>response.ok?response.json():null).then(data=>{
+  if(!data||!data.goal||a.geminiDecisionToken!==token||a.activity!=='personalGoal'||a.energy<18||a.hunger>82||rainActive)return;
+  const selected=goals.find(g=>g.name===data.goal);
+  if(!selected)return;
+  a.targetX=selected.x;a.targetZ=selected.z;
+  if(a.targetX<=100&&a.targetX>=-100&&a.targetZ<=100&&a.targetZ>=-100){
+   const safe=constrainToSidewalk(a.targetX,a.targetZ);a.targetX=safe.x;a.targetZ=safe.z;
+  }
+  a.goal=selected.name+' · '+a.lifeGoal;
+  a.brain=a.brain||createNpcBrain();
+  a.brain.thought='I chose to '+selected.name.toLowerCase();
+  a.brain.lastDecision=performance.now();
+  a.brain.decisionCount=(a.brain.decisionCount||0)+1;
+  a.geminiDecisionReason=String(data.reason||'').slice(0,90);
+ }).catch(()=>{});
+}
+
+
 
 let saveClock=0;
 function saveCityProgress(){
@@ -644,7 +680,7 @@ npcWorldEventClock-=dt;if(npcWorldEventClock<=0){npcWorldEvent=npcWorldEvents[Ma
   if(cityDay!==a.birthdayDay)a.birthdayDone=false;
   if(a.goalClock<=0&&a.familyRole===0&&a!==companionNPC&&!rainActive&&a.pause<=0&&a.activity!=='sitting'){
    const favourite=a.favouriteSpot||'park';const favouriteShop=extraBuildings.find(b=>b.kind==='shop'&&b.isOpen);const favouritePark=parkSpots[Math.floor(Math.random()*Math.max(1,parkSpots.length))]||[30,30];const goals=[{name:'Visit the park',x:favouritePark[0],z:favouritePark[1]},{name:'Explore a new street',x:a.homeX+(Math.random()-.5)*34,z:a.homeZ+(Math.random()-.5)*34},{name:'Visit a shop',x:favouriteShop?.entry.x??a.homeX,z:favouriteShop?.entry.z??a.homeZ},{name:'Enjoy the beach',x:132,z:180+(Math.random()-.5)*24},{name:'Visit a favourite place',x:favourite==='shop'?(favouriteShop?.entry.x??a.homeX):favourite==='beach'?132:favouritePark[0],z:favourite==='shop'?(favouriteShop?.entry.z??a.homeZ):favourite==='beach'?180:favouritePark[1]},{name:'Go to school',x:schoolEntry.x,z:schoolEntry.z},{name:'Wait at a bus stop',x:busStops[0]?.x??a.homeX,z:(busStops[0]?.z??a.homeZ)+1.5}];
-   if(a.eventInterest>.58){const eventSpot=npcEventSpots[Math.floor(Math.random()*npcEventSpots.length)];goals.push({name:'Attend '+npcWorldEvent,x:eventSpot[0],z:eventSpot[1]});}const habitKeys=Object.keys(a.habits||{});const preferred=habitKeys.sort((x,y)=>(a.habits[y]||0)-(a.habits[x]||0))[0];const goal=chooseNpcBrainGoal(a,goals);a.mlRecordedGoal=false;a.brain=a.brain||createNpcBrain();a.brain.thought='I decided to '+goal.name.toLowerCase();a.brain.lastDecision=performance.now();a.goal=goal.name+' · '+a.lifeGoal;a.targetX=goal.x;a.targetZ=goal.z;if(a.targetX<=100&&a.targetX>=-100&&a.targetZ<=100&&a.targetZ>=-100){const safe=constrainToSidewalk(a.targetX,a.targetZ);a.targetX=safe.x;a.targetZ=safe.z;}a.activity='personalGoal';a.goalClock=35+Math.random()*35;
+   if(a.eventInterest>.58){const eventSpot=npcEventSpots[Math.floor(Math.random()*npcEventSpots.length)];goals.push({name:'Attend '+npcWorldEvent,x:eventSpot[0],z:eventSpot[1]});}const habitKeys=Object.keys(a.habits||{});const preferred=habitKeys.sort((x,y)=>(a.habits[y]||0)-(a.habits[x]||0))[0];const goal=chooseNpcBrainGoal(a,goals);a.mlRecordedGoal=false;a.brain=a.brain||createNpcBrain();a.brain.thought='I decided to '+goal.name.toLowerCase();a.brain.lastDecision=performance.now();a.goal=goal.name+' · '+a.lifeGoal;a.targetX=goal.x;a.targetZ=goal.z;if(a.targetX<=100&&a.targetX>=-100&&a.targetZ<=100&&a.targetZ>=-100){const safe=constrainToSidewalk(a.targetX,a.targetZ);a.targetX=safe.x;a.targetZ=safe.z;}a.activity='personalGoal';a.goalClock=35+Math.random()*35;requestGeminiNpcDecision(a,goals);
   }
   if(a.energy<18&&a.activity!=='sitting'&&!a.benchTarget){const bench=cityBenches[Math.floor(Math.random()*cityBenches.length)];if(bench){a.benchTarget=bench;a.targetX=bench.x;a.targetZ=bench.z;a.activity='toBench';a.talkLine=a.name+': I need a short rest.'}}
 if(a.isChild){a.ageClock+=dt;if(a.ageClock>150&&a.ageStage===0){a.ageStage=1;a.mesh.scale.setScalar(.88)}else if(a.ageClock>300&&a.ageStage===1){a.ageStage=2;a.mesh.scale.setScalar(.96)}}});
